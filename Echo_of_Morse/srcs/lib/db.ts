@@ -3,7 +3,7 @@
 // that is reused across the entire application to avoid
 // creating too many database connections
 
-import { PrismaClient } from '../app/generated/prisma'
+import { PrismaClient } from '@/generated/prisma'
 
 // Extend the global object to store the Prisma instance
 // This prevents multiple instances during Next.js hot reload in development

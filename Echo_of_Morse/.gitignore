@@ -44,3 +44,7 @@ next-env.d.ts
 
 # Vault — données chiffrées et tokens (ne jamais committer)
 vault/data/
+
+
+#prisma
+srcs/generated/prisma

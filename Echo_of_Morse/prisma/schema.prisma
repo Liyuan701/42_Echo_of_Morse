@@ -1,7 +1,7 @@
 // tell prisma to generate the client, with which we can request data.
 generator client {
   provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  output = "../srcs/generated/prisma"
 }
 
 // which db to use
@@ -30,6 +30,7 @@ model User {
 
   sentRequests     Friendship[] @relation("SentRequests")
   receivedRequests Friendship[] @relation("ReceivedRequests")
+  letterProgresses UserLetterProgress[]
 }
 
 
