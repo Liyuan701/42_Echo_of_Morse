@@ -1,7 +1,8 @@
+// calls the API online-count
+
 import { unstable_noStore as noStore } from "next/cache";
 
 import { Card } from "@/components/ui";
-import { prisma } from "@/server/prisma";
 import styles from "./home.module.css";
 
 export default async function OnlineCounter() {
@@ -10,11 +11,14 @@ export default async function OnlineCounter() {
   let onlineCount = 0;
 
 
-//lifan: check the isOnline of the User. 
+//lifan: use API to get online num.
   try {
-    onlineCount = await prisma.user.count({
-      where: { isOnline: true }
+    const res = await fetch("http://web:3000/api/users/online-count", {
+      cache: "no-store",
     });
+
+    const data = await res.json();
+    onlineCount = data.count ?? 0;
   } catch {
     onlineCount = 0;
   }
@@ -26,7 +30,6 @@ export default async function OnlineCounter() {
   //     SELECT COUNT(DISTINCT "userId") AS count
   //     FROM "Progress"
   //   `;
-
   //   onlineCount = Number(count);
   // } catch {
   //   onlineCount = 0;

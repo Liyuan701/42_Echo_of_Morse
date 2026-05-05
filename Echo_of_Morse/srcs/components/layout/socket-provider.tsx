@@ -42,12 +42,7 @@ export default function SocketProvider() {
     //   });
     // TODO: save newSocket to state
 
-    // Hearbeat ping
-    const interval = setInterval(() => {
-      newSocket.emit("ping");
-    }, 30000);
-
-    // TODO: clean interval and connexion 
+    // TODO: clean interval and connexion
     return () => {
       clearInterval(interval);
       // TODO: newSocket.disconnect();
