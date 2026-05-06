@@ -5,7 +5,14 @@ import type { RegisterFormData } from "@/types/auth";
 import { Button, Card, Input } from "@/components/ui";
 import styles from "./register-form.module.css";
 
+//----------------- yren -----------------
+import { useRouter } from "next/navigation";
+
 export default function RegisterForm() {
+	//----------------- yren -----------------
+	const router = useRouter();
+	//----------------- yren -----------------
+
   const [formData, setFormData] = useState<RegisterFormData>({
     username: "",
     email: "",
@@ -62,26 +69,31 @@ export default function RegisterForm() {
 
     try {
       setIsSubmitting(true);
+	
+	//----------------- yren -----------------
+	// JSON.stringify --> convertit l'objet JS en JSON
+	const response = await fetch("/api/auth/register", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			username: formData.username,
+			email: formData.email,
+			password: formData.password,
+			confirmPassword: formData.confirmPassword,
+		}),
+		});
 
-      // ! yren: connect this register form to the real API.
-      // ! after auth / Prisma fields are confirmed.
-      // ! Expected fields from front for now: username, email, password.
-      // ! Please confirm whether backend expects username or name.
-      //
-      // Example:
-      // const response = await fetch("/api/auth/register", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     username: formData.username,
-      //     email: formData.email,
-      //     password: formData.password,
-      //   }),
-      // });
+		const data = await response.json();
 
-      await new Promise((resolve) => setTimeout(resolve, 600));
+		if (!response.ok) {
+			setError(data.error ?? "Something went wrong during registration.");
+			return;
+		}
 
-      setSuccess("Registration form submitted successfully.");
+		setSuccess("Account created successfully.");
+		router.push("/login");
+	//----------------- yren -----------------
+	
       setFormData({
         username: "",
         email: "",

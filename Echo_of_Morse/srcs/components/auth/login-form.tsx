@@ -6,7 +6,16 @@ import { FormEvent, useState } from "react";
 import { Button, Card, Input } from "@/components/ui";
 import styles from "./login-form.module.css";
 
+//----------------- yren -----------------
+import { signIn } from "next-auth/react";		//Les outils client React fournis par NextAuth
+import { useRouter } from "next/navigation";
+//----------------- yren -----------------
+
 export default function LoginForm() {
+	//----------------- yren -----------------
+	const router = useRouter(); //useRouter() = outil de next.js pour sauter à une autre page
+	//----------------- yren -----------------
+
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -50,16 +59,25 @@ export default function LoginForm() {
     try {
       setIsSubmitting(true);
 
-      // ! yren: connect this login form to auth.
-      // If we keep NextAuth, this should probably use signIn("credentials", { email, password }).
+	//----------------- yren -----------------
+	//envoyer au auth API route pour vérifier les credentials
+	const result = await signIn("credentials", {
+		email: formData.email,
+		password: formData.password,
+		redirect: false, //change pas lorsque login réussi
+	});
+	
+	if (result?.error) {
+		setError("Invalid email or password.");
+		return;
+	}
+	
+	//redirection après login réussi
+	setSuccess("Login successful.");
+	router.push("/dashboard"); //redirection vers dashboard après login réussi
+	router.refresh();
+	//----------------- yren -----------------
 
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
-      setSuccess("Login form submitted successfully.");
-      setFormData({
-        email: "",
-        password: "",
-      });
     } catch (submitError) {
       console.error(submitError);
       setError("Something went wrong during login.");
