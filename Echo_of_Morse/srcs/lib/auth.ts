@@ -2,11 +2,10 @@ import { NextAuthOptions } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/server/prisma";
 
-//* Objectif : configurer les options pour NextAuth
+//configurer les options pour NextAuth
 export const authOptions: NextAuthOptions = {
 
 	//============================ key = adapter ============================
@@ -19,11 +18,9 @@ export const authOptions: NextAuthOptions = {
 		//----- Email + Password -----
 		//credentials = identifier avec email et mot de passe
 		CredentialsProvider({
-			name: "credentials", //façon de se connecter
-			credentials: {		//champ necessaire du form
-				email: { type: "email" }, 
-				password: { type: "password" },
-			},
+			 //façon de se connecter
+			name: "credentials",
+			credentials: {email:{}, password:{}},
 			//verifier puis retourner les info d'user si c'est correcte
 			async authorize(credentials) {
 				if (!credentials?.email || !credentials?.password) //.? ==> si cette valeur est null ou undefined
@@ -31,18 +28,18 @@ export const authOptions: NextAuthOptions = {
 
 				//cherche dans la base de donnes un user avec cet email
 				const user = await prisma.user.findUnique({ where: { email: credentials.email }, });
-				if (!user || !user.password)
+				if (!user || !user.passwordHash)
 					return null;
 
 				//verrifier le mode passe
-				const isValid = await bcrypt.compare(credentials.password, user.password);
+				const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
 				if (!isValid)
 					return null;
 
 				return {
 					id: user.id,
 					email: user.email,
-					name: user.name,
+					name: user.username,
 					image: user.image,//profil de user
 				};
 			},
@@ -62,16 +59,6 @@ export const authOptions: NextAuthOptions = {
 				}),
 			]
 			: []),//=> vide
-
-		//----- GitHub OAuth -----
-		...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
-			? [
-				GitHubProvider({
-					clientId: process.env.GITHUB_CLIENT_ID,
-					clientSecret: process.env.GITHUB_CLIENT_SECRET,
-				}),
-			]
-			: []),
 
 		//----- 42 School OAuth -----
 		// Google(...) et GitHub(...) sont probablement des providers deja integres par la lib d’authentification
@@ -113,14 +100,32 @@ export const authOptions: NextAuthOptions = {
 
 	//============================ key = session ============================
 	//session = comment le systeme memorise qu’un utilisateur est deja connecte
-	//methods choisie: jwt
+	//methods choisie: jwt（JSON Web Token） => stocker la status de connexion puis generer session
 	session: {
 		strategy: "jwt",
 	},
 
 	//============================ key = callbacks ============================
 	callbacks: {
-		//pour ajouter token dans le jwt
+		//condition pour autoriser ou refuser la connexion d’un utilisateur
+		//account form -> nextAuth -> providers (google/42/credentials)
+		async signIn({ account }) {
+			if (!account || account.provider === "credentials") {
+				return true;
+			}
+
+			const linkedAccount = await prisma.account.findUnique({
+			where: {
+				provider_providerAccountId: {		//pour dire a prisma de chercher un compte avec ces deux champs
+					provider: account.provider,		//aller dans la tableau account, pour voir si = google/42
+					providerAccountId: account.providerAccountId,
+				},
+			},
+			});
+
+			return Boolean(linkedAccount);
+		},
+		//pour ajouter user.id dans token du jwt
 		async jwt({ token, user }) {
 			if (user) {
 				token.id = user.id;
@@ -128,10 +133,9 @@ export const authOptions: NextAuthOptions = {
 			return token;
 		},
 		//pour ajouter id dans session.user
+		//session.user.id = id de l'utilisateur qui deja connecte
 		async session({ session, token }) {
 			if (session.user) {
-				//! a verifier type de id
-				//{ id?: string } = un objet(session.user) qui peut avoir id, et si elle existe, elle doit etre string
 				(session.user as { id?: string }).id = token.id as string;
 			}
 			return session;
