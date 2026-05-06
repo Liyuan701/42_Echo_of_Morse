@@ -1,4 +1,4 @@
-import type { LoginFormData, RegisterFormData } from "@/types/auth";
+import type { LoginFormData, RegisterFormData } from "@/components/types/auth";
 
 export async function loginUser(formData: LoginFormData) {
   const response = await fetch("/api/login", {
@@ -17,7 +17,7 @@ export async function loginUser(formData: LoginFormData) {
 }
 
 export async function registerUser(formData: RegisterFormData) {
-  const response = await fetch("/api/auth/register", {
+  const response = await fetch("/api/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

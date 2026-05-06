@@ -1,0 +1,91 @@
+// import { Server } from "socket.io";
+
+// const io = new Server(3001, { cors: { origin: "*" }});
+
+// io.on("connection", (socket) => {
+
+//   console.log("User connected");
+//   socket.on("send-morse", (data: string) => { socket.broadcast.emit("receive-morse", data); });
+//   socket.on("disconnect", () => { console.log("User disconnected"); });
+
+// });
+
+
+const { Server } = require("socket.io");
+
+// Init server
+const io = new Server(3001, {
+  cors: { origin: "*" },
+  pingInterval: 25000,
+  pingTimeout: 20000,
+});
+
+// API calls
+async function setUserOnline(userId) {
+  try {
+    await fetch("http://web:3000/api/users/status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, isOnline: true }),
+    });
+  } catch (err) {
+    console.error("setUserOnline error:", err.message);
+  }
+}
+
+async function setUserOffline(userId) {
+  try {
+    await fetch("http://web:3000/api/users/status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, isOnline: false }),
+    });
+  } catch (err) {
+    console.error("setUserOffline error:", err.message);
+  }
+}
+
+
+// To complete the server.io heartbeat, in case of server crash.
+async function cleanupUsers() {
+  try {
+    await fetch("http://web:3000/api/users/cleanup", {
+      method: "POST",
+    });
+  } catch (err) {
+    console.error("cleanup error:", err.message);
+  }
+}
+
+// Socket handlers
+function handleConnection(socket) {
+  const userId = socket.handshake.auth.userId;
+  if (userId) {
+    setUserOnline(userId);
+  }
+
+  socket.on("send-morse", (data) => {
+    socket.broadcast.emit("receive-morse", data);
+  });
+
+  socket.on("disconnect", () => {
+    handleDisconnect(userId);
+  });
+}
+
+function handleDisconnect(userId) {
+  if (userId) {
+    setUserOffline(userId);
+  }
+}
+
+// Start logic
+io.on("connection", handleConnection);
+setInterval(cleanupUsers, 60000);
+
+
+

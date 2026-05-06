@@ -1,47 +1,160 @@
-# Docker Compose configuration for Transcendence project
-# Architecture: Browser -> localhost:3000 -> Next.js container -> db:5432 -> PostgreSQL container
+# Configuration Docker Compose pour le projet Transcendence
+# Architecture: Navigateur -> waf:443 -> web:3000 -> db:5432
+#               Secrets:     vault-init -> vault -> web
 
 services:
 
-# PostgreSQL database container
-# We will move the envs to a .env at the end of the project
+  # ============================================================
+  # WAF — seul service avec ports exposés vers l'extérieur
+  # Filtre tout le trafic avant qu'il atteigne l'application
+  # ============================================================
+  waf:
+    image: owasp/modsecurity-crs:nginx
+    container_name: transcendence_waf
+    restart: always
+    ports:
+      - "80:8080"
+      - "443:8443"
+    environment:
+      - BACKEND=http://web:3000       # redirige vers Next.js
+      - MODSEC_RULE_ENGINE=On         # bloque les attaques (SQLi, XSS, etc.)
+      - PARANOIA=1
+      - ANOMALY_INBOUND=5
+      - ANOMALY_OUTBOUND=4
+    depends_on:
+      - web
+    networks:
+      - transcendence_network
+
+  # ============================================================
+  # Base de données PostgreSQL — interne uniquement
+  # ============================================================
   db:
     image: postgres:15
     container_name: transcendence_db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgresMdp
-      POSTGRES_DB: transcendence
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "5432:5432"   # utile en développement — à commenter en production
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - transcendence_network
 
-# Next.js application container
-# context: .. to goback to root
+  # ============================================================
+  # Application Next.js — interne uniquement
+  # Se connecte à la DB via DATABASE_URL et lit les secrets depuis Vault
+  # ============================================================
   web:
-    build: 
-      context: ..
+    build:
+      context: .
       dockerfile: docker/Dockerfile
     container_name: transcendence_web
     restart: always
     ports:
-      - "3000:3000"
+      - "3000:3000"   # utile en développement — à commenter en production
     environment:
-      DATABASE_URL: "postgresql://postgres:postgresMdp@db:5432/transcendence"
+      VAULT_ADDR: http://vault:8200       # adresse de Vault pour lire les secrets
+    volumes:
+      - ./vault/data:/vault/data          # accès au root-token.txt généré par vault-unseal
     depends_on:
       - db
+      - vault-init
     networks:
       - transcendence_network
 
-# Named volume to persist PostgreSQL data
+  # ============================================================
+  # HashiCorp Vault — gestionnaire de secrets
+  # Stocke les credentials chiffrés sur disque (server mode, pas dev mode)
+  # ============================================================
+  vault:
+    image: hashicorp/vault:latest
+    container_name: transcendence_vault
+    restart: unless-stopped
+    ports:
+      - "8200:8200"   # interface UI Vault accessible sur http://localhost:8200
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK      # empêche les secrets d'être swappés sur le disque
+    volumes:
+      - ./vault/config:/vault/config    # fichier de configuration local.json
+      - ./vault/data:/vault/data        # données chiffrées persistantes
+    command: vault server -config=/vault/config/local.json
+    networks:
+      - transcendence_network
+
+  # ============================================================
+  # vault-unseal — initialise et descelle Vault au démarrage
+  # Première fois: génère les clés et le root token
+  # Redémarrages: relit les clés et descelle automatiquement
+  # ============================================================
+  vault-unseal:
+    image: hashicorp/vault:latest
+    container_name: transcendence_vault_unseal
+    environment:
+      - VAULT_ADDR=http://vault:8200
+    volumes:
+      - ./vault/data:/vault/data        # lit/écrit init-keys.txt et root-token.txt
+      - ./vault/scripts:/vault/scripts  # script vault-unseal.sh
+    depends_on:
+      - vault
+    command: sh /vault/scripts/vault-unseal.sh
+    networks:
+      - transcendence_network
+
+  # ============================================================
+  # vault-init — charge les secrets du .env dans Vault (one-shot)
+  # secret/database → DB_USER, DB_PASSWORD, DB_NAME
+  # secret/app      → NEXTAUTH_SECRET, NEXTAUTH_URL, OAuth keys
+  # ============================================================
+  vault-init:
+    image: hashicorp/vault:latest
+    container_name: transcendence_vault_init
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      # secret/database
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASS=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
+      # secret/app
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - FORTYTWO_CLIENT_ID=${FORTYTWO_CLIENT_ID}
+      - FORTYTWO_CLIENT_SECRET=${FORTYTWO_CLIENT_SECRET}
+    volumes:
+      - ./vault/data:/vault/data    # lit root-token.txt généré par vault-unseal
+    depends_on:
+      vault-unseal:
+        condition: service_completed_successfully
+    command: >
+      sh -c "
+        export VAULT_TOKEN=$$(cat /vault/data/root-token.txt) &&
+        vault secrets enable -path=secret kv-v2 || true &&
+        vault kv put secret/database DB_USER=$$DB_USER DB_PASSWORD=$$DB_PASS DB_NAME=$$DB_NAME &&
+        vault kv put secret/app NEXTAUTH_SECRET=$$NEXTAUTH_SECRET NEXTAUTH_URL=$$NEXTAUTH_URL GITHUB_CLIENT_ID=$$GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET=$$GITHUB_CLIENT_SECRET GOOGLE_CLIENT_ID=$$GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET=$$GOOGLE_CLIENT_SECRET FORTYTWO_CLIENT_ID=$$FORTYTWO_CLIENT_ID FORTYTWO_CLIENT_SECRET=$$FORTYTWO_CLIENT_SECRET &&
+        echo '[vault-init] Secrets chargés avec succès'
+      "
+    networks:
+      - transcendence_network
+
+  ws:
+    build: ./ws-server
+    ports:
+      - "3001:3001"
+
+# Volume nommé pour persister les données PostgreSQL
 volumes:
   postgres_data:
 
-# Internal network for app <-> db communication
+# Réseau interne — tous les services communiquent ici
 networks:
   transcendence_network:
     driver: bridge

@@ -36,6 +36,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# exception — commité pour que l'évaluateur puisse configurer son environnement
+!.env.example
 
 # vercel
 .vercel
@@ -43,3 +45,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Vault — données chiffrées et tokens (ne jamais committer)
+vault/data/
+
+
+#prisma
+srcs/generated/prisma

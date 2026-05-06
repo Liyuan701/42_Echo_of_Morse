@@ -1,8 +1,9 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import styles from "./register-form.module.css";
 import type { RegisterFormData } from "@/types/auth";
+import { Button, Card, Input } from "@/components/ui";
+import styles from "./register-form.module.css";
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -63,9 +64,9 @@ export default function RegisterForm() {
       setIsSubmitting(true);
 
       // ! yren: connect this register form to the real API.
-      // after auth / Prisma fields are confirmed.
-      // Expected fields from front for now: username, email, password.
-      // Please confirm whether backend expects username or name.
+      // ! after auth / Prisma fields are confirmed.
+      // ! Expected fields from front for now: username, email, password.
+      // ! Please confirm whether backend expects username or name.
       //
       // Example:
       // const response = await fetch("/api/auth/register", {
@@ -96,7 +97,7 @@ export default function RegisterForm() {
   }
 
   return (
-    <section className={styles.card}>
+    <Card size="narrow">
       <h1 className={styles.title}>Register</h1>
 
       <p className={styles.description}>
@@ -105,76 +106,64 @@ export default function RegisterForm() {
 
       <form onSubmit={handleSubmit}>
         <div className={styles.fields}>
-          <label className={styles.field}>
-            <span>
-              Name <span className={styles.required}>*</span>
-            </span>
-            <input
-              className={styles.input}
-              type="text"
-              value={formData.username}
-              onChange={(event) => updateField("username", event.target.value)}
-              placeholder="Enter your name"
-            />
-          </label>
+          <Input
+            label={
+              <>
+                Name <span className={styles.required}>*</span>
+              </>
+            }
+            type="text"
+            value={formData.username}
+            onChange={(event) => updateField("username", event.target.value)}
+            placeholder="Enter your name"
+          />
 
-          <label className={styles.field}>
-            <span>
-              Email <span className={styles.required}>*</span>
-            </span>
-            <input
-              className={styles.input}
-              type="email"
-              value={formData.email}
-              onChange={(event) => updateField("email", event.target.value)}
-              placeholder="Enter your email"
-            />
-          </label>
+          <Input
+            label={
+              <>
+                Email <span className={styles.required}>*</span>
+              </>
+            }
+            type="email"
+            value={formData.email}
+            onChange={(event) => updateField("email", event.target.value)}
+            placeholder="Enter your email"
+          />
 
-          <label className={styles.field}>
-            <span>
-              Password <span className={styles.required}>*</span>
-            </span>
-            <input
-              className={styles.input}
-              type="password"
-              value={formData.password}
-              onChange={(event) => updateField("password", event.target.value)}
-              placeholder="Enter your password"
-            />
-            <small className={styles.hint}>
-              Password must contain at least 8 characters.
-            </small>
-          </label>
+          <Input
+            label={
+              <>
+                Password <span className={styles.required}>*</span>
+              </>
+            }
+            type="password"
+            value={formData.password}
+            onChange={(event) => updateField("password", event.target.value)}
+            placeholder="Enter your password"
+            hint="Password must contain at least 8 characters."
+          />
 
-          <label className={styles.field}>
-            <span>Confirm Password</span>
-            <input
-              className={styles.input}
-              type="password"
-              value={formData.confirmPassword}
-              onChange={(event) =>
-                updateField("confirmPassword", event.target.value)
-              }
-              placeholder="Confirm your password"
-            />
-          </label>
+          <Input
+            label="Confirm Password"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={(event) =>
+              updateField("confirmPassword", event.target.value)
+            }
+            placeholder="Confirm your password"
+          />
         </div>
 
         {error ? <p className={styles.error}>{error}</p> : null}
 
         {success ? <p className={styles.success}>{success}</p> : null}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`${styles.submitButton} ${
-            isSubmitting ? styles.submitButtonDisabled : ""
-          }`}
-        >
-          {isSubmitting ? "Submitting..." : "Create account"}
-        </button>
+        <div className={styles.submitArea}>
+          <Button type="submit" disabled={isSubmitting} fullWidth>
+            {isSubmitting ? "Submitting..." : "Create account"}
+          </Button>
+        </div>
       </form>
-    </section>
+    </Card>
   );
 }

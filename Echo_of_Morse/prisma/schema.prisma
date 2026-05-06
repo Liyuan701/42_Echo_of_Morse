@@ -1,7 +1,7 @@
 // tell prisma to generate the client, with which we can request data.
 generator client {
   provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  output = "../srcs/generated/prisma"
 }
 
 // which db to use
@@ -20,7 +20,7 @@ model User {
 
   image         String?
   isOnline      Boolean   @default(false)
-  lastSeen      DateTime?    
+  lastSeen      DateTime?
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -30,6 +30,7 @@ model User {
 
   sentRequests     Friendship[] @relation("SentRequests")
   receivedRequests Friendship[] @relation("ReceivedRequests")
+  letterProgresses UserLetterProgress[]
 }
 
 
@@ -97,4 +98,38 @@ enum FriendshipStatus {
   PENDING
   ACCEPTED
   BLOCKED
+}
+
+
+// The letter table
+model Letter {
+  id    Int    @id @default(autoincrement())
+  char  String @unique  // A-Z
+
+  userProgress UserLetterProgress[]
+}
+
+// User-letter -mastery
+model UserLetterProgress {
+  id        Int   @id @default(autoincrement())
+
+  userId    String
+  letterId  Int
+  //level of mastery 1-10
+  mastery   Int   @default(0)
+
+  //learning data
+  correctCount   Int @default(0)
+  wrongCount     Int @default(0)
+  totalSeen      Int @default(0)
+  nextReviewAt   DateTime
+  //mext time review interval
+  interval       Int
+  easeFactor    Float @default(2.5)
+  lastReviewed   DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  letter Letter @relation(fields: [letterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, letterId])
 }
