@@ -49,15 +49,6 @@ export default function Navbar() {
 			</Link>
 		)}
 		{/* //----------------- yren ----------------- */}
-
-        {/* //! yren: optional place to add current user name/avatar after session is connected */}
-        {/* Example later:
-            <div className={styles.userPreview}>
-              <span>User avatar</span>
-              <span>User name</span>
-            </div>
-        */}
-
         <LanguageSwitcher />
       </nav>
     </header>
