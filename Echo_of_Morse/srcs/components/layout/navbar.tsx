@@ -1,8 +1,16 @@
+"use client";
 import Link from "next/link";
 import LanguageSwitcher from "@/components/layout/language-switcher";
 import styles from "./navbar.module.css";
+//----------------- yren -----------------
+import { signOut, useSession } from "next-auth/react";
 
 export default function Navbar() {
+	//----------------- yren -----------------
+	const { data: session, status } = useSession();
+	const isLoggedIn = status === "authenticated";
+	//----------------- yren -----------------
+
   return (
     <header className={styles.header}>
       <Link href="/" className={styles.logo}>
@@ -14,17 +22,33 @@ export default function Navbar() {
           Dashboard
         </Link>
 
-        {/* //! yren: this link should probably be visible only when the user is logged in */}
-        {/* //! yren: later, profile page should use current user data from auth/session */}
-        <Link href="/profile" className={styles.navLink}>
-          Profile
-        </Link>
+		{/* //----------------- yren ----------------- */}
+		{isLoggedIn ? (
+		// si login, show profile/logout
+		<>
+			<Link href="/profile" className={styles.navLink}>
+			Profile
+			</Link>
 
-        {/* //! yren: replace this static Login link with auth/session logic */}
-        {/* //! yren: if user is not logged in, show Login/Register; if logged in, show user name/avatar and Logout */}
-        <Link href="/login" className={styles.navLink}>
-          Login
-        </Link>
+			<span className={styles.navLink}>
+			{session.user?.name ?? session.user?.email ?? "User"}
+			</span>
+
+			<button
+			type="button"
+			className={styles.navButton}
+			onClick={() => signOut({ callbackUrl: "/" })}
+			>
+			Logout
+			</button>
+		</>
+		) : (
+			// sinon show login/register
+			<Link href="/login" className={styles.navLink}>
+				Login
+			</Link>
+		)}
+		{/* //----------------- yren ----------------- */}
 
         {/* //! yren: optional place to add current user name/avatar after session is connected */}
         {/* Example later:
