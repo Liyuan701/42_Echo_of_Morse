@@ -1,5 +1,7 @@
 import "./globals.css"
+//----------------- yren -----------------
 import { I18nProvider } from "@/lib/i18n";
+import AuthSessionProvider from "@/components/auth/session-provider";
 
 export const metadata = {
   title: "Echoes of Morse",
@@ -14,12 +16,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-		<I18nProvider>
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
-        {children}
-		</I18nProvider>
+		<AuthSessionProvider>
+			<I18nProvider>
+				<a href="#main-content" className="skip-link">
+					Skip to main content
+				</a>
+				{children}
+			</I18nProvider>
+		</AuthSessionProvider>
       </body>
     </html>
   )
