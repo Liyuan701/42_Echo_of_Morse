@@ -1,15 +1,60 @@
 "use client";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { Button, Card } from "@/components/ui";
+import Link from "next/link";
 import styles from "./profile-form.module.css";
 import { useI18n } from "@/lib/i18n";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 export default function Profile() {
 	const { dictionary } = useI18n();
   	const t = dictionary.profile;
 	const { data: session, status } = useSession();
 
+	// ===================== Données du profil =====================
+	//creer un type pour les données du profil pour les stocker
+	type ProfileUser = {
+		id: string;
+		username: string;
+		email: string | null;
+		image: string | null;
+		isOnline: boolean;
+	};
+	//setprofileUser avec un type ProfileUser ou null au début
+	//ici useState<type de la variable>(valeur initiale)
+	const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
+
+	// ===================== Charger les données du profil =====================
+	//useEffect pour charger les données du profil quand le composant est monté
+	useEffect(() => {
+		//récupérer l'info depuis la session
+
+		//recuperer id 
+		// | signifie "ou" pour les types : session.user peut être un objet avec id, ou undefined
+		const userId = (session?.user as { id?: string } | undefined)?.id;
+
+		if (status !== "authenticated" || !userId) {
+			return;
+		}
+
+		async function loadProfile() {
+			try {
+				const response = await fetch(`/api/users/${userId}`);
+
+				if (!response.ok) {
+					return;
+				}
+
+				const data = await response.json();
+				setProfileUser(data);
+			} catch (error) {
+				console.error(error);
+			}
+		}
+		loadProfile();
+}, [session, status]);//si session ou status change, on recharge le profil
+
+	// ===================== cas: n'a encore connecté ou charge =====================
 	if (status === "loading") {
 		return (
 		<Card>
@@ -26,10 +71,11 @@ export default function Profile() {
 		);
 	}
 
+	// ===================== mettre à jour les info du user =====================
 	const user = {
-		name: session?.user?.name ?? t.defaultUser,
-		email: session?.user?.email ?? t.noEmail,
-		image: session?.user?.image,
+		name: profileUser?.username ?? session?.user?.name ?? t.defaultUser,
+		email: profileUser?.email ?? session?.user?.email ?? t.noEmail,
+		image: profileUser?.image ?? session?.user?.image,
 		status: t.online,
 		//! besoin de données réelles pour le profil
 		level: "Intermediate",
@@ -53,10 +99,6 @@ export default function Profile() {
 								user.name.charAt(0) /* affiche la première lettre du nom */
 							)}
 						</div>
-
-						<button type="button" className={styles.avatarButton}>
-							{t.changeAvatar}
-						</button>
 					</div>
 
 			{/* =====================  info user pour profil ===================== */}
