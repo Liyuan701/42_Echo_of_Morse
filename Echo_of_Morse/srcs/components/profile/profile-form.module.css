@@ -1,0 +1,169 @@
+.profileHeader {
+	margin-bottom: 20px; /* laisse une espace */
+}
+
+/* hero... = principal...*/
+.heroCard {
+	display: grid; /* utilisation de la grille 网格 */
+	gap: 24px; /* espace entre les éléments */
+}
+
+.heroHeader {
+	display: flex;
+	align-items: center; /* centrer verticalement */
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+/* ========================================= avatar ========================================= */
+/* element avatar */
+.avatarBlock {
+	display: grid;
+	gap: 10px;
+	justify-items: center;
+	flex: 0 0 auto;
+}
+
+/* avatar */
+.avatar {
+	display: grid;
+	place-items: center; 				/* centre les éléments horizontalement et verticalement */
+	flex: 0 0 auto; 					/* empêche l'avatar de se redimensionner, maintenir le height et width */
+	width: 96px;
+	height: 96px;
+	border: 1px solid #111827;		/* bordure sombre*/
+	border-radius: 16px; 				/* coins arrondis */
+	background: #111827;
+	color: #ffffff;
+	font-size: 42px;					/* taille du texte */
+	font-weight: 800;					/* l’épaisseur du texte */	
+}
+
+/* bouton pour changer l'avatar */
+.avatarButton {
+	border: 0;						/* pas de bordure */
+	background: transparent;
+	color: #4b5563;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;				/* pour indiquer que c'est cliquable */
+}
+
+/* effet de survol pour le bouton */
+.avatarButton:hover {
+	color: #111827;				/* couleur plus sombre au survol */
+}
+
+/* ========================================= info user ========================================= */
+/* informations sur l'utilisateur */
+.identity {
+	flex: 1 1 240px;			/* prendre 240px, s'il n'y a pas assez de l'espace disponible -> reduire */
+	min-width: 0;				/* permet au texte de se réduire et d’utiliser l’espace disponible */
+}
+
+/* statut en ligne */
+.status {
+	display: inline-flex;		/* Les éléments à l’intérieur sont alignés horizontalement */
+	align-items: center;		/* centre verticalement le point et le texte */
+	gap: 8px;					/* espace entre le point et le texte */
+	margin: 0 0 10px 0;			/* espace en bas pour séparer du titre */
+	color: #166534;			/* couleur du texte pour le statut en ligne */
+	font-size: 14px;
+	font-weight: 700;
+}
+
+/* le point vert statut */
+.status::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 999px; 		/* rend le point parfaitement rond */
+	background: #16a34a;
+}
+
+/* titre d'utilisateur */
+.title {
+	margin: 0; 			/* pas de marge pour le titre */
+	color: #111827;
+	font-size: 40px;
+	font-weight: 800;
+}
+
+/* email de l'utilisateur */
+.email {
+	margin: 8px 0 0 0;
+	color: #4b5563;
+	font-size: 16px;
+	overflow-wrap: anywhere; /* permet de casser les mots longs pour éviter le débordement */
+}
+
+/* ========================================= level/account/accuracy ========================================= */
+/* niveau et informations de connexion */
+.profileMeta {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr)); 	/* 3 colonnes de largeur égale, s'adaptant à l'espace disponible */
+	gap: 14px;											/* espace entre les colonnes et les lignes */
+}
+
+/* Appliquer le même style aux div enfants */
+.profileMeta > div {
+	padding: 16px;					/* espace intérieur pour que le contenu ne touche pas les bords */
+	border: 1px solid #e5e7eb;		/* bordure grise claire */
+	border-radius: 12px;			
+	background: #f9fafb;
+}
+
+/* small labels */
+.metaLabel {
+	display: block;			/* L’élément prend toute la largeur disponible et passe à la ligne. */
+	margin-bottom: 6px;		/* espace entre le label et la valeur */
+	color: #6b7280;
+	font-size: 13px;
+	font-weight: 700;
+}
+
+/* small values */
+.metaValue {
+	display: block;
+	color: #111827;
+	font-size: 18px;
+	font-weight: 800;
+}
+
+/* ========================================= bouton éditer ========================================= */
+/* lien pour éditer le profil */
+.editLink {
+	margin-left: auto;  	/* pousse le lien vers la droite */
+	text-decoration: none;	/* pas de soulignement */
+}
+
+
+/* ========================================= mobile ========================================= */
+
+@media (max-width: 620px) {
+	/* 头像和文字保持横向，但缩小头像和标题 */
+	.heroHeader {
+		align-items: flex-start;
+	}
+
+	.avatar {
+		width: 72px;
+		height: 72px;
+		border-radius: 14px;
+		font-size: 32px;
+	}
+
+	.title {
+		font-size: 32px;
+	}
+
+	/* 信息块改成单列，避免文字挤压 */
+	.profileMeta {
+		grid-template-columns: 1fr;
+	}
+
+	.editLink,
+	.editLink button {
+		width: 100%;
+	}
+}
