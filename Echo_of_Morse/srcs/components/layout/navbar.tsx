@@ -43,7 +43,7 @@ export default function Navbar() {
 			</button>
 		</>
 		) : (
-			// sinon show login/register
+			// sinon show login
 			<Link href="/login" className={styles.navLink}>
 				Login
 			</Link>
