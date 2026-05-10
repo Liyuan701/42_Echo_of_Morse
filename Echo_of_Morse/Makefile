@@ -2,6 +2,11 @@
 # Detect environment
 # =========================
 
+# Linux - 42 Fedora - podman
+# Linux - Ubuntu - docker
+# Others - docker
+
+
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Darwin)
