@@ -37,21 +37,28 @@
 	color: #ffffff;
 	font-size: 42px;					/* taille du texte */
 	font-weight: 800;					/* l’épaisseur du texte */	
+	overflow: hidden;					/* empêche le contenu de dépasser les limites de l'avatar, utile pour les images */
 }
 
-/* bouton pour changer l'avatar */
-.avatarButton {
-	border: 0;						/* pas de bordure */
-	background: transparent;
+.avatarImage {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;			/* assure que l'image remplit l'avatar sans déformation, en coupant les parties qui dépassent */
+}
+
+.fileButton {
 	color: #4b5563;
 	font-size: 12px;
 	font-weight: 600;
-	cursor: pointer;				/* pour indiquer que c'est cliquable */
+	cursor: pointer;			/* indique que c'est cliquable */
 }
 
-/* effet de survol pour le bouton */
-.avatarButton:hover {
-	color: #111827;				/* couleur plus sombre au survol */
+.fileButton:hover {
+	color: #111827;
+}
+
+.fileInput {
+	display: none;			/* cache l'input de fichier, on utilise le label pour déclencher l'action de sélection de fichier */
 }
 
 /* ========================================= info user ========================================= */
@@ -137,6 +144,22 @@
 	text-decoration: none;	/* pas de soulignement */
 }
 
+.editForm {
+	display: grid;
+	gap: 24px;
+}
+
+.saveActions {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.errorText {
+	margin: 0;
+	color: #b91c1c;
+	font-size: 14px;
+	font-weight: 700;
+}
 
 /* ========================================= mobile ========================================= */
 
@@ -163,7 +186,12 @@
 	}
 
 	.editLink,
+	.saveActions button,
 	.editLink button {
 		width: 100%;
+	}
+
+	.saveActions {
+		justify-content: stretch;
 	}
 }
