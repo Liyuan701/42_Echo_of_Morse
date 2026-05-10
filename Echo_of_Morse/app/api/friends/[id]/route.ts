@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+// import { prisma } from '@/lib/db'
 
 //! With NextAuth
 import { getServerSession } from 'next-auth'
-import { authOptions } from '../../../../lib/auth'
+// import { authOptions } from '../../../../lib/auth'
 
+//?
+import { prisma } from '@/server/prisma'
+import { authOptions } from '@/lib/auth'
 // PUT /api/friends/[id] - Accept or reject a friend request
 export async function PUT(
 	request: NextRequest,
@@ -15,6 +18,15 @@ export async function PUT(
 		if (!session) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 		}
+
+		//? -----
+		// const userId = session.user?.id;
+		const userId = (session.user as { id?: string } | undefined)?.id;
+		if (!userId) {
+		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+		}
+		//? -----
+
 		const { id } = await params
 		const body = await request.json()
 		const { status } = body
@@ -29,16 +41,21 @@ export async function PUT(
 		const friendship = await prisma.friendship.findUnique({
 			where: { id: parseInt(id) }
 		})
-		if (friendship?.receiverId !== session.user.id) {
+		//? -----
+		// if (friendship?.receiverId !== session.user.id) {
+		if (friendship?.receiverId !== userId) {
+		//?
 			return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 		}
 
-		const friendship = await prisma.friendship.update({
+	//? -----
+		const updatedFriendship = await prisma.friendship.update({
 			where: { id: parseInt(id) },
 			data: { status: status }
 		})
+	//? -----
 
-		return NextResponse.json(friendship)
+		return NextResponse.json(updatedFriendship)
 
 	} catch (error) {
 		return NextResponse.json(
@@ -58,12 +75,24 @@ export async function DELETE(
 		if (!session) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 		}
+		
+		//? -----
+		const userId = (session.user as { id?: string } | undefined)?.id;
+
+		if (!userId) {
+		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+		}
+		//? -----
 
 		const { id } = await params
 		const friendship = await prisma.friendship.findUnique({
 			where: { id: parseInt(id) }
 		})
-		if (friendship?.senderId !== session.user.id && friendship?.receiverId !== session.user.id) {
+
+		//?-----
+		if (friendship?.senderId !== userId && friendship?.receiverId !== userId) {
+		// if (friendship?.senderId !== session.user.id && friendship?.receiverId !== session.user.id) {
+		//? ----
 			return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 		}
 

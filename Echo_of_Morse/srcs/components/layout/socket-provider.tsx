@@ -44,10 +44,10 @@ export default function SocketProvider() {
 
     // TODO: clean interval and connexion
     return () => {
-      clearInterval(interval);
+    //   clearInterval(interval);
       // TODO: newSocket.disconnect();
     };
-  }, [session]);
+  }, []);
 
   return null;
 }
