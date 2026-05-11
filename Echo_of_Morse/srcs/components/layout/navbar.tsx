@@ -54,3 +54,6 @@ export default function Navbar() {
     </header>
   );
 }
+
+// // ! i18n: move all navigation labels, aria-labels, footer links, and footer description into the i18n dictionary.
+// // ! i18n: keep the brand name "Echoes of Morse" unchanged unless the team decides to translate the product name.

@@ -120,6 +120,19 @@ export default function LoginForm() {
         <Button type="submit" disabled={isSubmitting} fullWidth>
           {isSubmitting ? "Submitting..." : "Login"}
         </Button>
+
+        {/* 
+           // ! Liyuan: replace these disabled placeholders with real OAuth login buttons.
+           // ! They should call NextAuth signIn() once the provider config is ready.
+        */}
+
+        <Button type="button" variant="secondary" fullWidth disabled>
+          Continue with Google
+        </Button>
+
+        <Button type="button" variant="secondary" fullWidth disabled>
+          Continue with 42
+        </Button>
       </form>
 
       <p className={styles.registerText}>
@@ -131,3 +144,5 @@ export default function LoginForm() {
     </Card>
   );
 }
+
+// ! i18n: move login form titles, descriptions, labels, placeholders, validation messages, success/error messages, and links into the i18n dictionary.
