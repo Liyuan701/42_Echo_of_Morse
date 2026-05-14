@@ -11,6 +11,30 @@ const fr = {
 		defaultUser: "Utilisateur",
 		noEmail: "Aucun email",
 	},
+
+	register: {
+		title: "Inscription",
+		description: "Créez votre compte pour accéder à la plateforme.",
+		name: "Nom",
+		email: "Email",
+		password: "Mot de passe",
+		confirmPassword: "Confirmer le mot de passe",
+		namePlaceholder: "Entrez votre nom",
+		emailPlaceholder: "Entrez votre email",
+		passwordPlaceholder: "Entrez votre mot de passe",
+		confirmPasswordPlaceholder: "Confirmez votre mot de passe",
+		passwordHint: "Le mot de passe doit contenir au moins 8 caractères.",
+		submitting: "Envoi en cours...",
+		createAccount: "Créer un compte",
+		nameRequired: "Le nom est requis.",
+		emailRequired: "L'email est requis.",
+		passwordRequired: "Le mot de passe est requis.",
+		passwordTooShort: "Le mot de passe doit contenir au moins 8 caractères.",
+		passwordsDoNotMatch: "Les mots de passe ne correspondent pas.",
+		success: "Compte créé avec succès. Redirection vers la connexion...",
+		genericError: "Une erreur est survenue lors de l'inscription.",
+		usernameOrEmailInUse: "Le nom d'utilisateur ou l'email est déjà utilisé.",
+	},
 };
 
 export default fr;

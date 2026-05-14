@@ -7,10 +7,13 @@ import styles from "./register-form.module.css";
 
 //----------------- yren -----------------
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
 
 export default function RegisterForm() {
 	//----------------- yren -----------------
 	const router = useRouter();
+	const { dictionary } = useI18n();
+	const t = dictionary.register;
 	//----------------- yren -----------------
 
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -33,23 +36,23 @@ export default function RegisterForm() {
 
   function validateForm() {
     if (!formData.username.trim()) {
-      return "Name is required.";
+      return t.nameRequired;
     }
 
     if (!formData.email.trim()) {
-      return "Email is required.";
+      return t.emailRequired;
     }
 
     if (!formData.password) {
-      return "Password is required.";
+      return t.passwordRequired;
     }
 
     if (formData.password.length < 8) {
-      return "Password must be at least 8 characters long.";
+      return t.passwordTooShort;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      return "Passwords do not match.";
+      return t.passwordsDoNotMatch;
     }
 
     return "";
@@ -85,13 +88,19 @@ export default function RegisterForm() {
 
 		const data = await response.json();
 
-		if (!response.ok) {
-			setError(data.error ?? "Something went wrong during registration.");
+	if (!response.ok) {
+		if (data.errorCode === "USERNAME_OR_EMAIL_IN_USE") {
+			setError(t.usernameOrEmailInUse);
 			return;
 		}
 
-		setSuccess("Account created successfully.");
-		router.push("/login");
+		setError(t.genericError);
+		return;
+	}
+
+		setSuccess(t.success);
+
+		setTimeout(() => {router.push("/login");}, 1500);
 	//----------------- yren -----------------
 	
       setFormData({
@@ -102,7 +111,7 @@ export default function RegisterForm() {
       });
     } catch (submitError) {
       console.error(submitError);
-      setError("Something went wrong during registration.");
+      setError(t.genericError);
     } finally {
       setIsSubmitting(false);
     }
@@ -110,10 +119,10 @@ export default function RegisterForm() {
 
   return (
     <Card size="narrow">
-      <h1 className={styles.title}>Register</h1>
+      <h1 className={styles.title}>{t.title}</h1>
 
       <p className={styles.description}>
-        Create your account to access the platform.
+        {t.description}
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -121,48 +130,48 @@ export default function RegisterForm() {
           <Input
             label={
               <>
-                Name <span className={styles.required}>*</span>
+                {t.name} <span className={styles.required}>*</span>
               </>
             }
             type="text"
             value={formData.username}
             onChange={(event) => updateField("username", event.target.value)}
-            placeholder="Enter your name"
+            placeholder={t.namePlaceholder}
           />
 
           <Input
             label={
               <>
-                Email <span className={styles.required}>*</span>
+                {t.email} <span className={styles.required}>*</span>
               </>
             }
             type="email"
             value={formData.email}
             onChange={(event) => updateField("email", event.target.value)}
-            placeholder="Enter your email"
+            placeholder={t.emailPlaceholder}
           />
 
           <Input
             label={
               <>
-                Password <span className={styles.required}>*</span>
+                {t.password} <span className={styles.required}>*</span>
               </>
             }
             type="password"
             value={formData.password}
             onChange={(event) => updateField("password", event.target.value)}
-            placeholder="Enter your password"
-            hint="Password must contain at least 8 characters."
+            placeholder={t.passwordPlaceholder}
+            hint={t.passwordHint}
           />
 
           <Input
-            label="Confirm Password"
+            label={t.confirmPassword}
             type="password"
             value={formData.confirmPassword}
             onChange={(event) =>
               updateField("confirmPassword", event.target.value)
             }
-            placeholder="Confirm your password"
+            placeholder={t.confirmPasswordPlaceholder}
           />
         </div>
 
@@ -172,12 +181,10 @@ export default function RegisterForm() {
 
         <div className={styles.submitArea}>
           <Button type="submit" disabled={isSubmitting} fullWidth>
-            {isSubmitting ? "Submitting..." : "Create account"}
+            {isSubmitting ? t.submitting : t.createAccount}
           </Button>
         </div>
       </form>
     </Card>
   );
 }
-
-// ! i18n: move register form titles, descriptions, labels, placeholders, hints, validation messages, success/error messages, and button states into the i18n dictionary.

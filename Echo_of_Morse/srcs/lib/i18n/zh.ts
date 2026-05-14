@@ -11,6 +11,30 @@ const zh = {
 		defaultUser: "用户",
 		noEmail: "无邮箱",
 	},
+	register: {
+		title: "注册",
+		description: "创建你的账号以使用平台功能。",
+		name: "用户名",
+		email: "邮箱",
+		password: "密码",
+		confirmPassword: "确认密码",
+		namePlaceholder: "请输入用户名",
+		emailPlaceholder: "请输入邮箱",
+		passwordPlaceholder: "请输入密码",
+		confirmPasswordPlaceholder: "请再次输入密码",
+		passwordHint: "密码至少需要 8 个字符。",
+		submitting: "提交中...",
+		createAccount: "创建账号",
+		nameRequired: "用户名不能为空。",
+		emailRequired: "邮箱不能为空。",
+		passwordRequired: "密码不能为空。",
+		passwordTooShort: "密码长度至少需要 8 个字符。",
+		passwordsDoNotMatch: "两次输入的密码不一致。",
+		success: "账号创建成功，正在跳转到登录页面...",
+		genericError: "注册时出现错误，请稍后再试。",
+		usernameOrEmailInUse: "用户名或邮箱已被使用。",
+	},
+
 };
 
 export default zh;
