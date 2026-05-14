@@ -1,7 +1,6 @@
 // tell prisma to generate the client, with which we can request data.
 generator client {
-  provider = "prisma-client"
-  output   = "../srcs/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 // which db to use

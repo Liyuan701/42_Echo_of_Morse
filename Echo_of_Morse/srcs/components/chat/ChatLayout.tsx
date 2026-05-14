@@ -6,6 +6,7 @@
 
 "use client";
 
+import { useEffect } from "react";
 import { useMemo, useState } from "react";
 import type {
   ChatMessage,
@@ -15,10 +16,9 @@ import type {
   SearchableUser,
   SystemMessage,
 } from "@/types/chat";
+//! to del
 import {
-  mockFriends,
   mockMessages,
-  mockSearchableUsers,
 } from "./faux-chat-data";
 import FriendList from "./FriendList";
 import ChatWindow from "./ChatWindow";
@@ -27,39 +27,35 @@ import { transformChatMessage } from "@/lib/chat-transform";
 import styles from "./css/ChatLayout.module.css";
 
 export default function ChatLayout() {
-// ! Liyuan: replace mockFriends with friends loaded from the real database.
-// ! Expected backend data: current user's friend list, including friendId,
-// ! username, displayName / remarkName, avatarUrl, online status,
-// ! last message preview, and last message time.
-// ! Online status may later need WebSocket presence updates.
-  const [friends, setFriends] = useState<Friend[]>(mockFriends);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(mockMessages);
+  // ! change the fixed ID
+    useEffect(() => {
+      const loadFriends = async () => {
+        try {
+          const res = await fetch("/api/friends?userId=cmp5myz0g0000sb273prm1x1h");
+          const data = await res.json();
+
+          setFriends(Array.isArray(data) ? data : []);
+        } catch (err) {
+          console.error(err);
+          setFriends([]);
+        }
+      };
+
+      loadFriends();
+    }, []);
   const [currentView, setCurrentView] = useState<ChatPanelView>({
     type: "none",
   });
-
-  // ! Liyuan: replace mockMessages with messages loaded from the real database.
-  // ! Expected backend data: messages for the selected conversation or friend.
-  const [messages, setMessages] = useState<ChatMessage[]>(mockMessages);
-
   const [chatMode, setChatMode] = useState<ChatMode>("language-to-morse");
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [userSearchResults, setUserSearchResults] = useState<SearchableUser[]>([]);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
-  // ! Liyuan: this is temporary local notification state.
-  // ! Later, system messages should come from a notification API or WebSocket events.
-  // ! Expected backend data: notification id, type, title, body, isRead, createdAt.
   const [systemMessages, setSystemMessages] = useState<SystemMessage[]>([]);
-  // ! Liyuan: replace this local pending friend request state with backend data.
-  // ! Expected backend data: pending outgoing friend requests for the current user.
-  // ! This prevents sending duplicate requests after refresh or from another device.
   const [pendingFriendRequestUserIds, setPendingFriendRequestUserIds] = useState<string[]>([]);
-
-  // ! game: temporary local state for game invitations.
-  // ! Later, this should be replaced by real game invitation data from the backend.
-  // ! Expected backend data: invitation id, senderId, receiverId, status, gameMode, createdAt.
   const [pendingGameInviteFriendIds, setPendingGameInviteFriendIds] = useState<string[]>([]);
-
   const [composerError, setComposerError] = useState("");
 
   const selectedFriendId =
@@ -88,11 +84,14 @@ export default function ChatLayout() {
       return friends;
     }
 
-    return friends.filter((friend) => {
-      return (
-        friend.displayName.includes(query) || friend.username.includes(query)
-      );
-    });
+  return Array.isArray(friends)
+    ? friends.filter((friend) => {
+        return (
+          friend.displayName.includes(query) ||
+          friend.username.includes(query)
+        );
+      })
+    : [];
   }, [friends, friendSearchQuery]);
 
   const unreadSystemMessageCount = useMemo(() => {
@@ -161,31 +160,37 @@ export default function ChatLayout() {
     });
   }
 
-  function handleSearchUsers(query: string) {
-    setUserSearchQuery(query);
 
-    const trimmedQuery = query.trim();
+// Search all site users
+function handleSearchUsers(query: string) {
+  setUserSearchQuery(query);
 
-    if (!trimmedQuery) {
-      setUserSearchResults([]);
-      return;
-    }
+  const trimmedQuery = query.trim();
 
-    // ! yren: TODO backend integration.
-    // ! This currently searches mockSearchableUsers on the front-end.
-    // ! Later, this should call a real user search endpoint, for example:
-    // ! GET /api/users/search?query=...
-    // ! This is different from searching inside the current friend list.
-    const results = mockSearchableUsers.filter((user) => {
-      return (
-        user.username.includes(trimmedQuery) ||
-        user.displayName.includes(trimmedQuery)
-      );
-    });
-
-    setUserSearchResults(results);
+  if (!trimmedQuery) {
+    setUserSearchResults([]);
+    return;
   }
 
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(
+        `/api/users/search?query=${trimmedQuery}`
+      );
+      const data = await res.json();
+
+      setUserSearchResults(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setUserSearchResults([]);
+    }
+  };
+
+  fetchUsers();
+}
+
+
+  // Add friend
   function handleToggleAddFriend() {
     const nextIsOpen = !isAddFriendOpen;
 
@@ -197,6 +202,9 @@ export default function ChatLayout() {
     }
   }
 
+
+
+// Send friend Request
   function handleSendFriendRequest(user: SearchableUser): boolean {
     const alreadyFriend = friends.some((friend) => friend.id === user.id);
 
@@ -212,13 +220,12 @@ export default function ChatLayout() {
       return false;
     }
 
-    // ! Liyuan: TODO backend integration.
-    // ! Add friend should not directly create a friendship.
-    // ! It should create a pending friend request first.
-    // ! The target user must accept the request before both users become friends.
-    // ! Later, this should call POST /api/friend-requests with targetUserId.
-    // ! Backend should notify the receiver, persist the pending request,
-    // ! and create the friendship only after acceptance.
+    //  Add friend should not directly create a friendship.
+    //  It should create a pending friend request first.
+    //  The target user must accept the request before both users become friends.
+    //  Later, this should call POST /api/friend-requests with targetUserId.
+    //  Backend should notify the receiver, persist the pending request,
+    //  and create the friendship only after acceptance.
     setPendingFriendRequestUserIds((prev) => [...prev, user.id]);
 
     addSystemMessage(
@@ -244,10 +251,9 @@ export default function ChatLayout() {
 
     const renamedFriend = friends.find((friend) => friend.id === friendId);
 
-    // ! Liyuan: TODO backend integration.
-    // ! This currently only updates the local displayName.
-    // ! Later, this should call a real API endpoint, for example PATCH /api/friends/:friendshipId.
-    // ! Backend should persist the remarkName / displayName for the current user.
+    //  This currently only updates the local displayName.
+    //  Later, this should call a real API endpoint, for example PATCH /api/friends/:friendshipId.
+    //  Backend should persist the remarkName / displayName for the current user.
     setFriends((prev) =>
       prev.map((friend) =>
         friend.id === friendId
@@ -267,10 +273,9 @@ export default function ChatLayout() {
   function handleDeleteFriend(friendId: string) {
     const deletedFriend = friends.find((friend) => friend.id === friendId);
 
-    // ! Liyuan: TODO backend integration.
-    // ! This currently only removes the friend from local React state.
-    // ! Later, this should call a real API endpoint, for example DELETE /api/friends/:friendshipId.
-    // ! Backend should remove or deactivate the friendship relation in the database.
+    //  This currently only removes the friend from local React state.
+    //  Later, this should call a real API endpoint, for example DELETE /api/friends/:friendshipId.
+    //  Backend should remove or deactivate the friendship relation in the database.
     setFriends((prev) => prev.filter((friend) => friend.id !== friendId));
 
     setMessages((prev) =>
@@ -320,11 +325,10 @@ export default function ChatLayout() {
       createdAt: getCurrentTime(),
     };
 
-    // ! Liyuan: TODO backend integration.
-    // ! Share friend should mean sharing a contact card to an existing friend,
-    // ! not only copying text to clipboard.
-    // ! Later, backend should support a shared_contact message type,
-    // ! including senderId, receiverId/conversationId, and sharedUserId.
+    //  Share friend should mean sharing a contact card to an existing friend,
+    //  not only copying text to clipboard.
+    //  Later, backend should support a shared_contact message type,
+    //  including senderId, receiverId/conversationId, and sharedUserId.
     setMessages((prev) => [...prev, sharedContactMessage]);
 
     addSystemMessage(
@@ -353,12 +357,12 @@ export default function ChatLayout() {
     }
 
     // ! game: TODO backend / WebSocket integration.
-    // ! This currently only creates a local pending game invitation.
-    // ! Later, this should call a real API endpoint or emit a WebSocket event, for example:
-    // ! POST /api/game-invitations with targetFriendId and gameMode.
-    // ! socket.emit("game_invitation:create", { toUserId: friendId, gameMode: "morse_duel" }).
-    // ! Backend should persist the invitation, notify the receiver,
-    // ! and create / join a game room only after the receiver accepts.
+    //  This currently only creates a local pending game invitation.
+    //  Later, this should call a real API endpoint or emit a WebSocket event, for example:
+    //  POST /api/game-invitations with targetFriendId and gameMode.
+    //  socket.emit("game_invitation:create", { toUserId: friendId, gameMode: "morse_duel" }).
+    //  Backend should persist the invitation, notify the receiver,
+    //  and create / join a game room only after the receiver accepts.
     setPendingGameInviteFriendIds((prev) => [...prev, friendId]);
 
     const gameInviteMessage: ChatMessage = {
@@ -412,11 +416,10 @@ export default function ChatLayout() {
       createdAt: getCurrentTime(),
     };
 
-    // ! Liyuan: TODO backend integration.
-    // ! This currently only appends the message to local React state.
-    // ! Later, this should call a real API endpoint or WebSocket event.
-    // ! Backend should persist the message with senderId, conversationId,
-    // ! rawText, translatedText, mode, and createdAt.
+    //  This currently only appends the message to local React state.
+    //  Later, this should call a real API endpoint or WebSocket event.
+    //  Backend should persist the message with senderId, conversationId,
+    //  rawText, translatedText, mode, and createdAt.
     setMessages((prev) => [...prev, nextMessage]);
 
     return true;

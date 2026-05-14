@@ -1,4 +1,4 @@
-// ! Liyuan / frontend note:
+// ! frontend note:
 // ! This file contains temporary mock data for building the chat UI.
 // ! It should be replaced by real backend data once the friendship,
 // ! conversation, message, and online status APIs are available.

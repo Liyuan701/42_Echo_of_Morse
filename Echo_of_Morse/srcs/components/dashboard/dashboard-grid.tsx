@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import styles from "./dashboard.module.css";
+import { useEffect, useState } from "react";
 
 type DashboardCardProps = {
   title: string;
@@ -24,14 +27,16 @@ function DashboardCard({ title, description, href }: DashboardCardProps) {
   );
 }
 
-// TODO: Liyuan : Replace this mock data with real data from the database.
 function TodayPracticeProgress() {
-  const progress: PracticeProgress = {
-    completedLessons: 3,
-    targetLessons: 5,
-    accuracy: 82,
-    streak: 4,
-  };
+  const [progress, setProgress] = useState<PracticeProgress | null>(null);
+
+  useEffect(() => {
+    fetch("/api/progress")
+      .then((res) => res.json())
+      .then(setProgress);
+  }, []);
+
+  if (!progress) return <p>Loading...</p>;
 
   const percentage = Math.round(
     (progress.completedLessons / progress.targetLessons) * 100

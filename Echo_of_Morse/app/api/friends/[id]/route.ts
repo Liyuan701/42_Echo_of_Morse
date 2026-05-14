@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-// import { prisma } from '@/lib/db'
-
-//! With NextAuth
 import { getServerSession } from 'next-auth'
-// import { authOptions } from '../../../../lib/auth'
-
-//?
 import { prisma } from '@/server/prisma'
 import { authOptions } from '@/lib/auth'
+
+
 // PUT /api/friends/[id] - Accept or reject a friend request
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: Promise<{ id: string }> } // ✅ Fix
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
 		const session = await getServerSession(authOptions)

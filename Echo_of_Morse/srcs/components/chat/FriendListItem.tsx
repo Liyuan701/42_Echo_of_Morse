@@ -125,7 +125,7 @@ export default function FriendListItem({
           </Link>
 
           <div className={styles.profilePreview}>
-            {/* //! Liyuan: replace this friend preview with real friend profile data from auth/database */}
+            {/* //! : replace this friend preview with real friend profile data from auth/database */}
             <div className={styles.previewHeader}>
               {friend.avatarUrl ? (
                 <img

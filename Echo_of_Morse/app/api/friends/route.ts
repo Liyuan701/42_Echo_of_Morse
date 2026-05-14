@@ -53,7 +53,21 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(friends);
+    const formatted = friends.map((f) => {
+      const user = f.senderId === userId ? f.receiver : f.sender;
+
+      return {
+        id: user.id,
+        username: user.username,
+        displayName: user.username,
+        avatarUrl: user.image,
+        isOnline: user.isOnline,
+        lastMessage: "",
+        lastMessageAt: "",
+      };
+    });
+
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error(error);
 

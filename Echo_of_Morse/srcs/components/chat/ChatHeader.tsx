@@ -1,23 +1,18 @@
 // 显示当前好友头像、名称、状态和关闭按钮
 
 import Link from "next/link";
-import type { Friend } from "@/types/chat";
+import type { UserDTO } from "@/types/user";
 import styles from "./css/ChatHeader.module.css";
 
 type ChatHeaderProps = {
-  friend: Friend;
+  friend: UserDTO;
   onCloseChat: () => void;
 };
 
 export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
-  // ! Liyuan: confirm final public user profile route.
-  // Current temporary route: /users/[userId].
   const profileHref = `/users/${friend.id}`;
-
-  const displayName = friend.displayName || friend.username || "Unknown user";
-  const avatarLetter =
-    friend.avatarInitial || displayName.charAt(0).toUpperCase();
-
+  const displayName = friend.username;
+  const avatarLetter = displayName.charAt(0).toUpperCase();
   const statusText = friend.isOnline ? "Online" : "Offline";
 
   return (
@@ -29,10 +24,10 @@ export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
             className={styles.avatarLink}
             aria-label={`View ${displayName}'s profile`}
           >
-            {friend.avatarUrl ? (
+            {friend.image ? (
               <img
                 className={styles.avatarImage}
-                src={friend.avatarUrl}
+                src={friend.image}
                 alt={`${displayName}'s avatar`}
               />
             ) : (
@@ -45,12 +40,11 @@ export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
           </Link>
 
           <div className={styles.profilePreview}>
-            {/* //! Liyuan: replace this friend preview with real friend profile data from auth/database */}
             <div className={styles.previewHeader}>
-              {friend.avatarUrl ? (
+              {friend.image ? (
                 <img
                   className={styles.previewAvatar}
-                  src={friend.avatarUrl}
+                  src={friend.image}
                   alt={`${displayName}'s avatar`}
                 />
               ) : (

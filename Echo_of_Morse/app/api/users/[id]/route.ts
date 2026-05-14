@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/server/prisma";
 import { authOptions } from "@/lib/auth";
+import { toUserDTO } from "@/lib/mappers/user";
 
 // GET /api/users/[id] - Get user information.
 export async function GET(
@@ -42,7 +43,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json(toUserDTO(user));
   } catch (error) {
     console.error(error);
 

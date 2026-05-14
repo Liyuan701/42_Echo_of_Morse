@@ -1,7 +1,7 @@
 //这是不同用户的页面
 import PageShell from "@/components/layout/page-shell";
 import { Card } from "@/components/ui";
-import { mockFriends } from "@/components/chat/faux-chat-data";
+import { prisma } from "@/server/prisma";
 import styles from "./user-profile.module.css";
 
 type UserProfilePageProps = {
@@ -10,9 +10,12 @@ type UserProfilePageProps = {
   };
 };
 
-export default function UserProfilePage({ params }: UserProfilePageProps) {
-  const friend = mockFriends.find((item) => item.id === params.userId);
-
+export default async function UserProfilePage({ params }: UserProfilePageProps) {
+  const friend = await prisma.user.findUnique({
+  where: {
+    id: params.userId,
+  },
+});
   if (!friend) {
     return (
       <main id="main-content">
@@ -33,30 +36,24 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
       <PageShell>
         <Card>
           <section className={styles.profile}>
-            {friend.avatarUrl ? (
+            {friend.image ? (
               <img
                 className={styles.avatar}
-                src={friend.avatarUrl}
-                alt={`${friend.displayName}'s avatar`}
+                src={friend.image}
+                alt={`${friend.username}'s avatar`}
               />
             ) : (
               <div className={styles.avatarFallback}>
-                {friend.avatarInitial}
+                {friend.username[0].toUpperCase()}
               </div>
             )}
 
             <div className={styles.content}>
-              <h1 className={styles.title}>{friend.displayName}</h1>
+              <h1 className={styles.title}>{friend.username}</h1>
               <p className={styles.username}>@{friend.username}</p>
 
               <p className={styles.status}>
                 {friend.isOnline ? "Online" : "Offline"}
-              </p>
-
-              {/* //! Liyuan: replace this mock friend profile with real user profile data from auth/database */}
-              <p className={styles.description}>
-                This is a temporary public user profile page. Later, this page
-                should display the real user profile from the database.
               </p>
             </div>
           </section>
