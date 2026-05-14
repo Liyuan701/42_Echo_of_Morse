@@ -22,8 +22,8 @@ export default function Footer() {
             Terms of Service
           </Link>
 
-          {/* //! yren: replace this static Login link with auth/session logic if needed */}
-          {/* //! yren: if user is logged in, this could become Profile or Logout instead of Login */}
+          {/* //! Liyuan: replace this static Login link with auth/session logic if needed */}
+          {/* //! Liyuan: if user is logged in, this could become Profile or Logout instead of Login */}
           <Link href="/login" className={styles.link}>
             Login
           </Link>
@@ -34,3 +34,6 @@ export default function Footer() {
     </footer>
   );
 }
+
+// ! i18n: move all navigation labels, aria-labels, footer links, and footer description into the i18n dictionary.
+// ! i18n: keep the brand name "Echoes of Morse" unchanged unless the team decides to translate the product name.

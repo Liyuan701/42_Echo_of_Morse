@@ -8,5 +8,7 @@ RUN npm install
 # Copy the project
 COPY . .
 
+RUN ./node_modules/.bin/prisma generate
+
 # No build step - Next.js runs in dev mode with hot reload
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run dev"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && npm run dev"]

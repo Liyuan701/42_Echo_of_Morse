@@ -32,7 +32,8 @@ services:
       DATABASE_URL: ${DATABASE_URL}
     volumes:
       - .:/app                # Bind mount - code changes reflect immediately
-      - /app/node_modules     # Keep container's node_modules
+      - /app/node_modules   # Keep container's node_modules
+      - /app/srcs/generated   # keep container's generated
     depends_on:
       - db
     networks:

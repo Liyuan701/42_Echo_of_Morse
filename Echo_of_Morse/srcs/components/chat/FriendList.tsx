@@ -1,0 +1,218 @@
+"use client";
+// 负责左侧好友列表。
+// There are two different search functions here:
+// 1. Search in my friends: Search only within the list of friends you've already added.
+// 2. Search users to add: Search the list of mock users to find those you can send friend requests to.
+// 3. Add friend.
+// 4. Invite friend to game.
+
+import type { ChangeEvent } from "react";
+import type { Friend, SearchableUser, SystemMessage } from "@/types/chat";
+import { Button, Input } from "@/components/ui";
+import FriendListItem from "./FriendListItem";
+import styles from "./css/FriendList.module.css";
+
+type FriendListProps = {
+  friends: Friend[];
+  allFriends: Friend[];
+  selectedFriendId: string;
+
+  systemMessages: SystemMessage[];
+  unreadSystemMessageCount: number;
+  isSystemPanelSelected: boolean;
+
+  friendSearchQuery: string;
+  userSearchQuery: string;
+  userSearchResults: SearchableUser[];
+  isAddFriendOpen: boolean;
+  pendingFriendRequestUserIds: string[];
+  pendingGameInviteFriendIds: string[];
+
+  onSelectFriend: (friendId: string) => void;
+  onSelectSystemMessages: () => void;
+
+  onChangeFriendSearchQuery: (query: string) => void;
+  onChangeUserSearchQuery: (query: string) => void;
+  onToggleAddFriend: () => void;
+  onSendFriendRequest: (user: SearchableUser) => boolean;
+
+  onRenameFriend: (friendId: string, nextDisplayName: string) => void;
+  onDeleteFriend: (friendId: string) => void;
+  onShareFriend: (friendId: string) => void | Promise<void>;
+
+  onInviteFriendToGame: (friendId: string) => void;
+};
+
+export default function FriendList({
+  friends,
+  allFriends,
+  selectedFriendId,
+  systemMessages,
+  unreadSystemMessageCount,
+  isSystemPanelSelected,
+  friendSearchQuery,
+  userSearchQuery,
+  userSearchResults,
+  isAddFriendOpen,
+  pendingFriendRequestUserIds,
+  pendingGameInviteFriendIds,
+  onSelectFriend,
+  onSelectSystemMessages,
+  onChangeFriendSearchQuery,
+  onChangeUserSearchQuery,
+  onToggleAddFriend,
+  onSendFriendRequest,
+  onRenameFriend,
+  onDeleteFriend,
+  onShareFriend,
+  onInviteFriendToGame,
+}: FriendListProps) {
+  const latestSystemMessage = systemMessages[0] ?? null;
+
+  function handleFriendSearchChange(event: ChangeEvent<HTMLInputElement>) {
+    onChangeFriendSearchQuery(event.target.value);
+  }
+
+  function handleUserSearchChange(event: ChangeEvent<HTMLInputElement>) {
+    onChangeUserSearchQuery(event.target.value);
+  }
+
+  return (
+    <aside className={styles.sidebar}>
+      <div className={styles.header}>
+        <div className={styles.headerTop}>
+          <h2 className={styles.title}>Chats</h2>
+
+          <Button type="button" size="sm" onClick={onToggleAddFriend}>
+            {isAddFriendOpen ? "Close" : "+ Add"}
+          </Button>
+        </div>
+
+        <Input
+          value={friendSearchQuery}
+          onChange={handleFriendSearchChange}
+          placeholder="Search in my friends"
+        />
+
+        {isAddFriendOpen ? (
+          <div className={styles.addFriendPanel}>
+            <Input
+              value={userSearchQuery}
+              onChange={handleUserSearchChange}
+              placeholder="Search users to add"
+            />
+
+            {userSearchQuery.trim() ? (
+              <div className={styles.searchResults}>
+                {userSearchResults.length > 0 ? (
+                  userSearchResults.map((user) => {
+                    const isAlreadyFriend = allFriends.some(
+                      (friend) => friend.username.trim() === user.username.trim()
+                    );
+
+                    const isPending = pendingFriendRequestUserIds.includes(
+                      user.id
+                    );
+
+                    const buttonLabel = isAlreadyFriend
+                      ? "Added"
+                      : isPending
+                        ? "Pending"
+                        : "Add";
+
+                    return (
+                      <div key={user.id} className={styles.searchResult}>
+                        <div className={styles.searchAvatar}>
+                          {user.avatarInitial}
+                        </div>
+
+                        <div className={styles.searchContent}>
+                          <p className={styles.searchName}>
+                            {user.displayName}
+                          </p>
+
+                          <p className={styles.searchUsername}>
+                            @{user.username}
+                          </p>
+                        </div>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={isAlreadyFriend || isPending}
+                          onClick={() => onSendFriendRequest(user)}
+                        >
+                          {buttonLabel}
+                        </Button>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className={styles.emptySearch}>No users found.</p>
+                )}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      <div className={styles.list}>
+        <button
+          type="button"
+          className={`${styles.systemItem} ${
+            isSystemPanelSelected ? styles.systemItemSelected : ""
+          }`}
+          onClick={onSelectSystemMessages}
+        >
+          <div className={styles.systemIcon}>!</div>
+
+          <div className={styles.systemContent}>
+            <div className={styles.systemRow}>
+              <span className={styles.systemTitle}>System messages</span>
+
+              {unreadSystemMessageCount > 0 ? (
+                <span className={styles.unreadBadge}>
+                  {unreadSystemMessageCount}
+                </span>
+              ) : null}
+            </div>
+
+            <p className={styles.systemPreview}>
+              {latestSystemMessage
+                ? latestSystemMessage.body
+                : "No system messages yet."}
+            </p>
+          </div>
+        </button>
+
+        {friends.length > 0 ? (
+          friends.map((friend) => {
+            const isGameInvitePending =
+              pendingGameInviteFriendIds.includes(friend.id);
+
+            return (
+              <FriendListItem
+                key={friend.id}
+                friend={friend}
+                isSelected={friend.id === selectedFriendId}
+                isGameInvitePending={isGameInvitePending}
+                onSelectFriend={onSelectFriend}
+                onRenameFriend={onRenameFriend}
+                onDeleteFriend={onDeleteFriend}
+                onShareFriend={onShareFriend}
+                onInviteFriendToGame={onInviteFriendToGame}
+              />
+            );
+          })
+        ) : (
+          <p className={styles.empty}>No friends found.</p>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+// ! i18n: move all chat UI labels, placeholders, aria-labels, empty states, mode names, prompt/confirm/alert messages, and button text into the i18n dictionary.
+// ! i18n: keep real chat messages, usernames, display names, timestamps, and Morse-transformed content unchanged.
+// ! i18n: dynamic strings such as "View ${displayName}'s profile" should use interpolation variables.
+// ! i18n: move game invitation button labels, pending state, and validation messages into the i18n dictionary.

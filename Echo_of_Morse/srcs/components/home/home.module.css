@@ -1,5 +1,21 @@
-.sectionBlock {
-  margin-bottom: 20px;
+.homeLayout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.leftColumn {
+  display: flex;
+  min-width: 0;
+  align-self: stretch;
+}
+
+.mainColumn {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  align-self: stretch;
 }
 
 .sectionTitle {
@@ -28,4 +44,15 @@
   line-height: 1.7;
   margin: 0;
   color: #4b5563;
+}
+
+@media (max-width: 900px) {
+  .homeLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .leftColumn {
+    max-width: 420px;
+    width: 100%;
+  }
 }

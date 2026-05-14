@@ -179,3 +179,5 @@ export default function RegisterForm() {
     </Card>
   );
 }
+
+// ! i18n: move register form titles, descriptions, labels, placeholders, hints, validation messages, success/error messages, and button states into the i18n dictionary.

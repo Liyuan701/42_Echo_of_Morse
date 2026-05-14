@@ -13,3 +13,6 @@ export default function IntroSection() {
     </Card>
   );
 }
+
+// ! i18n: move home page titles, descriptive paragraphs, online-user labels, empty states, buttons, and alert messages into the i18n dictionary.
+// ! i18n: keep dynamic values such as onlineCount and displayName as interpolation variables.

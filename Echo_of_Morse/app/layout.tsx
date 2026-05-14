@@ -28,3 +28,6 @@ export default function RootLayout({
     </html>
   )
 }
+
+// ! i18n: move metadata title, metadata description, html lang, and skip-link text into the i18n setup.
+// ! i18n: html lang should follow the current selected locale, for example en / fr / zh.

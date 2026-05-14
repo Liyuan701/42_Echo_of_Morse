@@ -2,9 +2,16 @@
 # Detect environment
 # =========================
 
+# Linux - 42 Fedora - podman
+# Linux - Ubuntu - docker
+# Others - docker
+
+
 UNAME := $(shell uname)
 
-ifeq ($(UNAME), Linux)
+ifeq ($(UNAME), Darwin)
+	COMPOSE = docker compose
+else ifneq ($(shell which podman-compose 2>/dev/null),)
 	COMPOSE = podman-compose
 else
 	COMPOSE = docker compose

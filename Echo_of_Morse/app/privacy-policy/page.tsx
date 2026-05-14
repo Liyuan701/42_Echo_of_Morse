@@ -8,3 +8,6 @@ export default function PrivacyPolicyPage() {
     </PageShell>
   );
 }
+
+// ! i18n: move legal page titles and body text into the i18n dictionary.
+// ! i18n: once real legal content is added, each locale should have its own reviewed legal text.
