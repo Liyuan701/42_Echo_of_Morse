@@ -23,7 +23,6 @@ export default function ProfileEditForm() {
 
 	const [formData, setFormData] = useState({
 		username: "",
-		email: "",
 		image: "",
 	});
 	const [error, setError] = useState("");
@@ -57,7 +56,6 @@ export default function ProfileEditForm() {
 
 					setFormData({
 						username: user.username ?? "",
-						email: user.email ?? "",
 						image: user.image ?? "",
 					});
 			} catch (error) {
@@ -101,7 +99,7 @@ export default function ProfileEditForm() {
 			// ...oldFormData = on copie toutes les valeurs anciennes, et on modifie seulement celle qui a changé
 			// [field]: value = on modifie seulement le champ qui a changé, on met [] car field est une variable
 			// comme js lit de gauche à droite, il va d'abord copier les anciennes valeurs, puis écraser la valeur du champ modifié
-	function updateField(field: "username" | "email" | "image", value: string) {
+	function updateField(field: "username" | "image", value: string) {
 		setFormData((oldFormData) => ({ ...oldFormData, [field]: value,}));
 	}
 
@@ -144,7 +142,7 @@ export default function ProfileEditForm() {
 	}
 
 	// ===================== Enregistrer le profil =====================
-	//au clic sur save, on envoie username, email et image à l'API PUT.
+	//au clic sur save, on envoie username et image à l'API PUT.
 	async function handleSubmit(event:  FormEvent<HTMLFormElement>) {
 		// empêcher le comportement(recharger la page) par défaut du navigateur
 		event.preventDefault();
@@ -166,7 +164,6 @@ export default function ProfileEditForm() {
 				//stringify = convertir en json pour l'envoyer à l'API
 				body: JSON.stringify({
 				username: formData.username,
-				email: formData.email,
 				image: formData.image,
 			}),
 		});
@@ -228,14 +225,6 @@ export default function ProfileEditForm() {
                 value={formData.username}
                 onChange={(event) => updateField("username", event.target.value)}
                 placeholder="Enter your username"
-              />
-
-              <Input
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={(event) => updateField("email", event.target.value)}
-                placeholder="Enter your email"
               />
             </div>
           </div>
