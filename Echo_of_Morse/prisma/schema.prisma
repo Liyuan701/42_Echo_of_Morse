@@ -18,6 +18,11 @@ model User {
   passwordHash  String
 
   image         String?
+
+  // profile
+  bio           String?   // personal quote / signature
+  learningLevel Int       @default(1) // level 1-12
+
   isOnline      Boolean   @default(false)
   lastSeen      DateTime?
 
@@ -29,9 +34,9 @@ model User {
 
   sentRequests     Friendship[] @relation("SentRequests")
   receivedRequests Friendship[] @relation("ReceivedRequests")
+
   letterProgresses UserLetterProgress[]
 }
-
 
 // OAuth account
 model Account {

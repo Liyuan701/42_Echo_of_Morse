@@ -31,8 +31,19 @@ export async function GET(
         username: true,
         email: true,
         image: true,
+
+        bio: true,
+        learningLevel: true,
+
         isOnline: true,
         createdAt: true,
+        lastSeen: true,
+
+        accounts: {
+          select: {
+            provider: true,
+          },
+        },
       },
     });
 
@@ -42,6 +53,18 @@ export async function GET(
         { status: 404 }
       );
     }
+
+    // we can get a friend by receving and sending the invitation.
+    // so count the sender and receiver.
+    const friendCount = await prisma.friendship.count({
+      where: {
+        status: "ACCEPTED",
+        OR: [
+          { senderId: id },
+          { receiverId: id },
+        ],
+      },
+    });
 
     return NextResponse.json(toUserDTO(user));
   } catch (error) {
@@ -98,7 +121,12 @@ export async function PUT(
         username: true,
         email: true,
         image: true,
+
+        bio: true,
+        learningLevel: true,
+
         isOnline: true,
+        createdAt: true,
       },
     });
 

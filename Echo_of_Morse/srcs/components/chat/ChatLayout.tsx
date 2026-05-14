@@ -25,15 +25,21 @@ import ChatWindow from "./ChatWindow";
 import SystemMessageWindow from "./SystemMessageWindow";
 import { transformChatMessage } from "@/lib/chat-transform";
 import styles from "./css/ChatLayout.module.css";
+import { useSession } from "next-auth/react";
+
+
 
 export default function ChatLayout() {
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [messages, setMessages] = useState<ChatMessage[]>(mockMessages);
-  // ! change the fixed ID
+    const [friends, setFriends] = useState<Friend[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>(mockMessages);
+    const { data: session } = useSession();
+    const userId = session?.user?.id;
     useEffect(() => {
+      if (!userId) return;
+
       const loadFriends = async () => {
         try {
-          const res = await fetch("/api/friends?userId=cmp5myz0g0000sb273prm1x1h");
+          const res = await fetch(`/api/friends?userId=${userId}`);
           const data = await res.json();
 
           setFriends(Array.isArray(data) ? data : []);
@@ -44,7 +50,9 @@ export default function ChatLayout() {
       };
 
       loadFriends();
-    }, []);
+    }, [userId]);
+
+
   const [currentView, setCurrentView] = useState<ChatPanelView>({
     type: "none",
   });
@@ -98,12 +106,19 @@ export default function ChatLayout() {
     return systemMessages.filter((message) => !message.isRead).length;
   }, [systemMessages]);
 
+
+
+
+  
   function getCurrentTime() {
     return new Date().toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
   }
+
+
+
 
   function addSystemMessage(title: string, body: string) {
     const nextMessage: SystemMessage = {
