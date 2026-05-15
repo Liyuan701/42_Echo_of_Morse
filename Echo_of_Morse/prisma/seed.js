@@ -17,13 +17,14 @@ const users = [
 async function main() {
   console.log("Reset database...");
 
-  await prisma.userLetterProgress.deleteMany();
-  await prisma.friendship.deleteMany();
-  await prisma.letter.deleteMany();
-  await prisma.user.deleteMany();
+  await prisma.message.deleteMany();         // Message 没有 Cascade，手动删
+  await prisma.conversation.deleteMany();    // 再删 Conversation
+  await prisma.friendship.deleteMany();      // Friendship 没有 Cascade，手动删
+  await prisma.gameInvitation.deleteMany();  // 同上
+  await prisma.letter.deleteMany();          // Letter 被 UserLetterProgress 引用
+  await prisma.user.deleteMany();            // 最后删 User，Cascade 会处理其余的
 
   const passwordHash = await bcrypt.hash(PASSWORD, 10);
-
   console.log("Creating users...");
 
   const created = [];
@@ -75,7 +76,52 @@ for (let i = 0; i < group.length; i++) {
     });
   }
 }
+  console.log("Creating conversations and messages...");
 
+  const lifan = map["lifan"];
+  const yren = map["yren"];
+  const jdu = map["jdu"];
+
+// 对话 1：lifan <-> yren
+const [aId, bId] = lifan.id < yren.id
+  ? [lifan.id, yren.id]
+  : [yren.id, lifan.id];
+
+const conv1 = await prisma.conversation.create({
+  data: {
+    userAId: aId,
+    userBId: bId,
+  },
+});
+await prisma.message.createMany({
+  data: [
+    {
+      conversationId: conv1.id,
+      senderId: lifan.id,
+      rawText: "Hello in morse",
+      translatedText: ".... . .-.. .-.. ---",
+      mode: "LANGUAGE_TO_MORSE",
+    },
+    {
+      conversationId: conv1.id,
+      senderId: yren.id,
+      rawText: "Reply here",
+      translatedText: ".-. . .--. .-.. -.--",
+      mode: "LANGUAGE_TO_MORSE",
+    },
+  ],
+});
+// 对话 2：lifan <-> jdu
+const [cId, dId] = lifan.id < jdu.id
+  ? [lifan.id, jdu.id]
+  : [jdu.id, lifan.id];
+
+await prisma.conversation.create({
+  data: {
+    userAId: cId,
+    userBId: dId,
+  },
+});
   console.log("Seed completed.");
 }
 

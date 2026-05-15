@@ -4,6 +4,8 @@
 // translatedText 是自动转换后的内容。例如你输入英文，系统自动生成摩斯密码。
 // mode 记录这条消息是在哪个聊天模式下发送的。
 
+import type { MessageMode } from "@/lib/mappers/chat-mode";
+
 export type ChatMode =
   | "language-to-morse"
   | "morse-to-language"
@@ -30,7 +32,7 @@ export type ChatMessage = {
   sender: "me" | "friend";
   rawText: string;
   translatedText?: string;
-  mode: ChatMode;
+  mode: MessageMode;
   createdAt: string;
 };
 

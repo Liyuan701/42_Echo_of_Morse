@@ -11,54 +11,58 @@ datasource db {
 
 // account main info
 model User {
-  id            String    @id @default(cuid())
+  id String @id @default(cuid())
 
-  username      String    @unique
-  email         String    @unique
-  passwordHash  String
+  username     String @unique
+  email        String @unique
+  passwordHash String
 
-  image         String?
+  image String?
 
   // profile
-  bio           String?   // personal quote / signature
-  learningLevel Int       @default(1) // level 1-12
+  bio           String? // personal quote / signature
+  learningLevel Int     @default(1) // level 1-12
 
-  isOnline      Boolean   @default(false)
-  lastSeen      DateTime?
+  isOnline Boolean   @default(false)
+  lastSeen DateTime?
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
+  accounts Account[]
+  sessions Session[]
 
-  sentRequests     Friendship[] @relation("SentRequests")
-  receivedRequests Friendship[] @relation("ReceivedRequests")
-
-  letterProgresses UserLetterProgress[]
+  sentRequests            Friendship[]         @relation("SentRequests")
+  receivedRequests        Friendship[]         @relation("ReceivedRequests")
+  sentMessages            Message[]            @relation("SentMessages")
+  systemMessages          SystemMessage[]
+  conversationsA          Conversation[]       @relation("ConversationA")
+  conversationsB          Conversation[]       @relation("ConversationB")
+  gameInvitationsSent     GameInvitation[]     @relation("GameFrom")
+  gameInvitationsReceived GameInvitation[]     @relation("GameTo")
+  letterProgresses        UserLetterProgress[]
 }
 
 // OAuth account
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
+  id                String @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
 
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+  refresh_token String?
+  access_token  String?
+  expires_at    Int?
+  token_type    String?
+  scope         String?
+  id_token      String?
+  session_state String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
-
 
 //unsed, we use the JWT mode.
 // who is login: user login -> server creat session -> browser save cookie
@@ -81,7 +85,6 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-
 // An independent table to save relationships
 // The sender/receiver Id is the second key, of User table.
 model Friendship {
@@ -89,51 +92,124 @@ model Friendship {
   status    FriendshipStatus @default(PENDING)
   createdAt DateTime         @default(now())
 
-  senderId   String
-  sender     User @relation("SentRequests", fields: [senderId], references: [id])
+  senderId String
+  sender   User   @relation("SentRequests", fields: [senderId], references: [id])
 
   receiverId String
-  receiver   User @relation("ReceivedRequests", fields: [receiverId], references: [id])
+  receiver   User   @relation("ReceivedRequests", fields: [receiverId], references: [id])
 
   @@unique([senderId, receiverId])
 }
 
-enum FriendshipStatus {
-  PENDING
-  ACCEPTED
-  BLOCKED
-}
-
-
 // The letter table
 model Letter {
-  id    Int    @id @default(autoincrement())
-  char  String @unique  // A-Z
+  id   Int    @id @default(autoincrement())
+  char String @unique // A-Z
 
   userProgress UserLetterProgress[]
 }
 
 // User-letter -mastery
 model UserLetterProgress {
-  id        Int   @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  userId    String
-  letterId  Int
+  userId   String
+  letterId Int
   //level of mastery 1-10
-  mastery   Int   @default(0)
+  mastery  Int    @default(0)
 
   //learning data
-  correctCount   Int @default(0)
-  wrongCount     Int @default(0)
-  totalSeen      Int @default(0)
-  nextReviewAt   DateTime
+  correctCount Int       @default(0)
+  wrongCount   Int       @default(0)
+  totalSeen    Int       @default(0)
+  nextReviewAt DateTime
   //mext time review interval
-  interval       Int
-  easeFactor    Float @default(2.5)
-  lastReviewed   DateTime?
+  interval     Int
+  easeFactor   Float     @default(2.5)
+  lastReviewed DateTime?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   letter Letter @relation(fields: [letterId], references: [id], onDelete: Cascade)
 
   @@unique([userId, letterId])
+}
+
+//the chat frame
+model Conversation {
+  id String @id @default(cuid())
+
+  userAId String
+  userBId String
+
+  userA User @relation("ConversationA", fields: [userAId], references: [id])
+  userB User @relation("ConversationB", fields: [userBId], references: [id])
+
+  messages Message[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([userAId, userBId])
+}
+
+// the chat contents
+model Message {
+  id String @id @default(cuid())
+
+  conversationId String
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender User @relation("SentMessages", fields: [senderId], references: [id])
+
+  rawText String
+  translatedText String?
+
+  mode MessageMode
+
+  createdAt DateTime @default(now())
+}
+
+model SystemMessage {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title  String
+  body   String
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+model GameInvitation {
+  id String @id @default(cuid())
+
+  fromUserId String
+  toUserId   String
+
+  fromUser User @relation("GameFrom", fields: [fromUserId], references: [id])
+  toUser   User @relation("GameTo", fields: [toUserId], references: [id])
+
+  status GameInviteStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+}
+
+enum GameInviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum MessageMode {
+  LANGUAGE_TO_MORSE
+  MORSE_TO_LANGUAGE
+  LANGUAGE_ONLY
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
 }
