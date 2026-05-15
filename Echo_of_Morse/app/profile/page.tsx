@@ -8,5 +8,3 @@ export default function ProfilePage() {
     </PageShell>
   );
 }
-
-// ! i18n: move profile page title and placeholder description into the i18n dictionary.

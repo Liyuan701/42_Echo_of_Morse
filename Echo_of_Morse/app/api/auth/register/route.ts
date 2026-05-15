@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 		});
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing || existingUsername) {
-      return NextResponse.json({ error: "Username or email already in use" }, { status: 409 });
+      return NextResponse.json({ errorCode: "USERNAME_OR_EMAIL_IN_USE" }, { status: 409 });
     }
 
 	//5. on crée un nouvel utilisateur dans la base de données et proteger aevc hased
