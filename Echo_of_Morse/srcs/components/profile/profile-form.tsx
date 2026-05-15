@@ -18,7 +18,13 @@ export default function Profile() {
 		username: string;
 		email: string | null;
 		image: string | null;
+		bio: string | null;
+		learningLevel: number;
 		isOnline: boolean;
+		createdAt: string;
+		lastSeen: string | null;
+		friendCount: number;
+		providers: string[];
 	};
 	//setprofileUser avec un type ProfileUser/null au début
 	//ici useState<type de la variable>(valeur initiale)
@@ -78,13 +84,13 @@ export default function Profile() {
 		image: profileUser?.image ?? session?.user?.image,
 		status: t.online,
 		//! besoin de données réelles pour le profil
-		bio: "hahahahaha.",
+		bio: profileUser?.bio ?? "",
 		accuracy: "84%",
-		learningLevel: "Level 4",
-		friendsCount: "12",
-		joinedAt: "Jan 2026",
-		googleLinked: false,
-		fortyTwoLinked: true,
+		learningLevel: `Level ${profileUser?.learningLevel ?? 1}`,
+		friendsCount: String(profileUser?.friendCount ?? 0),
+		joinedAt: profileUser?.createdAt ? new Date(profileUser.createdAt).toLocaleDateString() : "-",
+		googleLinked: profileUser?.providers?.includes("google") ?? false,
+		fortyTwoLinked: profileUser?.providers?.includes("42-school") ?? false,
 	};
 
 	return (
@@ -156,7 +162,10 @@ export default function Profile() {
 					<div className={styles.connectedRow}>
 					<div>
 						<span className={styles.providerName}>Google</span>
-						<p className={styles.providerDescription}>{t.notConnected}</p>
+						<p className={styles.providerDescription}>
+						{user.googleLinked ? t.connected : t.notConnected}
+						</p>
+
 					</div>
 
 					<Button type="button" variant="secondary" disabled>
@@ -167,7 +176,9 @@ export default function Profile() {
 					<div className={styles.connectedRow}>
 					<div>
 						<span className={styles.providerName}>42</span>
-						<p className={styles.providerDescription}>{t.notConnected}</p>
+						<p className={styles.providerDescription}>
+						{user.fortyTwoLinked ? t.connected : t.notConnected}
+						</p>
 					</div>
 
 					<Button type="button" variant="secondary" disabled>

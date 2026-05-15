@@ -13,6 +13,7 @@ const fr = {
 		joined: "Inscription",
 		connectedAccounts: "Comptes connectés",
 		notConnected: "Non connecté",
+		connected: "Connecté",
 		comingSoon: "Bientôt disponible",
 		username: "Nom d'utilisateur",
 		usernamePlaceholder: "Entrez votre nom d'utilisateur",
@@ -28,8 +29,10 @@ const fr = {
 		failedToUpdateProfile: "Impossible de mettre à jour le profil.",
 		updateProfileError: "Une erreur est survenue pendant la mise à jour du profil.",
 		online: "En ligne",
+		offline: "Hors ligne",
 		defaultUser: "Utilisateur",
 		noEmail: "Aucun email",
+		userNotFound: "Utilisateur introuvable",
 	},
 
 	register: {

@@ -1,7 +1,6 @@
 import PageShell from "@/components/layout/page-shell";
-import { Card } from "@/components/ui";
-import { mockFriends } from "@/components/chat/faux-chat-data";
 import ProfileFriends from "@/components/profile/profile-friends";
+import ProfileUserNotFound from "@/components/profile/profile-friends-not-found";
 
 type UserProfilePageProps = {
   params: {
@@ -9,34 +8,40 @@ type UserProfilePageProps = {
   };
 };
 
-export default function UserProfilePage({ params }: UserProfilePageProps) {
-  const friend = mockFriends.find((item) => item.id === params.userId);
+export default async function UserProfilePage({ params }: UserProfilePageProps) {
+  const response = await fetch(
+    `${process.env.NEXTAUTH_URL}/api/users/${params.userId}`,
+    { cache: "no-store" }
+  );
 
-	if (!friend) {
-	return (
-		<main id="main-content">
-		<PageShell>
-			<Card>
-			<h1>User not found</h1>
-			<p>We could not find this user profile.</p>
-			</Card>
-		</PageShell>
-		</main>
-	);
+	if (!response.ok) {
+		return (
+			<main id="main-content">
+			<PageShell>
+				<ProfileUserNotFound />
+			</PageShell>
+			</main>
+		);
 	}
 
-	return (
-	<main id="main-content">
-		<PageShell>
-		<ProfileFriends
-			name={friend.displayName || friend.username || "Unknown user"}
-			username={friend.username}
-			image={friend.avatarUrl}
-			isOnline={friend.isOnline}
-		/>
-		</PageShell>
-	</main>
-	);
+  const user = await response.json();
+
+  return (
+    <main id="main-content">
+      <PageShell>
+        <ProfileFriends
+          name={user.username}
+          username={user.username}
+          image={user.image}
+          isOnline={user.isOnline}
+          bio={user.bio}
+          learningLevel={user.learningLevel}
+          friendCount={user.friendCount}
+          createdAt={user.createdAt}
+        />
+      </PageShell>
+    </main>
+  );
 }
 
 // ! i18n: move public profile fallback text, online/offline labels, avatar alt text, and temporary description into the i18n dictionary.

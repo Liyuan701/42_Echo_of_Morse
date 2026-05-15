@@ -13,6 +13,7 @@ const en = {
 		joined: "Joined",
 		connectedAccounts: "Connected accounts",
 		notConnected: "Not connected",
+		connected: "Connected",
 		comingSoon: "Coming soon",
 		username: "Username",
 		usernamePlaceholder: "Enter your username",
@@ -28,8 +29,10 @@ const en = {
 		failedToUpdateProfile: "Failed to update profile.",
 		updateProfileError: "Something went wrong while updating profile.",
 		online: "Online",
+		offline: "Offline",
 		defaultUser: "User",
 		noEmail: "No email",
+		userNotFound: "User not found",
 	},
 
 	register: {

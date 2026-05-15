@@ -13,6 +13,7 @@ const zh = {
 		joined: "注册时间",
 		connectedAccounts: "绑定账号",
 		notConnected: "未绑定",
+		connected: "已绑定",
 		comingSoon: "即将开放",
 		username: "用户名",
 		usernamePlaceholder: "请输入用户名",
@@ -28,8 +29,10 @@ const zh = {
 		failedToUpdateProfile: "更新个人资料失败。",
 		updateProfileError: "更新个人资料时出现错误。",
 		online: "在线",
+		offline: "离线",
 		defaultUser: "用户",
 		noEmail: "无邮箱",
+		userNotFound: "未找到用户",
 	},
 	register: {
 		title: "注册",
