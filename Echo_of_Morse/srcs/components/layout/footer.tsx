@@ -22,8 +22,8 @@ export default function Footer() {
             Terms of Service
           </Link>
 
-          {/* //! Liyuan: replace this static Login link with auth/session logic if needed */}
-          {/* //! Liyuan: if user is logged in, this could become Profile or Logout instead of Login */}
+          {/* //! yren: replace this static Login link with auth/session logic if needed */}
+          {/* //! yren: if user is logged in, this could become Profile or Logout instead of Login */}
           <Link href="/login" className={styles.link}>
             Login
           </Link>

@@ -46,6 +46,9 @@ ps:
 logs:
 	$(COMPOSE) logs -f
 
+seed:
+	$(COMPOSE) exec web npx prisma db seed
+
 # =========================
 # Dev reset
 # =========================

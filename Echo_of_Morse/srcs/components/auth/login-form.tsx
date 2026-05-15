@@ -122,7 +122,7 @@ export default function LoginForm() {
         </Button>
 
         {/* 
-           // ! Liyuan: replace these disabled placeholders with real OAuth login buttons.
+           // ! yren: replace these disabled placeholders with real OAuth login buttons.
            // ! They should call NextAuth signIn() once the provider config is ready.
         */}
 

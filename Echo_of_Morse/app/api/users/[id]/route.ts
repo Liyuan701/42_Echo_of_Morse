@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/server/prisma";
 import { authOptions } from "@/lib/auth";
+import { toUserDTO } from "@/lib/mappers/user";
 
 // GET /api/users/[id] - Get user information.
 export async function GET(
@@ -30,8 +31,19 @@ export async function GET(
         username: true,
         email: true,
         image: true,
+
+        bio: true,
+        learningLevel: true,
+
         isOnline: true,
         createdAt: true,
+        lastSeen: true,
+
+        accounts: {
+          select: {
+            provider: true,
+          },
+        },
       },
     });
 
@@ -42,7 +54,19 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(user);
+    // we can get a friend by receving and sending the invitation.
+    // so count the sender and receiver.
+    const friendCount = await prisma.friendship.count({
+      where: {
+        status: "ACCEPTED",
+        OR: [
+          { senderId: id },
+          { receiverId: id },
+        ],
+      },
+    });
+
+    return NextResponse.json(toUserDTO(user));
   } catch (error) {
     console.error(error);
 
@@ -97,7 +121,12 @@ export async function PUT(
         username: true,
         email: true,
         image: true,
+
+        bio: true,
+        learningLevel: true,
+
         isOnline: true,
+        createdAt: true,
       },
     });
 

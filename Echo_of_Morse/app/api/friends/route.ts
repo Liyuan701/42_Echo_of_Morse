@@ -6,62 +6,38 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/prisma";
+import { getFriends } from "@/lib/services/friends";
+
+
 
 // GET /api/friends?userId=123 - Get friend list of a user
 export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
 
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "userId is required" },
-        { status: 400 }
-      );
-    }
-
-    const friends = await prisma.friendship.findMany({
-      where: {
-        OR: [
-          { senderId: userId, status: "ACCEPTED" },
-          { receiverId: userId, status: "ACCEPTED" },
-        ],
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            username: true,
-            image: true,
-            isOnline: true,
-          },
-        },
-        receiver: {
-          select: {
-            id: true,
-            username: true,
-            image: true,
-            isOnline: true,
-          },
-        },
-      },
-    });
-
-    return NextResponse.json(friends);
-  } catch (error) {
-    console.error(error);
-
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get("userId");
+
+  if (!userId) {
+    return NextResponse.json({ error: "userId required" }, { status: 400 });
+  }
+
+  const friends = await getFriends(userId);
+
+  const formatted = friends.map((user) => ({
+    id: user.id,
+    username: user.username,
+    displayName: user.username,
+    avatarUrl: user.image,
+    isOnline: user.isOnline,
+    lastMessage: "",
+    lastMessageAt: "",
+  }));
+
+  return NextResponse.json(formatted);
 }
 
 // POST /api/friends - Send a friend request
