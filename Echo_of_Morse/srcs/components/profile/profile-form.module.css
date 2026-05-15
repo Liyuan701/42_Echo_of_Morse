@@ -1,22 +1,110 @@
+/* ========================================= global ========================================= */
+/* laisse un espace en bas */
 .profileHeader {
 	margin-bottom: 20px; /* laisse une espace */
 }
 
-/* hero... = principal...*/
-.heroCard {
-	display: grid; /* utilisation de la grille 网格 */
-	gap: 24px; /* espace entre les éléments */
-}
-
+/* pour avatar/username/email/edit boutton */
 .heroHeader {
 	display: flex;
 	align-items: center; /* centrer verticalement */
 	gap: 20px;
-	flex-wrap: wrap;
+	flex-wrap: wrap;	/* pour sauter une ligne losque ecran est petit*/
 }
 
-/* ========================================= avatar ========================================= */
-/* element avatar */
+/* pour des blocs dans cette carte*/
+.profileCard {
+  display: grid;  /* utilisation de la grille 网格 */
+  gap: 24px;		/* espace entre les éléments */
+}
+
+/* pour separer: Bio、Stats、Connected accounts */
+.profileSection {
+  display: grid;
+  gap: 12px;
+  padding-top: 20px; /*laisse des espace pour le cotenue et la ligne*/
+  border-top: 1px solid #e5e7eb; /*la ligne separee*/
+}
+
+/* titre du chaque bloc */
+.sectionTitle {
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* mode pour le text du biogranphie */
+.bio {
+  margin: 0;
+  color: #4b5563;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* pour les 4 petites cartes */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* mode pour les petite cartes */
+.statItem {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+}
+
+.editFields {
+  display: grid;
+  gap: 20px;
+}
+
+/* ========================================= bloc: connecter ========================================= */
+/* conteneur des info connecte */
+.connectedList {
+  display: grid;
+  gap: 10px;
+}
+
+/* mode pour chaque conteneur */
+.connectedRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /*coller sur deux cotes*/
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+}
+
+.connected {
+  color: #166534;
+}
+
+.notConnected {
+  color: #6b7280;
+}
+
+.providerName {
+	display: block;
+	color: #111827;
+	font-size: 16px;
+	font-weight: 800;
+}
+
+.providerDescription {
+	margin: 4px 0 0 0;
+	color: #6b7280;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+/* ========================================= bloc: avatar ========================================= */
+/* conteneur avatar */
 .avatarBlock {
 	display: grid;
 	gap: 10px;
@@ -61,7 +149,7 @@
 	display: none;			/* cache l'input de fichier, on utilise le label pour déclencher l'action de sélection de fichier */
 }
 
-/* ========================================= info user ========================================= */
+/* ========================================= bloc: info user ========================================= */
 /* informations sur l'utilisateur */
 .identity {
 	flex: 1 1 240px;			/* prendre 240px, s'il n'y a pas assez de l'espace disponible -> reduire */
@@ -104,22 +192,7 @@
 	overflow-wrap: anywhere; /* permet de casser les mots longs pour éviter le débordement */
 }
 
-/* ========================================= level/account/accuracy ========================================= */
-/* niveau et informations de connexion */
-.profileMeta {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr)); 	/* 3 colonnes de largeur égale, s'adaptant à l'espace disponible */
-	gap: 14px;											/* espace entre les colonnes et les lignes */
-}
-
-/* Appliquer le même style aux div enfants */
-.profileMeta > div {
-	padding: 16px;					/* espace intérieur pour que le contenu ne touche pas les bords */
-	border: 1px solid #e5e7eb;		/* bordure grise claire */
-	border-radius: 12px;			
-	background: #f9fafb;
-}
-
+/* ========================================= bloc: stats ========================================= */
 /* small labels */
 .metaLabel {
 	display: block;			/* L’élément prend toute la largeur disponible et passe à la ligne. */
@@ -164,11 +237,13 @@
 /* ========================================= mobile ========================================= */
 
 @media (max-width: 620px) {
-	/* 头像和文字保持横向，但缩小头像和标题 */
 	.heroHeader {
 		align-items: flex-start;
 	}
 
+	.statsGrid {
+		grid-template-columns: 1fr;
+	}
 	.avatar {
 		width: 72px;
 		height: 72px;
@@ -178,11 +253,6 @@
 
 	.title {
 		font-size: 32px;
-	}
-
-	/* 信息块改成单列，避免文字挤压 */
-	.profileMeta {
-		grid-template-columns: 1fr;
 	}
 
 	.editLink,

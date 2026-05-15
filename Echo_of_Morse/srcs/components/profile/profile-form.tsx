@@ -3,7 +3,7 @@ import { Button, Card } from "@/components/ui";
 import Link from "next/link";
 import styles from "./profile-form.module.css";
 import { useI18n } from "@/lib/i18n";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 export default function Profile() {
@@ -12,7 +12,7 @@ export default function Profile() {
 	const { data: session, status } = useSession();
 
 	// ===================== Données du profil =====================
-	//creer un type pour les données du profil pour les stocker
+	//creer un type pour les données du profil
 	type ProfileUser = {
 		id: string;
 		username: string;
@@ -20,12 +20,12 @@ export default function Profile() {
 		image: string | null;
 		isOnline: boolean;
 	};
-	//setprofileUser avec un type ProfileUser ou null au début
+	//setprofileUser avec un type ProfileUser/null au début
 	//ici useState<type de la variable>(valeur initiale)
 	const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
 
 	// ===================== Charger les données du profil =====================
-	//useEffect pour charger les données du profil quand le composant est monté
+	//useEffect pour charger les données du profil
 	useEffect(() => {
 		//récupérer l'info depuis la session
 
@@ -52,7 +52,7 @@ export default function Profile() {
 			}
 		}
 		loadProfile();
-}, [session, status]);//si session ou status change, on recharge le profil
+	}, [session, status]);//si session ou status change, on recharge le profil
 
 	// ===================== cas: n'a encore connecté ou charge =====================
 	if (status === "loading") {
@@ -78,23 +78,23 @@ export default function Profile() {
 		image: profileUser?.image ?? session?.user?.image,
 		status: t.online,
 		//! besoin de données réelles pour le profil
-		level: "Intermediate",
-		authProvider: "NextAuth",
+		bio: "hahahahaha.",
 		accuracy: "84%",
+		learningLevel: "Level 4",
+		friendsCount: "12",
+		joinedAt: "Jan 2026",
+		googleLinked: false,
+		fortyTwoLinked: true,
 	};
 
 	return (
-		<section className={styles.profileHeader}>
-			<Card className={styles.heroCard}>
+			<Card className={styles.profileCard}>
 				<div className={styles.heroHeader}>
-					<div className={styles.avatarBlock}>
 			{/* =====================  avatar ===================== */}
+					<div className={styles.avatarBlock}>
 						<div className={styles.avatar}>
 							{user.image ? (
-								<img
-									src={user.image}
-									className={styles.avatarImage}
-								/>
+								<img src={user.image} className={styles.avatarImage}/>
 							) : (
 								user.name.charAt(0) /* affiche la première lettre du nom */
 							)}
@@ -116,24 +116,66 @@ export default function Profile() {
 					</Link>
 					</div>
 
-			{/* =====================  meta pour profil ===================== */}
-					<div className={styles.profileMeta}>
-					<div>
-						<span className={styles.metaLabel}>{t.level}</span>
-						<strong className={styles.metaValue}>{user.level}</strong>
-					</div>
+			{/* =====================  bio ===================== */}
+					<section className={styles.profileSection}>
+						<h2 className={styles.sectionTitle}>{t.bio}</h2>
+						<p className={styles.bio}>{user.bio}</p>
+					</section>
+			{/* =====================  stats pour profil ===================== */}
+				<section className={styles.profileSection}>
+					<h2 className={styles.sectionTitle}>{t.stats}</h2>
 
-					<div>
-						<span className={styles.metaLabel}>{t.account}</span>
-						<strong className={styles.metaValue}>{user.authProvider}</strong>
-					</div>
-
-					<div>
+					<div className={styles.statsGrid}>
+					<div className={styles.statItem}>
 						<span className={styles.metaLabel}>{t.accuracy}</span>
 						<strong className={styles.metaValue}>{user.accuracy}</strong>
 					</div>
+
+					<div className={styles.statItem}>
+						<span className={styles.metaLabel}>{t.learningLevel}</span>
+						<strong className={styles.metaValue}>{user.learningLevel}</strong>
+					</div>
+
+					<div className={styles.statItem}>
+						<span className={styles.metaLabel}>{t.friends}</span>
+						<strong className={styles.metaValue}>{user.friendsCount}</strong>
+					</div>
+
+					<div className={styles.statItem}>
+						<span className={styles.metaLabel}>{t.joined}</span>
+						<strong className={styles.metaValue}>{user.joinedAt}</strong>
+					</div>
+					</div>
+				</section>
+		
+			{/* ===================== comptes provi ===================== */}
+				<section className={styles.profileSection}>
+				<h2 className={styles.sectionTitle}>{t.connectedAccounts}</h2>
+
+				<div className={styles.connectedList}>
+					<div className={styles.connectedRow}>
+					<div>
+						<span className={styles.providerName}>Google</span>
+						<p className={styles.providerDescription}>{t.notConnected}</p>
+					</div>
+
+					<Button type="button" variant="secondary" disabled>
+						Coming soon
+					</Button>
+					</div>
+
+					<div className={styles.connectedRow}>
+					<div>
+						<span className={styles.providerName}>42</span>
+						<p className={styles.providerDescription}>{t.notConnected}</p>
+					</div>
+
+					<Button type="button" variant="secondary" disabled>
+						Coming soon
+					</Button>
+					</div>
 				</div>
+				</section>
 			</Card>
-		</section>
 	);
 }

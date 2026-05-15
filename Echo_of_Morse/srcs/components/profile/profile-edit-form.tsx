@@ -6,8 +6,11 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button, Card, Input } from "@/components/ui";
 import styles from "./profile-form.module.css";
+import { useI18n } from "@/lib/i18n";
 
 export default function ProfileEditForm() {
+	const { dictionary } = useI18n();
+	const t = dictionary.profile;
 	const { data: session, status } = useSession();
 	const router = useRouter();
 	 //verifer que session.user est un type avec un id, puis recuperer id
@@ -18,19 +21,22 @@ export default function ProfileEditForm() {
 		username: string;
 		email: string | null;
 		image: string | null;
+		bio: string | null;
 		isOnline: boolean;
 	};
 
 	const [formData, setFormData] = useState({
 		username: "",
 		image: "",
+		bio: "",
 	});
 	const [error, setError] = useState("");
 	const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	// ===================== Charger le profil réel ===================== 
+	// ========================================== Charger le profil réel ========================================== 
 	// quand la page s'ouvre, on utilise session.user.id pour récupérer le profil à jour.
+	//pour les info dans input
 	useEffect(() => {
 
 		if (status !== "authenticated" || !userId) {
@@ -48,7 +54,7 @@ export default function ProfileEditForm() {
 					const data = (await response.json()) as ProfileUser | { error?: string };
 
 					if (!response.ok) {
-						setError("Failed to load profile.");
+						setError(t.failedToLoadProfile);
 						return;
 					}
 
@@ -57,10 +63,11 @@ export default function ProfileEditForm() {
 					setFormData({
 						username: user.username ?? "",
 						image: user.image ?? "",
+						bio: user.bio ?? "",
 					});
 			} catch (error) {
 				console.error(error);
-				setError("Something went wrong while loading profile.");
+				setError(t.loadProfileError);
 			// finally = peu importe le résultat du try/catch, on arrête le message de chargement
 			} finally {
 				setIsLoadingProfile(false);
@@ -74,7 +81,7 @@ export default function ProfileEditForm() {
 	if (status === "loading") {
 		return (
 		<Card>
-			<p>Loading profile...</p>
+			<p>{t.loading}</p>
 		</Card>
 		);
 	}
@@ -82,12 +89,12 @@ export default function ProfileEditForm() {
 	if (status === "unauthenticated") {
 		return (
 		<Card>
-			<p>Please log in to edit your profile.</p>
+			<p>{t.editLoginRequired}</p>
 		</Card>
 		);
 	}
 
-	// =====================  modification  =====================
+	// ==========================================  modification  ==========================================
 
 	//  -------------- Modifier les champs  --------------
 	//quand l'utilisateur écrit, on modifie seulement le champ correspondant
@@ -99,7 +106,7 @@ export default function ProfileEditForm() {
 			// ...oldFormData = on copie toutes les valeurs anciennes, et on modifie seulement celle qui a changé
 			// [field]: value = on modifie seulement le champ qui a changé, on met [] car field est une variable
 			// comme js lit de gauche à droite, il va d'abord copier les anciennes valeurs, puis écraser la valeur du champ modifié
-	function updateField(field: "username" | "image", value: string) {
+	function updateField(field: "username" | "image" | "bio", value: string) {
 		setFormData((oldFormData) => ({ ...oldFormData, [field]: value,}));
 	}
 
@@ -111,37 +118,37 @@ export default function ProfileEditForm() {
 		// event.target.files est une liste de fichiers sélectionnés, on prend le premier [0]
 		const file = event.target.files?.[0];
 
-    if (!file) {
-    	return;
-    }
-	//vérifier que c'est un fichier image
-	//file.type = un string, on vefifie que ça commence par "image/"
-    if (!file.type.startsWith("image/")) {
-		setError("Please choose an image file.");
-		return;
-    }
+		if (!file) {
+			return;
+		}
+		//vérifier que c'est un fichier image
+		//file.type = un string, on vefifie que ça commence par "image/"
+		if (!file.type.startsWith("image/")) {
+			setError(t.chooseImageFile);
+			return;
+		}
 
-	//FileReader = outil qui permet de lire le contenu d'un fichier
-    const reader = new FileReader();
+		//FileReader = outil qui permet de lire le contenu d'un fichier
+		const reader = new FileReader();
 
-	//reader.onload = lorsque on a reussi a lire ce fichier
-	//() => {...} on appelle la fonction quand l'événement se déclenche
-    reader.onload = () => {
-		//string() = convertir en string
-		//reader.result = le contenu du fichier, qui est une string en base64
-    	updateField("image", String(reader.result));
-    };
+		//reader.onload = lorsque on a reussi a lire ce fichier
+		//() => {...} on appelle la fonction quand l'événement se déclenche
+		reader.onload = () => {
+			//string() = convertir en string
+			//reader.result = le contenu du fichier, qui est une string en base64
+			updateField("image", String(reader.result));
+		};
 
-	//reader.onerror = lorsque on a une erreur pendant la lecture du fichier
-    reader.onerror = () => {
-    	setError("Unable to read this image.");
-    };
+		//reader.onerror = lorsque on a une erreur pendant la lecture du fichier
+		reader.onerror = () => {
+			setError(t.readImageError);
+		};
 
-	//lire le fichier en base64, et déclencher les événements onload ou onerror
-    reader.readAsDataURL(file);
+		//lire le fichier en base64, et déclencher les événements onload ou onerror
+		reader.readAsDataURL(file);
 	}
 
-	// ===================== Enregistrer le profil =====================
+	// ========================================== Enregistrer le profil ==========================================
 	//au clic sur save, on envoie username et image à l'API PUT.
 	async function handleSubmit(event:  FormEvent<HTMLFormElement>) {
 		// empêcher le comportement(recharger la page) par défaut du navigateur
@@ -149,7 +156,7 @@ export default function ProfileEditForm() {
 		setError("");
 
 		if (!userId) {
-			setError("Missing user id.");
+			setError(t.missingUserId);
 			return;
 		}
 
@@ -165,13 +172,14 @@ export default function ProfileEditForm() {
 				body: JSON.stringify({
 				username: formData.username,
 				image: formData.image,
+				bio: formData.bio,
 			}),
 		});
 
 		const data = await response.json();
 
 		if (!response.ok) {
-			setError(data.error ?? "Failed to update profile.");
+			setError(data.error ?? t.failedToUpdateProfile);
 			return;
 		}
 
@@ -179,7 +187,7 @@ export default function ProfileEditForm() {
 		router.refresh();
 	} catch (error) {
 		console.error(error);
-		setError("Something went wrong while updating profile.");
+		setError(t.updateProfileError);
 	} finally {
 		setIsSubmitting(false);
 	}
@@ -187,9 +195,9 @@ export default function ProfileEditForm() {
 
   return (
     <section className={styles.profileHeader}>
-      <Card className={styles.heroCard}>
+      <Card className={styles.profileCard}>
         <form className={styles.editForm} onSubmit={handleSubmit}>
-          {/* ===================== avatar / avatar ===================== */}
+          {/* ========================================== avatar / avatar ========================================== */}
           <div className={styles.heroHeader}>
             <div className={styles.avatarBlock}>
               <div className={styles.avatar}>
@@ -205,7 +213,7 @@ export default function ProfileEditForm() {
               </div>
 
               <label className={styles.fileButton}>
-                Change avatar
+                {t.changeAvatar}
                 <input
                   type="file"
                   accept="image/*"
@@ -215,45 +223,37 @@ export default function ProfileEditForm() {
               </label>
             </div>
 
-            {/* ===================== informations éditables ===================== */}
+            {/* ========================================== informations éditables ========================================== */}
             <div className={styles.identity}>
-              <p className={styles.status}>Online</p>
-
-              <Input
-                label="Username"
-                type="text"
-                value={formData.username}
-                onChange={(event) => updateField("username", event.target.value)}
-                placeholder="Enter your username"
-              />
+              <p className={styles.status}>{t.online}</p>
+ 				<div className={styles.editFields}>
+					<Input
+						label={t.username}
+						type="text"
+						value={formData.username}
+						onChange={(event) => updateField("username", event.target.value)}
+						placeholder={t.usernamePlaceholder}
+					/>
+					<Input
+						label={t.bio}
+						type="text"
+						value={formData.bio}
+						onChange={(event) => updateField("bio", event.target.value)}
+						placeholder={t.bioPlaceholder}
+					/>
+			  </div>
             </div>
           </div>
 
-          {/* ===================== informations non éditables ===================== */}
-          <div className={styles.profileMeta}>
-            <div>
-              <span className={styles.metaLabel}>Level</span>
-              <strong className={styles.metaValue}>Intermediate</strong>
-            </div>
+          {/* ========================================== informations non éditables ========================================== */}
 
-            <div>
-              <span className={styles.metaLabel}>Account</span>
-              <strong className={styles.metaValue}>NextAuth</strong>
-            </div>
-
-            <div>
-              <span className={styles.metaLabel}>Accuracy</span>
-              <strong className={styles.metaValue}>84%</strong>
-            </div>
-          </div>
-
-          {isLoadingProfile ? <p>Loading current profile...</p> : null}
+          {isLoadingProfile ? <p>{t.loadingCurrentProfile}</p> : null}
           {error ? <p className={styles.errorText}>{error}</p> : null}
 
-          {/* ===================== bouton sauvegarder ===================== */}
+          {/* ========================================== bouton sauvegarder ========================================== */}
           <div className={styles.saveActions}>
             <Button type="submit" disabled={isSubmitting || isLoadingProfile}>
-              {isSubmitting ? "Saving..." : "Save changes"}
+              {isSubmitting ? t.saving : t.saveChanges}
             </Button>
           </div>
         </form>
