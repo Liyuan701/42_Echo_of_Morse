@@ -1,5 +1,6 @@
 # Configuration Docker Compose pour le projet Transcendence
 # Architecture: Navigateur -> waf:443 -> web:3000 -> db:5432
+#                             waf:443 -> ws:3001  (WebSocket via /socket.io/)
 #               Secrets:     vault-init -> vault -> web
 
 services:
@@ -21,8 +22,14 @@ services:
       - PARANOIA=1
       - ANOMALY_INBOUND=5
       - ANOMALY_OUTBOUND=4
+    volumes:
+      # Monte la config WebSocket dans nginx du WAF.
+      # nginx inclut automatiquement tous les .conf de /etc/nginx/conf.d/
+      # Ce fichier ajoute le routage /socket.io/ → ws:3001
+      - ./docker/nginx/websocket.conf:/etc/nginx/conf.d/websocket.conf
     depends_on:
       - web
+      - ws
     networks:
       - transcendence_network
 
@@ -145,10 +152,21 @@ services:
     networks:
       - transcendence_network
 
+  # ============================================================
+  # Serveur WebSocket (Socket.IO) — interne uniquement
+  # Le trafic WebSocket entre par le WAF (/socket.io/) → ws:3001
+  # ws appelle web:3000/api/users/status pour mettre à jour isOnline en DB
+  # ============================================================
   ws:
     build: ./ws-server
+    container_name: transcendence_ws
+    restart: always
     ports:
-      - "3001:3001"
+      - "3001:3001"   # utile en développement — à commenter en production
+    depends_on:
+      - web
+    networks:
+      - transcendence_network
 
 # Volume nommé pour persister les données PostgreSQL
 volumes:
