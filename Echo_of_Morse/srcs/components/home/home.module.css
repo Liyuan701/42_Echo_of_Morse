@@ -1,8 +1,20 @@
 .homeLayout {
   display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   align-items: stretch;
+}
+
+/* 
+  ! auth/layout:
+  When the user is logged out, there is no .leftColumn,
+  so the home page keeps a clean one-column public layout.
+
+  When the user is logged in, AuthenticatedOnlineFriends renders .leftColumn,
+  and the home page becomes a two-column personalized layout.
+*/
+.homeLayout:has(.leftColumn) {
+  grid-template-columns: 340px minmax(0, 1fr);
 }
 
 .leftColumn {
@@ -47,7 +59,8 @@
 }
 
 @media (max-width: 900px) {
-  .homeLayout {
+  .homeLayout,
+  .homeLayout:has(.leftColumn) {
     grid-template-columns: 1fr;
   }
 
