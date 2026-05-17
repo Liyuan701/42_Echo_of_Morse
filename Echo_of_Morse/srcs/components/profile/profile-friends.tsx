@@ -3,27 +3,27 @@ import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui";
 import styles from "./profile-form.module.css";
 
-type ProfileFriends = {
-  name: string;
-  username: string;
-  image?: string | null;
-  isOnline: boolean;
-  bio?: string | null;
-  learningLevel?: number;
-  friendCount?: number;
-  createdAt?: string;
+type dataProfileFriends = {
+	name: string;
+	username: string;
+	image?: string | null;
+	bio?: string | null;
+	learningLevel?: number;
+	friendCount?: number;
+	accuracy?: number;
+	createdAt?: Date;
 };
 
 export default function ProfileFriends({
 	name,
 	username,
 	image,
-	isOnline,
 	bio,
 	learningLevel,
 	friendCount,
+	accuracy,
 	createdAt,
-}: ProfileFriends) {
+}: dataProfileFriends) {
 	const { dictionary } = useI18n();
 	const t = dictionary.profile;
 	const avatarLetter = name.charAt(0).toUpperCase();
@@ -32,12 +32,11 @@ export default function ProfileFriends({
 		name,
 		username,
 		image,
-		status: isOnline ? t.online : t.offline,
 		bio: bio ?? "",
-		accuracy: "84%",//! besoin de données réelles pour le profil
+		accuracy: `${accuracy ?? 0}%`,
 		learningLevel: `Level ${learningLevel ?? 1}`,
 		friendsCount: String(friendCount ?? 0),
-		joinedAt: createdAt ? new Date(createdAt).toLocaleDateString() : "-",
+		joinedAt: createdAt ? createdAt.toLocaleDateString() : "-",
 	};
 
   return (
@@ -59,7 +58,6 @@ export default function ProfileFriends({
         </div>
 		{/* ===================== info user pour profil ===================== */}
         <div className={styles.identity}>
-          <p className={styles.status}>{user.status}</p>
           <h1 className={styles.title}>{user.name}</h1>
           <p className={styles.email}>@{user.username}</p>
         </div>

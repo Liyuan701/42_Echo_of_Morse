@@ -1,30 +1,51 @@
 import PageShell from "@/components/layout/page-shell";
 import ProfileFriends from "@/components/profile/profile-friends";
 import ProfileUserNotFound from "@/components/profile/profile-friends-not-found";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/server/prisma";
 
 type UserProfilePageProps = {
-  params: {
-    userId: string;
-  };
+	params: {
+		userId: string;
+	};
 };
 
 export default async function UserProfilePage({ params }: UserProfilePageProps) {
-  const response = await fetch(
-    `${process.env.NEXTAUTH_URL}/api/users/${params.userId}`,
-    { cache: "no-store" }
-  );
+	const session = await getServerSession(authOptions);
 
-	if (!response.ok) {
+	if (!session) {
 		return (
 			<main id="main-content">
-			<PageShell>
-				<ProfileUserNotFound />
-			</PageShell>
+				<PageShell>
+					<ProfileUserNotFound />
+				</PageShell>
 			</main>
 		);
 	}
 
-  const user = await response.json();
+	const user = await prisma.user.findUnique({
+		where: { id: params.userId },
+		select: {
+			id: true,
+			username: true,
+			image: true,
+			bio: true,
+			learningLevel: true,
+			isOnline: true,
+			createdAt: true,
+		},
+	});
+
+	if (!user) {
+		return (
+			<main id="main-content">
+				<PageShell>
+					<ProfileUserNotFound />
+				</PageShell>
+			</main>
+		);
+	}
 
   return (
     <main id="main-content">
@@ -36,7 +57,9 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
           isOnline={user.isOnline}
           bio={user.bio}
           learningLevel={user.learningLevel}
-          friendCount={user.friendCount}
+		  //! besoin de données réelles pour le profil
+        //friendCount={user.friendCount} 
+		//accuracy={user.accuracy}
           createdAt={user.createdAt}
         />
       </PageShell>
