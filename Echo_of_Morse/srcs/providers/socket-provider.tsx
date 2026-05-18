@@ -85,7 +85,7 @@ export function SocketProvider({
 
   useEffect(() => {
     const socketInstance = io(WS_URL, {
-      transports: ["websocket"],
+      transports: ["polling", "websocket"],
     });
 
     socketInstance.on("connect", () => {
