@@ -11,6 +11,29 @@
 // });
 
 
+//-------------------------------------------------------------------------------------
+
+// const { Server } = require("socket.io");
+
+// const io = new Server(3001, {
+//   cors: { origin: "*" }
+// });
+
+// io.on("connection", (socket) => {
+//   console.log("User connected");
+
+//   socket.on("send-morse", (data) => {
+//     socket.broadcast.emit("receive-morse", data);
+//   });
+
+//   socket.on("disconnect", () => {
+//     console.log("User disconnected");
+//   });
+// });
+
+
+//----------------------------------------------------------------------
+
 const { Server } = require("socket.io");
 
 // Init server
@@ -19,6 +42,10 @@ const io = new Server(3001, {
   pingInterval: 25000,
   pingTimeout: 20000,
 });
+
+// io.on("connection", (socket) => {
+//   console.log("✅ Client connected:", socket.id);
+// });
 
 // API calls
 async function setUserOnline(userId) {
@@ -62,10 +89,10 @@ async function cleanupUsers() {
 }
 
 // Socket handlers
-function handleConnection(socket) {
+async function handleConnection(socket) {
   const userId = socket.handshake.auth.userId;
   if (userId) {
-    setUserOnline(userId);
+    await setUserOnline(userId);
   }
 
   socket.on("send-morse", (data) => {
@@ -84,8 +111,20 @@ function handleDisconnect(userId) {
 }
 
 // Start logic
-io.on("connection", handleConnection);
+// io.on("connection", handleConnection);
+
+io.on("connection", (socket) => {
+  console.log("✅ CLIENT CONNECTED:", socket.id);
+
+  console.log("Current count:", io.engine.clientsCount);
+
+  io.emit("users-count", io.engine.clientsCount);
+
+  socket.on("disconnect", () => {
+    console.log("❌ CLIENT DISCONNECTED");
+
+    io.emit("users-count", io.engine.clientsCount);
+  });
+});
+
 setInterval(cleanupUsers, 60000);
-
-
-

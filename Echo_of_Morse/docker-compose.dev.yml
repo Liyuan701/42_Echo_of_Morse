@@ -44,6 +44,8 @@ services:
     build: ./ws-server
     ports:
       - "3001:3001"
+    networks:
+    - transcendence_network
 
 volumes:
   postgres_data_dev:

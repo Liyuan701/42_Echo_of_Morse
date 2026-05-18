@@ -30,6 +30,8 @@ import "./globals.css"
 import { I18nProvider } from "@/lib/i18n";
 import AuthSessionProvider from "@/components/auth/session-provider";
 
+import { SocketProvider } from "@/providers/socket-provider";
+
 export const metadata = {
   title: "Echoes of Morse",
   description: "Learn, communicate, and compete through Morse code.",
@@ -48,7 +50,9 @@ export default function RootLayout({
 				<a href="#main-content" className="skip-link">
 					Skip to main content
 				</a>
-				{children}
+        <SocketProvider>
+				  {children}
+        </SocketProvider>
 			</I18nProvider>
 		</AuthSessionProvider>
       </body>
