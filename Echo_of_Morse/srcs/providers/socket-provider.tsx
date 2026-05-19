@@ -56,97 +56,21 @@
 //---------------------------------------------------------------------------
 
 
-"use client";
-
-import { createContext, useContext, useEffect, useState } from "react";
-
-import { io, Socket } from "socket.io-client";
-
-
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
-
-type SocketContextType = {
-  socket: Socket | null;
-  isConnected: boolean;
-};
-
-const SocketContext = createContext<SocketContextType>({
-  socket: null,
-  isConnected: false,
-});
-
-export function SocketProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-
-  useEffect(() => {
-    const socketInstance = io(WS_URL, {
-      transports: ["polling", "websocket"],
-    });
-
-    socketInstance.on("connect", () => {
-      console.log("✅ Socket connected");
-
-      setIsConnected(true);
-    });
-
-    socketInstance.on("disconnect", () => {
-      console.log("❌ Socket disconnected");
-
-      setIsConnected(false);
-    });
-
-    setSocket(socketInstance);
-
-    return () => {
-      socketInstance.disconnect();
-    };
-  }, []);
-
-  return (
-    <SocketContext.Provider
-      value={{
-        socket,
-        isConnected,
-      }}
-    >
-      {children}
-    </SocketContext.Provider>
-  );
-}
-
-export function useSocket() {
-  return useContext(SocketContext);
-}
-
-
-
-
-
-//------------------------------------------------------------------
-
 // "use client";
 
-// import {
-//   createContext,
-//   useContext,
-//   useEffect,
-//   useState,
-// } from "react";
+// import { createContext, useContext, useEffect, useState } from "react";
 
-// import { useSession } from "next-auth/react";
+// import { io, Socket } from "socket.io-client";
 
-// import {
-//   createSocket,
-//   disconnectSocket,
-//   getSocket,
-// } from "@/lib/socket";
 
-// const SocketContext = createContext({
+// const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
+
+// type SocketContextType = {
+//   socket: Socket | null;
+//   isConnected: boolean;
+// };
+
+// const SocketContext = createContext<SocketContextType>({
 //   socket: null,
 //   isConnected: false,
 // });
@@ -156,42 +80,37 @@ export function useSocket() {
 // }: {
 //   children: React.ReactNode;
 // }) {
-//   const { data: session } = useSession();
-
+//   const [socket, setSocket] = useState<Socket | null>(null);
 //   const [isConnected, setIsConnected] = useState(false);
 
 //   useEffect(() => {
-//     const userId = session?.user?.id;
+//     const socketInstance = io(WS_URL, {
+//       transports: ["polling", "websocket"],
+//     });
 
-//     if (!userId) return;
+//     socketInstance.on("connect", () => {
+//       console.log("✅ Socket connected");
 
-//     const socket = createSocket(userId);
-
-//     const onConnect = () => {
-//       console.log("✅ connected");
 //       setIsConnected(true);
-//     };
+//     });
 
-//     const onDisconnect = () => {
-//       console.log("❌ disconnected");
+//     socketInstance.on("disconnect", () => {
+//       console.log("❌ Socket disconnected");
+
 //       setIsConnected(false);
-//     };
+//     });
 
-//     socket.on("connect", onConnect);
-//     socket.on("disconnect", onDisconnect);
+//     setSocket(socketInstance);
 
 //     return () => {
-//       socket.off("connect", onConnect);
-//       socket.off("disconnect", onDisconnect);
-
-//       disconnectSocket();
+//       socketInstance.disconnect();
 //     };
-//   }, [session]);
+//   }, []);
 
 //   return (
 //     <SocketContext.Provider
 //       value={{
-//         socket: getSocket(),
+//         socket,
 //         isConnected,
 //       }}
 //     >
@@ -203,3 +122,70 @@ export function useSocket() {
 // export function useSocket() {
 //   return useContext(SocketContext);
 // }
+
+
+
+
+
+//------------------------------------------------------------------
+
+"use client";
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+import { getSocket } from "@/lib/socket";
+
+const SocketContext = createContext({
+  socket: null,
+  isConnected: false,
+});
+
+export function SocketProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    const onConnect = () => {
+      console.log("✅ connected");
+      setIsConnected(true);
+    };
+
+    const onDisconnect = () => {
+      console.log("❌ disconnected");
+      setIsConnected(false);
+    };
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
+  }, []);
+
+  return (
+    <SocketContext.Provider
+      value={{
+        socket: getSocket(),
+        isConnected,
+      }}
+    >
+      {children}
+    </SocketContext.Provider>
+  );
+}
+
+export function useSocket() {
+  return useContext(SocketContext);
+}
