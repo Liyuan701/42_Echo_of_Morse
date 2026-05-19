@@ -1,38 +1,43 @@
 const fr = {
-		profile: {
+	profile: {
+		//------------------ phrases ------------------
 		loading: "Chargement du profil...",
 		loginRequired: "Veuillez vous connecter pour voir votre profil.",
 		editLoginRequired: "Veuillez vous connecter pour modifier votre profil.",
+		loadingCurrentProfile: "Chargement du profil actuel...",
+		saving: "Enregistrement...",
+		failedToLoadProfile: "Impossible de charger le profil.",
+		loadProfileError: "Une erreur est survenue pendant le chargement du profil.",
+		missingUserId: "Identifiant utilisateur manquant.",
+		//------------------ mots ------------------
 		changeAvatar: "Changer d'avatar",
 		editProfile: "Modifier le profil",
+		defaultUser: "Utilisateur",
+		//------- informations personnelles -------
 		bio: "Bio",
 		stats: "Statistiques",
 		accuracy: "Précision",
 		learningLevel: "Niveau d'apprentissage",
+		levelPrefix: "Niveau",
 		friends: "Amis",
 		joined: "Inscription",
-		connectedAccounts: "Comptes connectés",
-		notConnected: "Non connecté",
-		connected: "Connecté",
-		comingSoon: "Bientôt disponible",
+		connectedAccounts: "Comptes liés",
+		notConnected: "Non lié",
+		connected: "Lié",
+		bindGoogle: "Lier Google",
+		bindFortyTwo: "Lier 42",
+		noEmail: "Aucun email",
+		//------------------ profil amis ------------------
+		userNotFound: "Utilisateur introuvable",
+		//------------------ modification du profil ------------------
 		username: "Nom d'utilisateur",
 		usernamePlaceholder: "Entrez votre nom d'utilisateur",
 		bioPlaceholder: "Parlez un peu de vous",
-		loadingCurrentProfile: "Chargement du profil actuel...",
-		saving: "Enregistrement...",
 		saveChanges: "Enregistrer les modifications",
-		failedToLoadProfile: "Impossible de charger le profil.",
-		loadProfileError: "Une erreur est survenue pendant le chargement du profil.",
-		missingUserId: "Identifiant utilisateur manquant.",
 		chooseImageFile: "Veuillez choisir un fichier image.",
 		readImageError: "Impossible de lire cette image.",
 		failedToUpdateProfile: "Impossible de mettre à jour le profil.",
 		updateProfileError: "Une erreur est survenue pendant la mise à jour du profil.",
-		online: "En ligne",
-		offline: "Hors ligne",
-		defaultUser: "Utilisateur",
-		noEmail: "Aucun email",
-		userNotFound: "Utilisateur introuvable",
 	},
 
 	register: {

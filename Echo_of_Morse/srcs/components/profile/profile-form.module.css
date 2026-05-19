@@ -81,14 +81,6 @@
   background: #f9fafb;
 }
 
-.connected {
-  color: #166534;
-}
-
-.notConnected {
-  color: #6b7280;
-}
-
 .providerName {
 	display: block;
 	color: #111827;
@@ -154,26 +146,6 @@
 .identity {
 	flex: 1 1 240px;			/* prendre 240px, s'il n'y a pas assez de l'espace disponible -> reduire */
 	min-width: 0;				/* permet au texte de se réduire et d’utiliser l’espace disponible */
-}
-
-/* statut en ligne */
-.status {
-	display: inline-flex;		/* Les éléments à l’intérieur sont alignés horizontalement */
-	align-items: center;		/* centre verticalement le point et le texte */
-	gap: 8px;					/* espace entre le point et le texte */
-	margin: 0 0 10px 0;			/* espace en bas pour séparer du titre */
-	color: #166534;			/* couleur du texte pour le statut en ligne */
-	font-size: 14px;
-	font-weight: 700;
-}
-
-/* le point vert statut */
-.status::before {
-	content: "";
-	width: 8px;
-	height: 8px;
-	border-radius: 999px; 		/* rend le point parfaitement rond */
-	background: #16a34a;
 }
 
 /* titre d'utilisateur */
