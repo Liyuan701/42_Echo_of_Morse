@@ -1,13 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Card, Button } from "@/components/ui";
-import { mockFriends } from "@/components/chat/faux-chat-data";
 import styles from "./online-friend.module.css";
 
+type ApiFriendship = {
+  id: number;
+  sender: {
+    id: string;
+    username: string;
+    image: string | null;
+    isOnline: boolean;
+  };
+  receiver: {
+    id: string;
+    username: string;
+    image: string | null;
+    isOnline: boolean;
+  };
+};
+
+type OnlineFriend = {
+  id: string;
+  username: string;
+  image: string | null;
+  isOnline: boolean;
+};
+
 export default function OnlineFriendsPreview() {
-  const onlineFriends = mockFriends.filter((friend) => friend.isOnline);
+  const { data: session, status } = useSession();
+
+  const currentUserId = (session?.user as { id?: string } | undefined)?.id;
+
+  const [onlineFriends, setOnlineFriends] = useState<OnlineFriend[]>([]);
+  const [isLoadingFriends, setIsLoadingFriends] = useState(false);
 
   // ! game: temporary local state for home page game invitations.
   // ! This only controls the "Pending" state on the home page.
@@ -16,6 +44,51 @@ export default function OnlineFriendsPreview() {
   const [pendingGameInviteFriendIds, setPendingGameInviteFriendIds] = useState<
     string[]
   >([]);
+
+  useEffect(() => {
+    // ! auth: if the user is not logged in, this public home page must not show any private friend data.
+    // ! This prevents the "Online friends" panel from displaying mock or unrelated users before login.
+    if (status !== "authenticated" || !currentUserId) {
+      setOnlineFriends([]);
+      return;
+    }
+
+    async function fetchOnlineFriends() {
+      try {
+        setIsLoadingFriends(true);
+
+        // ! Liyuan : replace this endpoint if the final friends API uses another route.
+        // ! Expected response shape: an array of friendships containing sender and receiver.
+        // ! The current user can be either sender or receiver, so the UI must extract the opposite user.
+        const response = await fetch(`/api/friends?userId=${currentUserId}`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch friends.");
+        }
+
+        const friendships = (await response.json()) as ApiFriendship[];
+
+        const friends = friendships
+          .map((friendship) => {
+            if (friendship.sender.id === currentUserId) {
+              return friendship.receiver;
+            }
+
+            return friendship.sender;
+          })
+          .filter((friend) => friend.isOnline);
+
+        setOnlineFriends(friends);
+      } catch (error) {
+        console.error(error);
+        setOnlineFriends([]);
+      } finally {
+        setIsLoadingFriends(false);
+      }
+    }
+
+    fetchOnlineFriends();
+  }, [status, currentUserId]);
 
   function handleInviteFriendToGame(friendId: string, displayName: string) {
     const alreadyPending = pendingGameInviteFriendIds.includes(friendId);
@@ -39,6 +112,19 @@ export default function OnlineFriendsPreview() {
     );
   }
 
+  if (status === "loading") {
+    return (
+      <Card className={styles.card}>
+        <h2 className={styles.title}>Online friends</h2>
+        <p className={styles.description}>Checking your session...</p>
+      </Card>
+    );
+  }
+
+  if (status !== "authenticated") {
+    return null;
+  }
+
   return (
     <Card className={styles.card}>
       <div className={styles.header}>
@@ -50,15 +136,16 @@ export default function OnlineFriendsPreview() {
         </div>
       </div>
 
-      {/* //! yren: replace mock online friends with real current user's online friends from auth/database */}
-      {onlineFriends.length > 0 ? (
+      {/* //! Liyuan: replace mock online friends with real current user's online friends from auth/database */}
+      {/* //! current version: this component now uses session.user.id and /api/friends instead of mockFriends */}
+      {isLoadingFriends ? (
+        <p className={styles.empty}>Loading online friends...</p>
+      ) : onlineFriends.length > 0 ? (
         <ul className={styles.list}>
           {onlineFriends.map((friend) => {
             const profileHref = `/users/${friend.id}`;
-            const displayName =
-              friend.displayName || friend.username || "Unknown user";
-            const avatarLetter =
-              friend.avatarInitial || displayName.charAt(0).toUpperCase();
+            const displayName = friend.username || "Unknown user";
+            const avatarLetter = displayName.charAt(0).toUpperCase();
 
             const isGameInvitePending = pendingGameInviteFriendIds.includes(
               friend.id
@@ -71,10 +158,10 @@ export default function OnlineFriendsPreview() {
             return (
               <li key={friend.id} className={styles.item}>
                 <Link href={profileHref} className={styles.profileLink}>
-                  {friend.avatarUrl ? (
+                  {friend.image ? (
                     <img
                       className={styles.avatar}
-                      src={friend.avatarUrl}
+                      src={friend.image}
                       alt={`${displayName}'s avatar`}
                     />
                   ) : (

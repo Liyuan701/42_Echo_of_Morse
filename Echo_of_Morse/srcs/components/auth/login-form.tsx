@@ -74,7 +74,7 @@ export default function LoginForm() {
 	
 	//redirection après login réussi
 	setSuccess("Login successful.");
-	router.push("/dashboard"); //redirection vers dashboard après login réussi
+	router.push("/"); //redirection vers dashboard après login réussi
 	router.refresh();
 	//----------------- yren -----------------
 
@@ -121,18 +121,21 @@ export default function LoginForm() {
           {isSubmitting ? "Submitting..." : "Login"}
         </Button>
 
-        {/* 
-           // ! yren: replace these disabled placeholders with real OAuth login buttons.
-           // ! They should call NextAuth signIn() once the provider config is ready.
-        */}
+        <Button
+			type="button"
+			variant="secondary"
+			onClick={() => signIn("google", { callbackUrl: "/" },  { prompt: "select_account" })}
+		>
+			Login with Google
+		</Button>
 
-        <Button type="button" variant="secondary" fullWidth disabled>
-          Continue with Google
-        </Button>
-
-        <Button type="button" variant="secondary" fullWidth disabled>
-          Continue with 42
-        </Button>
+        <Button
+			type="button"
+			variant="secondary"
+			onClick={() => signIn("42-school", { callbackUrl: "/" })}
+		>
+			Login with 42
+		</Button>
       </form>
 
       <p className={styles.registerText}>

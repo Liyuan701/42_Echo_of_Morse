@@ -4,13 +4,46 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/server/prisma";
+import { cookies } from "next/headers";
+
+function getOAuthLink() {
+  const cookieStore = cookies();
+
+  const provider = cookieStore.get("oauth_link_provider")?.value;
+  const userId = cookieStore.get("oauth_link_user_id")?.value;
+
+  if (!provider || !userId) {
+    return null;
+  }
+
+  return { provider, userId };
+}
+
+//garder tous, mais modifier que linkAcount pour connection avec 42
+const prismaAdapter = PrismaAdapter(prisma);
+const myPrismaAdapter = {
+	//garder tous les champs dans safeAccount
+	//ex：
+	//	const a = { name: "Alice", age: 20,};
+	//	const b = {...a, age: 30,};
+	//	b = {name: "Alice", age: 30,};
+	...prismaAdapter,
+
+	async linkAccount(account: any) {
+		// Retirer created_at et secret_valid_until, puis garder les autres champs dans safeAccount.
+		const { created_at, secret_valid_until, ...safeAccount } = account;
+
+		return prismaAdapter.linkAccount!(safeAccount);
+	},
+};
 
 //configurer les options pour NextAuth
 export const authOptions: NextAuthOptions = {
 
 	//============================ key = adapter ============================
 	//adapter permet dire au NextAuth: comment lire et enregistrer les utilisateurs, comptes et sessions dans la base de donnees.
-	adapter: PrismaAdapter(prisma),
+	// adapter: PrismaAdapter(prisma),
+	adapter: myPrismaAdapter,
 
 	//============================ key = providers ============================
 	//providers: liste des methodes de connexion 
@@ -18,7 +51,7 @@ export const authOptions: NextAuthOptions = {
 		//----- Email + Password -----
 		//credentials = identifier avec email et mot de passe
 		CredentialsProvider({
-			 //façon de se connecter
+			//façon de se connecter
 			name: "credentials",
 			credentials: {email:{}, password:{}},
 			//verifier puis retourner les info d'user si c'est correcte
@@ -106,14 +139,18 @@ export const authOptions: NextAuthOptions = {
 	},
 
 	//============================ key = callbacks ============================
+	// Ce callback autorise ou refuse le flux OAuth ; 
+	// si true = PrismaAdapter lie automatiquement le compte OAuth a l'utilisateur.
 	callbacks: {
 		//condition pour autoriser ou refuser la connexion d’un utilisateur
 		//account form -> nextAuth -> providers (google/42/credentials)
 		async signIn({ account }) {
+			// ----- credentials ----- 
 			if (!account || account.provider === "credentials") {
 				return true;
 			}
 
+			// ----- provider = google/42 ----- 
 			const linkedAccount = await prisma.account.findUnique({
 			where: {
 				provider_providerAccountId: {		//pour dire a prisma de chercher un compte avec ces deux champs
@@ -123,17 +160,42 @@ export const authOptions: NextAuthOptions = {
 			},
 			});
 
-			return Boolean(linkedAccount);
+			const link = getOAuthLink();
+
+			//null = // Connexion normale : autorisee seulement si le compte OAuth est deja lie.
+			//sinon liaison du compte Google google/42
+			if (!link) {
+				return Boolean(linkedAccount);
+			}
+
+			//le provider demande doit correspondre au provider OAuth qui revient.
+			if (link.provider !== account.provider) {
+				return false;
+			}
+
+			// Refuser si ce compte Google/42 est deja lie a un autre utilisateur.
+			if (linkedAccount && linkedAccount.userId !== link.userId) {
+				return false;
+			}
+
+			//Verifier que l'utilisateur qui demande la liaison existe bien.
+			const localUser = await prisma.user.findUnique({
+				where: { id: link.userId },
+				select: { id: true },
+			});
+
+			return Boolean(localUser);
 		},
-		//pour ajouter user.id dans token du jwt
+
+		//pour session: met les info de connexion dans le token que l'on veut conserver.
 		async jwt({ token, user }) {
 			if (user) {
 				token.id = user.id;
 			}
 			return token;
 		},
-		//pour ajouter id dans session.user
-		//session.user.id = id de l'utilisateur qui deja connecte
+		
+		//expose au frontend les informations contenues dans le token.
 		async session({ session, token }) {
 			if (session.user) {
 				(session.user as { id?: string }).id = token.id as string;
@@ -142,6 +204,19 @@ export const authOptions: NextAuthOptions = {
 		},
 	},
 
+	//============================ key = events ============================
+	events: {
+		// Apres une liaison OAuth reussie, supprimer les cookies temporaires utilises pour identifier le mode liaison.
+		async linkAccount({ account }) {
+			const link = getOAuthLink();
+
+			if (link?.provider === account.provider) {
+				const cookieStore = cookies();
+				cookieStore.delete("oauth_link_provider");
+				cookieStore.delete("oauth_link_user_id");
+			}
+		},
+	},
 	//============================ key = pages ============================
 	// personnalise les pages utilisees par NextAuth
 	pages: {

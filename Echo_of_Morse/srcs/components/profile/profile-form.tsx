@@ -6,6 +6,27 @@ import { useI18n } from "@/lib/i18n";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
+async function handleLinkProvider(provider: "google" | "42-school") {
+	//envoyer pour le type de provider
+	const response = await fetch("/api/auth/oauth", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ provider }),
+	});
+
+	if (!response.ok) {
+		return;
+	}
+
+	if (provider === "google") {
+		signIn("google", { callbackUrl: "/profile" }, { prompt: "select_account" });
+	} else {
+		signIn(provider, { callbackUrl: "/profile" });
+	}
+}
+
 export default function Profile() {
 	const { dictionary } = useI18n();
   	const t = dictionary.profile;
@@ -18,7 +39,12 @@ export default function Profile() {
 		username: string;
 		email: string | null;
 		image: string | null;
-		isOnline: boolean;
+		bio: string | null;
+		accuracy?: number | null;
+		learningLevel: number;
+		createdAt: string;
+		friendCount: number;
+		providers: string[];
 	};
 	//setprofileUser avec un type ProfileUser/null au début
 	//ici useState<type de la variable>(valeur initiale)
@@ -76,15 +102,14 @@ export default function Profile() {
 		name: profileUser?.username ?? session?.user?.name ?? t.defaultUser,
 		email: profileUser?.email ?? session?.user?.email ?? t.noEmail,
 		image: profileUser?.image ?? session?.user?.image,
-		status: t.online,
 		//! besoin de données réelles pour le profil
-		bio: "hahahahaha.",
-		accuracy: "84%",
-		learningLevel: "Level 4",
-		friendsCount: "12",
-		joinedAt: "Jan 2026",
-		googleLinked: false,
-		fortyTwoLinked: true,
+		bio: profileUser?.bio ?? "",
+		accuracy: `${profileUser?.accuracy ?? 0}%`,
+		learningLevel: `${t.levelPrefix} ${profileUser?.learningLevel ?? 1}`,
+		friendsCount: String(profileUser?.friendCount ?? 0),
+		joinedAt: profileUser?.createdAt ? new Date(profileUser.createdAt).toLocaleDateString() : "-",
+		googleLinked: profileUser?.providers?.includes("google") ?? false,
+		fortyTwoLinked: profileUser?.providers?.includes("42-school") ?? false,
 	};
 
 	return (
@@ -103,7 +128,6 @@ export default function Profile() {
 
 			{/* =====================  info user pour profil ===================== */}
 					<div className={styles.identity}>
-						<p className={styles.status}>{user.status}</p>
 						<h1 className={styles.title}>{user.name}</h1>
 						<p className={styles.email}>{user.email}</p>
 					</div>
@@ -156,22 +180,37 @@ export default function Profile() {
 					<div className={styles.connectedRow}>
 					<div>
 						<span className={styles.providerName}>Google</span>
-						<p className={styles.providerDescription}>{t.notConnected}</p>
+						<p className={styles.providerDescription}>
+						{user.googleLinked ? t.connected : t.notConnected}
+						</p>
+
 					</div>
 
-					<Button type="button" variant="secondary" disabled>
-						Coming soon
+					<Button
+						type="button"
+						variant="secondary"
+						disabled={user.googleLinked}
+						onClick={() => handleLinkProvider("google")}
+					>
+						{user.googleLinked ? t.connected : t.bindGoogle}
 					</Button>
 					</div>
 
 					<div className={styles.connectedRow}>
 					<div>
 						<span className={styles.providerName}>42</span>
-						<p className={styles.providerDescription}>{t.notConnected}</p>
+						<p className={styles.providerDescription}>
+						{user.fortyTwoLinked ? t.connected : t.notConnected}
+						</p>
 					</div>
 
-					<Button type="button" variant="secondary" disabled>
-						Coming soon
+					<Button
+						type="button"
+						variant="secondary"
+						disabled={user.fortyTwoLinked}
+						onClick={() => handleLinkProvider("42-school")}
+					>
+						{user.fortyTwoLinked ? t.connected : t.bindFortyTwo}
 					</Button>
 					</div>
 				</div>

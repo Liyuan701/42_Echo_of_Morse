@@ -1,42 +1,70 @@
 import PageShell from "@/components/layout/page-shell";
-import { Card } from "@/components/ui";
-import { mockFriends } from "@/components/chat/faux-chat-data";
 import ProfileFriends from "@/components/profile/profile-friends";
+import ProfileUserNotFound from "@/components/profile/profile-friends-not-found";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/server/prisma";
 
 type UserProfilePageProps = {
-  params: {
-    userId: string;
-  };
+	params: {
+		userId: string;
+	};
 };
 
-export default function UserProfilePage({ params }: UserProfilePageProps) {
-  const friend = mockFriends.find((item) => item.id === params.userId);
+export default async function UserProfilePage({ params }: UserProfilePageProps) {
+	const session = await getServerSession(authOptions);
 
-	if (!friend) {
-	return (
-		<main id="main-content">
-		<PageShell>
-			<Card>
-			<h1>User not found</h1>
-			<p>We could not find this user profile.</p>
-			</Card>
-		</PageShell>
-		</main>
-	);
+	if (!session) {
+		return (
+			<main id="main-content">
+				<PageShell>
+					<ProfileUserNotFound />
+				</PageShell>
+			</main>
+		);
 	}
 
-	return (
-	<main id="main-content">
-		<PageShell>
-		<ProfileFriends
-			name={friend.displayName || friend.username || "Unknown user"}
-			username={friend.username}
-			image={friend.avatarUrl}
-			isOnline={friend.isOnline}
-		/>
-		</PageShell>
-	</main>
-	);
+	const user = await prisma.user.findUnique({
+		where: { id: params.userId },
+		select: {
+			id: true,
+			username: true,
+			image: true,
+			bio: true,
+			learningLevel: true,
+			isOnline: true,
+			createdAt: true,
+		},
+	});
+
+	if (!user) {
+		return (
+			<main id="main-content">
+				<PageShell>
+					<ProfileUserNotFound />
+				</PageShell>
+			</main>
+		);
+	}
+
+  return (
+    <main id="main-content">
+      <PageShell>
+        <ProfileFriends
+          name={user.username}
+          username={user.username}
+          image={user.image}
+          isOnline={user.isOnline}
+          bio={user.bio}
+          learningLevel={user.learningLevel}
+		  //! besoin de données réelles pour le profil
+        //friendCount={user.friendCount} 
+		//accuracy={user.accuracy}
+          createdAt={user.createdAt}
+        />
+      </PageShell>
+    </main>
+  );
 }
 
 // ! i18n: move public profile fallback text, online/offline labels, avatar alt text, and temporary description into the i18n dictionary.

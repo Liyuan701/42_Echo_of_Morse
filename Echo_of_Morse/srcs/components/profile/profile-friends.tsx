@@ -1,34 +1,43 @@
+"use client";
+import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui";
 import styles from "./profile-form.module.css";
 
-type ProfileFriendsProps = {
-  name: string;
-  username: string;
-  image?: string | null;
-  isOnline: boolean;
+type dataProfileFriends = {
+	name: string;
+	username: string;
+	image?: string | null;
+	bio?: string | null;
+	learningLevel?: number;
+	friendCount?: number;
+	accuracy?: number;
+	createdAt?: Date;
 };
 
 export default function ProfileFriends({
 	name,
 	username,
 	image,
-	isOnline,
-}: ProfileFriendsProps) {
-  const avatarLetter = name.charAt(0).toUpperCase();
+	bio,
+	learningLevel,
+	friendCount,
+	accuracy,
+	createdAt,
+}: dataProfileFriends) {
+	const { dictionary } = useI18n();
+	const t = dictionary.profile;
+	const avatarLetter = name.charAt(0).toUpperCase();
 
-  const user = {
-    name,
-    username,
-    image,
-    status: isOnline ? "Online" : "Offline",
-
-	//! besoin de données réelles pour le profil
-    bio: "Learning Morse one signal at a time.",
-    accuracy: "84%",
-    learningLevel: "Level 4",
-    friendsCount: "12",
-    joinedAt: "Jan 2026",
-  };
+	const user = {
+		name,
+		username,
+		image,
+		bio: bio ?? "",
+		accuracy: `${accuracy ?? 0}%`,
+		learningLevel: `Level ${learningLevel ?? 1}`,
+		friendsCount: String(friendCount ?? 0),
+		joinedAt: createdAt ? createdAt.toLocaleDateString() : "-",
+	};
 
   return (
     <Card className={styles.profileCard}>
@@ -49,7 +58,6 @@ export default function ProfileFriends({
         </div>
 		{/* ===================== info user pour profil ===================== */}
         <div className={styles.identity}>
-          <p className={styles.status}>{user.status}</p>
           <h1 className={styles.title}>{user.name}</h1>
           <p className={styles.email}>@{user.username}</p>
         </div>
@@ -57,32 +65,32 @@ export default function ProfileFriends({
 
 		{/* ===================== bio ===================== */}
       <section className={styles.profileSection}>
-        <h2 className={styles.sectionTitle}>Bio</h2>
+        <h2 className={styles.sectionTitle}>{t.bio}</h2>
         <p className={styles.bio}>{user.bio}</p>
       </section>
 
 		{/* ===================== stats pour profil ===================== */}
       <section className={styles.profileSection}>
-        <h2 className={styles.sectionTitle}>Stats</h2>
+        <h2 className={styles.sectionTitle}>{t.stats}</h2>
 
         <div className={styles.statsGrid}>
           <div className={styles.statItem}>
-            <span className={styles.metaLabel}>Accuracy</span>
+            <span className={styles.metaLabel}>{t.accuracy}</span>
             <strong className={styles.metaValue}>{user.accuracy}</strong>
           </div>
 
           <div className={styles.statItem}>
-            <span className={styles.metaLabel}>Learning level</span>
+            <span className={styles.metaLabel}>{t.learningLevel}</span>
             <strong className={styles.metaValue}>{user.learningLevel}</strong>
           </div>
 
           <div className={styles.statItem}>
-            <span className={styles.metaLabel}>Friends</span>
+            <span className={styles.metaLabel}>{t.friends}</span>
             <strong className={styles.metaValue}>{user.friendsCount}</strong>
           </div>
 
           <div className={styles.statItem}>
-            <span className={styles.metaLabel}>Joined</span>
+            <span className={styles.metaLabel}>{t.joined}</span>
             <strong className={styles.metaValue}>{user.joinedAt}</strong>
           </div>
         </div>
