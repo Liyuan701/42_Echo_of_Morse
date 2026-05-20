@@ -66,7 +66,7 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(toUserDTO(user), friendCount);
+    return NextResponse.json(toUserDTO(user, friendCount));
   } catch (error) {
     console.error(error);
 

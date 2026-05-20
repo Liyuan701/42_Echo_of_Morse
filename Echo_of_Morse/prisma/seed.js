@@ -65,15 +65,6 @@ for (let i = 0; i < group.length; i++) {
         status: "ACCEPTED",
       },
     });
-
-    // B -> A
-    await prisma.friendship.create({
-      data: {
-        senderId: b.id,
-        receiverId: a.id,
-        status: "ACCEPTED",
-      },
-    });
   }
 }
   console.log("Creating conversations and messages...");
