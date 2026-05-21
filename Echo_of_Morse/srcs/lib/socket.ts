@@ -33,20 +33,44 @@
 // console.log("WS_URL =", WS_URL);
 
 
+//-----------------------------------------------------------------------------------
+
+// import { io, Socket } from "socket.io-client";
+
+// const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
+
+// let socket: Socket | null = null;
+
+// export function getSocket() {
+//   if (!socket) {
+//     socket = io(WS_URL, {
+//       transports: ["polling", "websocket"],
+//     });
+
+//     console.log("🧠 SOCKET CREATED");
+//   }
+
+//   return socket;
+// }
+
+//----------------------------------------------------------------------------
+
 import { io, Socket } from "socket.io-client";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
 
-let socket: Socket | null = null;
+declare global {
+  var socket: Socket | undefined;
+}
 
 export function getSocket() {
-  if (!socket) {
-    socket = io(WS_URL, {
+  if (!globalThis.socket) {
+    globalThis.socket = io(WS_URL, {
       transports: ["polling", "websocket"],
     });
 
     console.log("🧠 SOCKET CREATED");
   }
 
-  return socket;
+  return globalThis.socket;
 }

@@ -10,13 +10,14 @@ import styles from "./css/MessageComposer.module.css";
 type MessageComposerProps = {
   chatMode: ChatMode;
   error: string;
-  onSendMessage: (text: string) => boolean;
+  // onSendMessage: (text: string) => boolean;
+  onSendMessage: (text: string) => Promise<boolean>;
 };
 
 const placeholderByMode: Record<ChatMode, string> = {
   "language-to-morse": "Type text to show text and Morse...",
   "morse-to-language": "Enter Morse code to decode...",
-  "language-only": "Type a message...",
+  "LANGUAGE_ONLY": "Type a message...",
   "morse-only": "Type Morse code only...",
   "text-to-morse-only": "Type text to send as Morse only...",
 };
@@ -35,9 +36,10 @@ export default function MessageComposer({
 
     const didSendMessage = onSendMessage(text);
 
-    if (didSendMessage) {
-      setText("");
-    }
+    setText("");
+    // if (didSendMessage) {
+    //   setText("");
+    // }
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {

@@ -12,6 +12,7 @@ type dataProfileFriends = {
 	friendCount?: number;
 	accuracy?: number;
 	createdAt?: Date;
+  isOnline: boolean;
 };
 
 export default function ProfileFriends({

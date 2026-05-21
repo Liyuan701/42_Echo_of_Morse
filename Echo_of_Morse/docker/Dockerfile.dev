@@ -12,3 +12,20 @@ RUN ./node_modules/.bin/prisma generate
 
 # No build step - Next.js runs in dev mode with hot reload
 CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && npm run dev"]
+
+
+# FROM node:20-alpine
+
+# WORKDIR /app
+
+# COPY package*.json ./
+# RUN npm install
+
+# COPY . .
+
+# RUN ./node_modules/.bin/prisma generate
+
+# # Build Next.js production app
+# RUN npm run build
+
+# CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && npm run start"]

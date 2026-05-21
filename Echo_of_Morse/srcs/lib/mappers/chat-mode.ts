@@ -13,7 +13,7 @@ export function mapChatModeToDB(mode: ChatMode): MessageMode {
     case "morse-to-language":
       return "MORSE_TO_LANGUAGE";
 
-    case "language-only":
+    case "LANGUAGE_ONLY":
       return "LANGUAGE_ONLY";
 
     case "morse-only":
@@ -33,6 +33,6 @@ export function mapDBToChatMode(mode: MessageMode): ChatMode {
       return "morse-to-language";
 
     case "LANGUAGE_ONLY":
-      return "language-only";
+      return "LANGUAGE_ONLY";
   }
 }

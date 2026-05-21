@@ -46,7 +46,7 @@ export function transformChatMessage(
     };
   }
 
-  if (mode === "language-only") {
+  if (mode === "LANGUAGE_ONLY") {
     return {
       rawText: normalizedText,
       translatedText: "",

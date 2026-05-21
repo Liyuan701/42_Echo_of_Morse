@@ -290,7 +290,7 @@ export default function ChatLayout() {
       sender: "me",
       rawText: `Shared contact: ${target.displayName} (@${target.username})`,
       translatedText: undefined,
-      mode: "language-only",
+      mode: "LANGUAGE_ONLY",
       createdAt: getCurrentTime(),
     };
 
@@ -324,7 +324,7 @@ export default function ChatLayout() {
       sender: "me",
       rawText: `Game invitation sent to ${invited.displayName}.`,
       translatedText: "Waiting for their response.",
-      mode: "language-only",
+      mode: "LANGUAGE_ONLY",
       createdAt: getCurrentTime(),
     };
 

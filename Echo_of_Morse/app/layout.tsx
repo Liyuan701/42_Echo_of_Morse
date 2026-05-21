@@ -46,14 +46,14 @@ export default function RootLayout({
     <html lang="en">
       <body>
 		<AuthSessionProvider>
-			<I18nProvider>
-				<a href="#main-content" className="skip-link">
-					Skip to main content
-				</a>
-        <SocketProvider>
-				  {children}
-        </SocketProvider>
-			</I18nProvider>
+      <SocketProvider>
+        <I18nProvider>
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
+            {children}
+        </I18nProvider>
+       </SocketProvider>
 		</AuthSessionProvider>
       </body>
     </html>
