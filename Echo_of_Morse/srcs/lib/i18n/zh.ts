@@ -64,6 +64,58 @@ const zh = {
 		usernameOrEmailInUse: "用户名或邮箱已被使用。",
 	},
 
+	learningPractice: {
+		//------------------ en haut à gauch ------------------
+		mixedPractice: "混合练习",
+		level: "等级",
+
+		//------------------ à gauche ------------------
+		decodeSignal: "识别信号",
+		listenPrompt: "听声音或观察灯光信号，然后按下对应字符。",
+		playing: "播放中...",
+		replaySignal: "重播信号",
+		encodeCharacter: "输入摩斯码",
+		encodePrompt: "左箭头输入点，右箭头输入划。按 Enter 提交。",
+
+		//------------------ en haut à doite ------------------
+		correctCount: "题正确",
+
+		//------------------ à droite ------------------
+		yourAnswer: "你的答案",
+		leftDot: "点",
+		rightDash: "划",
+		delete: "删除",
+		submit: "提交",
+		pressMatching: "请按下键盘上对应的字符。",
+		buildMorse: "使用方向键输入摩斯码。",
+		correct: "正确",
+		wrong: "错误",
+
+		//------------------ en bas ------------------
+		audio: "声音",
+		light: "灯光",
+
+		//------------------ resultat ------------------
+		complete: "完成",
+
+		levelPassed: "通过本关",
+		tryAgain: "再试一次",
+		
+		resultSummary: "你答对了 {correctCount} / {questionCount} 题。",
+		passConditionText: "通过条件：{passCount} / {questionCount}。",
+
+		accuracy: "准确率",
+		status: "状态",
+		unlockedNext: "已解锁下一关",
+		needsReview: "需要复习",
+
+		practiceAgain: "重新练习",
+
+		signalOn: "信号亮起",
+		signalSettings: "信号设置",
+		signalOff: "信号关闭",
+	},
+
 };
 
 export default zh;

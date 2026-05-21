@@ -64,6 +64,59 @@ const en = {
 		usernameOrEmailInUse: "Username or email already in use.",
 	},
 
+	learningPractice: {
+		//------------------ top left ------------------
+		mixedPractice: "Mixed practice",
+		level: "Level",
+
+		//------------------ left ------------------
+		decodeSignal: "Decode signal",
+		listenPrompt: "Listen or watch the signal, then press the matching key.",
+		playing: "Playing...",
+		replaySignal: "Replay signal",
+		encodeCharacter: "Encode character",
+		encodePrompt: "Use Left Arrow for dot and Right Arrow for dash. Press Enter to submit.",
+
+		//------------------ top right ------------------
+		correctCount: "Correct",
+
+		//------------------ right ------------------
+		yourAnswer: "Your answer",
+		leftDot: "Dot",
+		rightDash: "Dash",
+		delete: "Delete",
+		submit: "Submit",
+		pressMatching: "Press the matching character on your keyboard.",
+		buildMorse: "Build the Morse code with the arrow keys.",
+		correct: "Correct",
+		wrong: "Wrong",
+
+		//------------------ bottom ------------------
+		audio: "Audio",
+		light: "Light",
+
+		//------------------ result ------------------
+		complete: "complete",
+
+		levelPassed: "Level passed",
+		tryAgain: "Try again",
+
+		resultSummary: "You answered {correctCount} of {questionCount} correctly.",
+		passConditionText: "Pass condition: {passCount} / {questionCount}.",
+
+		accuracy: "Accuracy",
+		status: "Status",
+		unlockedNext: "Unlocked next",
+		needsReview: "Needs review",
+
+		practiceAgain: "Practice again",
+
+		signalOn: "Signal on",
+		signalSettings: "Signal settings",
+		signalOff: "Signal off",
+	},
+
+
 };
 
 export default en;

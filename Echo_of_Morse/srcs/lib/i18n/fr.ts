@@ -63,6 +63,59 @@ const fr = {
 		genericError: "Une erreur est survenue lors de l'inscription.",
 		usernameOrEmailInUse: "Le nom d'utilisateur ou l'email est déjà utilisé.",
 	},
+	
+	learningPractice: {
+		//------------------ en haut à gauche ------------------
+		mixedPractice: "Entrainement mixte",
+		level: "Niveau",
+
+		//------------------ à gauche ------------------
+		decodeSignal: "Decoder le signal",
+		listenPrompt: "Ecoutez ou observez le signal, puis appuyez sur la touche correspondante.",
+		playing: "Lecture...",
+		replaySignal: "Rejouer le signal",
+		encodeCharacter: "Encoder le caractere",
+		encodePrompt: "Utilisez Fleche gauche pour le point et Fleche droite pour le trait. Appuyez sur Entree pour valider.",
+
+		//------------------ en haut à droite ------------------
+		correctCount: "correctes",
+
+		//------------------ à droite ------------------
+		yourAnswer: "Votre reponse",
+		leftDot: "Point",
+		rightDash: "Trait",
+		delete: "Supprimer",
+		submit: "Valider",
+		pressMatching: "Appuyez sur le caractere correspondant au clavier.",
+		buildMorse: "Composez le code Morse avec les fleches du clavier.",
+		correct: "Correct",
+		wrong: "Erreur",
+
+		//------------------ en bas ------------------
+		audio: "Son",
+		light: "Lumiere",
+
+		//------------------ resultat ------------------
+		complete: "termine",
+
+		levelPassed: "Niveau reussi",
+		tryAgain: "Reessayer",
+
+		resultSummary: "Vous avez répondu correctement à {correctCount} question(s) sur {questionCount}.",
+		passConditionText: "Condition de réussite : {passCount} / {questionCount}.",
+
+		accuracy: "Précision",
+		status: "Statut",
+		unlockedNext: "Niveau suivant debloque",
+		needsReview: "Revision necessaire",
+
+		practiceAgain: "Recommencer",
+
+		signalOn: "Signal allume",
+		signalSettings: "Parametres du signal",
+		signalOff: "Signal eteint",
+	},
+
 };
 
 export default fr;
