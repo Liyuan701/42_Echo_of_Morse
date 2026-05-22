@@ -23,7 +23,7 @@ export function transformChatMessage(
     };
   }
 
-  if (mode === "language-to-morse") {
+  if (mode === "LANGUAGE_TO_MORSE") {
     return {
       rawText: normalizedText,
       translatedText: encode(normalizedText),

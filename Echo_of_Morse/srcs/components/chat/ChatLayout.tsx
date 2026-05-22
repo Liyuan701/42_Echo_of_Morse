@@ -35,7 +35,7 @@ export default function ChatLayout() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentView, setCurrentView] = useState<ChatPanelView>({ type: "none" });
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [chatMode, setChatMode] = useState<ChatMode>("language-to-morse");
+  const [chatMode, setChatMode] = useState<ChatMode>("LANGUAGE_TO_MORSE");
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [userSearchResults, setUserSearchResults] = useState<SearchableUser[]>([]);

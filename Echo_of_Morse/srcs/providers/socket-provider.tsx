@@ -129,6 +129,84 @@
 
 //------------------------------------------------------------------
 
+// "use client";
+
+// import {
+//   createContext,
+//   useContext,
+//   useEffect,
+//   useState,
+// } from "react";
+
+// import { getSocket } from "@/lib/socket";
+// import { Socket } from "socket.io-client";
+
+// // const SocketContext = createContext({
+// //   socket: null,
+// //   isConnected: false,
+// // });
+
+// type SocketContextType = {
+//   socket: Socket | null;
+//   isConnected: boolean;
+// };
+
+// const SocketContext = createContext<SocketContextType>({
+//   socket: null,
+//   isConnected: false,
+// });
+
+// export function SocketProvider({
+//   children,
+// }: {
+//   children: React.ReactNode;
+// }) {
+//   const [isConnected, setIsConnected] = useState(false);
+
+//   useEffect(() => {
+//     const socket = getSocket();
+
+//     if (!socket) return;
+
+//     const onConnect = () => {
+//       console.log("✅ connected");
+//       setIsConnected(true);
+//     };
+
+//     const onDisconnect = () => {
+//       console.log("❌ disconnected");
+//       setIsConnected(false);
+//     };
+
+//     socket.on("connect", onConnect);
+//     socket.on("disconnect", onDisconnect);
+
+//     return () => {
+//       socket.off("connect", onConnect);
+//       socket.off("disconnect", onDisconnect);
+//     };
+//   }, []);
+
+//   return (
+//     <SocketContext.Provider
+//       value={{
+//         socket: getSocket(),
+//         isConnected,
+//       }}
+//     >
+//       {children}
+//     </SocketContext.Provider>
+//   );
+// }
+
+// export function useSocket() {
+//   return useContext(SocketContext);
+// }
+
+
+
+//---------------------------------------------------------
+
 "use client";
 
 import {
@@ -136,24 +214,30 @@ import {
   useContext,
   useEffect,
   useState,
+  useMemo,
 } from "react";
 
-import { getSocket } from "@/lib/socket";
+import { initSocket } from "@/lib/socket";
+import { Socket } from "socket.io-client";
 
-const SocketContext = createContext({
+type SocketContextType = {
+  socket: Socket | null;
+  isConnected: boolean;
+};
+
+const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
 });
 
-export function SocketProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
 
+  // ✅ create socket ONCE
+  const socket = useMemo(() => initSocket(), []);
+
   useEffect(() => {
-    const socket = getSocket();
+    if (!socket) return;
 
     const onConnect = () => {
       console.log("✅ connected");
@@ -172,15 +256,10 @@ export function SocketProvider({
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
-  }, []);
+  }, [socket]);
 
   return (
-    <SocketContext.Provider
-      value={{
-        socket: getSocket(),
-        isConnected,
-      }}
-    >
+    <SocketContext.Provider value={{ socket, isConnected }}>
       {children}
     </SocketContext.Provider>
   );

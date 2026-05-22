@@ -55,22 +55,58 @@
 
 //----------------------------------------------------------------------------
 
+// import { io, Socket } from "socket.io-client";
+
+// const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
+
+// declare global {
+//   var socket: Socket | undefined;
+// }
+
+// let socket: Socket | null = null;
+
+// export function getSocket() {
+
+//   if (typeof window === "undefined") {
+//     return null;
+//   }
+
+//   if (!globalThis.socket) {
+//     globalThis.socket = io(WS_URL, {
+//       transports: ["polling", "websocket"],
+//     });
+
+//     console.log("🧠 SOCKET CREATED");
+//   }
+
+//   return globalThis.socket;
+// }
+
+//-----------------------------------------------
+
 import { io, Socket } from "socket.io-client";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
 
 declare global {
-  var socket: Socket | undefined;
+  // eslint-disable-next-line no-var
+  var __socket: Socket | undefined;
 }
 
-export function getSocket() {
-  if (!globalThis.socket) {
-    globalThis.socket = io(WS_URL, {
+export function initSocket() {
+  if (typeof window === "undefined") return null;
+
+  if (!globalThis.__socket) {
+    globalThis.__socket = io(WS_URL!, {
       transports: ["polling", "websocket"],
     });
 
     console.log("🧠 SOCKET CREATED");
   }
 
-  return globalThis.socket;
+  return globalThis.__socket;
+}
+
+export function getSocket() {
+  return globalThis.__socket ?? null;
 }

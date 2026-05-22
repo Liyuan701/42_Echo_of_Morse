@@ -7,7 +7,7 @@
 import type { MessageMode } from "@/lib/mappers/chat-mode";
 
 export type ChatMode =
-  | "language-to-morse"
+  | "LANGUAGE_TO_MORSE"
   | "morse-to-language"
   | "LANGUAGE_ONLY"
   | "morse-only"

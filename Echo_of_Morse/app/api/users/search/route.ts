@@ -1,5 +1,7 @@
 // check the login, go query in DBmm and return id/username/avatar/online
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/prisma";
 import { getServerSession } from "next-auth";

@@ -15,7 +15,7 @@ type MessageComposerProps = {
 };
 
 const placeholderByMode: Record<ChatMode, string> = {
-  "language-to-morse": "Type text to show text and Morse...",
+  "LANGUAGE_TO_MORSE": "Type text to show text and Morse...",
   "morse-to-language": "Enter Morse code to decode...",
   "LANGUAGE_ONLY": "Type a message...",
   "morse-only": "Type Morse code only...",

@@ -14,7 +14,7 @@ const modes: Array<{
   label: string;
 }> = [
   {
-    value: "language-to-morse",
+    value: "LANGUAGE_TO_MORSE",
     label: "Language -> Morse",
   },
   {
