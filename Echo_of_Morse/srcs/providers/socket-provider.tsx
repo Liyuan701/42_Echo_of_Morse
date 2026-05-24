@@ -205,20 +205,13 @@
 
 
 
-//---------------------------------------------------------
+//--------------------------------------------------------
 
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useMemo,
-} from "react";
-
-import { initSocket } from "@/lib/socket";
-import { Socket } from "socket.io-client";
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
+import { getSocket } from "@/lib/socket";
+import type { Socket } from "socket.io-client";
 
 type SocketContextType = {
   socket: Socket | null;
@@ -233,28 +226,27 @@ const SocketContext = createContext<SocketContextType>({
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
 
-  // ✅ create socket ONCE
-  const socket = useMemo(() => initSocket(), []);
+  const socket = useMemo(() => getSocket(), []);
 
   useEffect(() => {
     if (!socket) return;
 
-    const onConnect = () => {
-      console.log("✅ connected");
+    const handleConnect = () => {
+      console.log("CONNECTED", socket.id);
       setIsConnected(true);
     };
 
-    const onDisconnect = () => {
-      console.log("❌ disconnected");
+    const handleDisconnect = (reason: string) => {
+      console.log("DISCONNECTED", reason);
       setIsConnected(false);
     };
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
 
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
     };
   }, [socket]);
 

@@ -120,8 +120,8 @@ io.on("connection", (socket) => {
 
   io.emit("users-count", io.engine.clientsCount);
 
-  socket.on("disconnect", () => {
-    console.log("❌ CLIENT DISCONNECTED");
+  socket.on("disconnect", (reason) => {
+    console.log("❌ CLIENT DISCONNECTED", socket.id, reason);
 
     io.emit("users-count", io.engine.clientsCount);
   });

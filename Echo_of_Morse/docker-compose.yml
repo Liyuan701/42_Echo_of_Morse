@@ -121,11 +121,11 @@ services:
     networks:
       - transcendence_network
 
-  ============================================================
-  vault-init — charge les secrets du .env dans Vault (one-shot)
-  secret/database → DB_USER, DB_PASSWORD, DB_NAME
-  secret/app      → NEXTAUTH_SECRET, NEXTAUTH_URL, OAuth keys
-  ============================================================
+  # ============================================================
+  # vault-init — charge les secrets du .env dans Vault (one-shot)
+  # secret/database → DB_USER, DB_PASSWORD, DB_NAME
+  # secret/app      → NEXTAUTH_SECRET, NEXTAUTH_URL, OAuth keys
+  # ============================================================
   vault-init:
     image: hashicorp/vault:latest
     container_name: transcendence_vault_init
