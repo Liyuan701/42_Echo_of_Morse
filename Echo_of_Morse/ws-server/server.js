@@ -37,15 +37,27 @@
 const { Server } = require("socket.io");
 
 // Init server
-const io = new Server(3001, {
+
+// const io = new Server(3001, {
+//   cors: { origin: "*" },
+//   pingInterval: 25000,
+//   pingTimeout: 20000,
+// });
+
+const express = require("express");
+const http = require("http");
+
+const app = express();
+const httpServer = http.createServer(app);
+
+
+const io = new Server(httpServer, {
+  path: "/socket.io/",
   cors: { origin: "*" },
   pingInterval: 25000,
   pingTimeout: 20000,
 });
 
-// io.on("connection", (socket) => {
-//   console.log("✅ Client connected:", socket.id);
-// });
 
 // API calls
 async function setUserOnline(userId) {
@@ -125,6 +137,10 @@ io.on("connection", (socket) => {
 
     io.emit("users-count", io.engine.clientsCount);
   });
+});
+
+httpServer.listen(3001, () => {
+  console.log("WS SERVER RUNNING ON 3001");
 });
 
 setInterval(cleanupUsers, 60000);
