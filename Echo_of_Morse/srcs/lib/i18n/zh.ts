@@ -66,7 +66,6 @@ const zh = {
 
 	learningPractice: {
 		//------------------ en haut à gauch ------------------
-		mixedPractice: "混合练习",
 		level: "等级",
 
 		//------------------ à gauche ------------------
@@ -74,6 +73,7 @@ const zh = {
 		listenPrompt: "听声音或观察灯光信号，然后按下对应字符。",
 		playing: "播放中...",
 		replaySignal: "重播信号",
+		
 		encodeCharacter: "输入摩斯码",
 		encodePrompt: "左箭头输入点，右箭头输入划。按 Enter 提交。",
 
@@ -114,6 +114,9 @@ const zh = {
 		signalOn: "信号亮起",
 		signalSettings: "信号设置",
 		signalOff: "信号关闭",
+
+		//------------------ error ------------------
+		noQuestion: "没有可用题目。"
 	},
 
 };

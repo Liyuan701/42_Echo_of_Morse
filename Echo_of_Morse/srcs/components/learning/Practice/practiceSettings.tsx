@@ -6,7 +6,6 @@ import styles from "@/components/learning/css/PracticeSession.module.css";
 // Elle reçoit true ou false. Elle sert à dire au parent si le son est activé ou non. 
 // void veut dire qu’elle ne retourne rien d’important.
 type PracticeSettingsProps = {
-	label: string;
 	audioLabel: string;
 	lightLabel: string;
 	audioEnabled: boolean;
@@ -25,7 +24,7 @@ export default function PracticeSettings({
 	onVisualChange,
 }: PracticeSettingsProps) {
 	return (
-		<section className={styles.settingsPanel} aria-label={label}>
+		<section className={styles.settingsPanel}>
 			<label>
 				<input
 					type="checkbox"

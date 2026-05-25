@@ -66,7 +66,6 @@ const fr = {
 	
 	learningPractice: {
 		//------------------ en haut à gauche ------------------
-		mixedPractice: "Entrainement mixte",
 		level: "Niveau",
 
 		//------------------ à gauche ------------------
@@ -114,6 +113,9 @@ const fr = {
 		signalOn: "Signal allume",
 		signalSettings: "Parametres du signal",
 		signalOff: "Signal eteint",
+
+		//------------------ error ------------------
+		noQuestion: "Aucune question disponible."
 	},
 
 };

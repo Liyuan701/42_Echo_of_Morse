@@ -20,6 +20,7 @@ type PracticeResultProps = {
 		needsReview: string;
 		practiceAgain: string;
 	};
+	//recevoir une fonction onRestart qui retourne rien et pas besoin d'avoir param
 	onRestart: () => void;
 };
 
@@ -39,11 +40,12 @@ export default function PracticeResult({
 				<p className={styles.kicker}>
 					{t.level} {levelId} {t.complete}
 				</p>
-
+				{/*------------------ une phrase pour resultat ------------------*/}
 				<h1 className={styles.resultTitle}>
 					{hasPassed ? t.levelPassed : t.tryAgain}
 				</h1>
 
+				{/*------------------ des donnees pour resultat ------------------*/}
 				<p className={styles.resultText}>
 					{t.resultSummary
 						.replace("{correctCount}", String(correctCount))
