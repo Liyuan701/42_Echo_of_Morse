@@ -22,7 +22,8 @@ export default function PracticePage({ params }: PracticePageProps) {
 			<PageShell>
 				<section className={styles.learningPage}>
 					<div className={styles.learningContainer}>
-						<nav className={styles.breadcrumb} aria-label="Breadcrumb">
+						{/* c’est une petite navigation comme Learning / Levels / Level 3 practice */}
+						<nav className={styles.breadcrumb}>
 							<Link className={styles.link} href="/learning">
 								Learning
 							</Link>
