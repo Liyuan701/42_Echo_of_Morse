@@ -4,22 +4,26 @@ import LanguageSwitcher from "@/components/layout/language-switcher";
 import styles from "./navbar.module.css";
 //----------------- yren -----------------
 import { signOut, useSession } from "next-auth/react";
+import { useI18n } from "@/lib/i18n";
 
 export default function Navbar() {
 	//----------------- yren -----------------
 	const { data: session, status } = useSession();
 	const isLoggedIn = status === "authenticated";
+
+	const { dictionary } = useI18n();
+	const t = dictionary.layout;
 	//----------------- yren -----------------
 
   return (
     <header className={styles.header}>
       <Link href="/" className={styles.logo}>
-        Echoes of Morse
+        {t.brand}
       </Link>
 
-      <nav className={styles.nav} aria-label="Main navigation">
+      <nav className={styles.nav} aria-label={t.mainNavigation}>
         <Link href="/dashboard" className={styles.navLink}>
-          Dashboard
+          {t.dashboard}
         </Link>
 
 		{/* //----------------- yren ----------------- */}
@@ -27,11 +31,11 @@ export default function Navbar() {
 		// si login, show profile/logout
 		<>
 			<Link href="/profile" className={styles.navLink}>
-			Profile
+				{t.profile}
 			</Link>
 
 			<span className={styles.navLink}>
-			{session.user?.name ?? session.user?.email ?? "User"}
+			{session.user?.name ?? session.user?.email ?? t.user}
 			</span>
 
 			<button
@@ -39,13 +43,13 @@ export default function Navbar() {
 			className={styles.navButton}
 			onClick={() => signOut({ callbackUrl: "/" })}
 			>
-			Logout
+				{t.logout}
 			</button>
 		</>
 		) : (
 			// sinon show login
 			<Link href="/login" className={styles.navLink}>
-				Login
+				{t.login}
 			</Link>
 		)}
 		{/* //----------------- yren ----------------- */}
@@ -54,6 +58,3 @@ export default function Navbar() {
     </header>
   );
 }
-
-// // ! i18n: move all navigation labels, aria-labels, footer links, and footer description into the i18n dictionary.
-// // ! i18n: keep the brand name "Echoes of Morse" unchanged unless the team decides to translate the product name.

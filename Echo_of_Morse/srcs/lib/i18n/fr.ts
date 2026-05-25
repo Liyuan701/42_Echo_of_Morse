@@ -118,6 +118,27 @@ const fr = {
 		noQuestion: "Aucune question disponible."
 	},
 
+	layout: {
+		//------------------ navbar ------------------
+		brand: "Echos de Morse",
+		dashboard: "Tableau de bord",
+		profile: "Profil",
+		login: "Connexion",
+		logout: "Deconnexion",
+		user: "Utilisateur",
+
+		//------------------ footer ------------------
+		footerDescription: "Apprenez, communiquez et relevez des defis avec le code Morse.",
+		privacyPolicy: "Politique de confidentialite",
+		termsOfService: "Conditions d'utilisation",
+		copyright: "© 2026 Echos de Morse",
+		mainNavigation: "Navigation principale",
+		footerNavigation: "Navigation du pied de page",
+
+		//------------------ languageSwitcher ------------------
+		languageSwitcher: "Changer de langue",
+	},
+
 };
 
 export default fr;

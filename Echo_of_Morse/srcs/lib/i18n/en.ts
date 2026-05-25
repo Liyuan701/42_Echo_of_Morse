@@ -118,6 +118,27 @@ const en = {
 		noQuestion: "No question available."
 	},
 
+	layout: {
+		//------------------ navbar ------------------
+		brand: "Echoes of Morse",
+		dashboard: "Dashboard",
+		profile: "Profile",
+		login: "Login",
+		logout: "Logout",
+		user: "User",
+
+		//------------------ footer ------------------
+		footerDescription: "Learn, communicate, and compete through Morse code.",
+		privacyPolicy: "Privacy Policy",
+		termsOfService: "Terms of Service",
+		copyright: "© 2026 Echoes of Morse",
+		mainNavigation: "Main navigation",
+		footerNavigation: "Footer navigation",
+
+		//------------------ languageSwitcher ------------------
+		languageSwitcher: "Language switcher",
+	},
+
 
 };
 

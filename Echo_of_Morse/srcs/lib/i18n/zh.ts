@@ -119,6 +119,26 @@ const zh = {
 		noQuestion: "没有可用题目。"
 	},
 
+	layout: {
+		//------------------ navbar ------------------
+		brand: "摩斯之声",
+		dashboard: "主页",
+		profile: "个人",
+		login: "登录",
+		logout: "退出",
+		user: "用户",
+
+		//------------------ footer ------------------
+		footerDescription: "学习、交流，并通过摩斯码进行挑战。",
+		privacyPolicy: "隐私政策",
+		termsOfService: "服务条款",
+		copyright: "© 2026 摩斯之声",
+		footerNavigation: "页脚导航",
+		mainNavigation: "主导航",
+
+		//------------------ languageSwitcher ------------------
+		languageSwitcher: "语言切换",
+	},
 };
 
 export default zh;
