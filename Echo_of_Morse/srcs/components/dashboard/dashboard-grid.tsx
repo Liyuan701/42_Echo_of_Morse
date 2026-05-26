@@ -112,8 +112,9 @@
 //   );
 // }
 
-// // ! i18n: move dashboard card titles, descriptions, progress labels, and unit labels into the i18n dictionary.
-// // ! i18n: keep numeric progress values dynamic and only translate surrounding labels such as "days".
+"use client";
+import { useI18n } from "@/lib/i18n";
+
 import Link from "next/link";
 import styles from "./dashboard.module.css";
 import { useEffect, useState } from "react";
@@ -122,9 +123,10 @@ type DashboardCardProps = {
   title: string;
   description: string;
   href: string;
+  actionLabel: string;
 };
 
-function DashboardCard({ title, description, href }: DashboardCardProps) {
+function DashboardCard({ title, description, href, actionLabel }: DashboardCardProps) {
   return (
     <Link href={href} className={styles.card}>
       <div>
@@ -133,32 +135,35 @@ function DashboardCard({ title, description, href }: DashboardCardProps) {
         <p className={styles.cardDescription}>{description}</p>
       </div>
 
-      <span className={styles.cardAction}>Open module →</span>
+      <span className={styles.cardAction}>{actionLabel}</span>
     </Link>
   );
 }
 
 export default function DashboardGrid() {
-  const cards: DashboardCardProps[] = [
+	const { dictionary } = useI18n();
+	const t = dictionary.dashboard;
+
+  const cards = [
     {
-      title: "Learning",
-      description: "Practice Morse code and improve your decoding skills.",
+      title: t.learningTitle,
+      description: t.learningDescription,
       href: "/learning",
     },
     {
-      title: "Chat",
-      description: "Communicate with other users through real-time chat.",
+      title: t.chatTitle,
+      description: t.chatDescription,
       href: "/chat",
     },
     {
-      title: "Competition",
-      description: "Join challenges and compare your performance.",
+      title: t.competitionTitle,
+      description: t.competitionDescription,
       href: "/competition",
     },
   ];
 
   return (
-    <section aria-label="Dashboard modules">
+    <section aria-label={t.modulesLabel}>
       <div className={styles.cardGrid}>
         {cards.map((card) => (
           <DashboardCard
@@ -166,11 +171,10 @@ export default function DashboardGrid() {
             title={card.title}
             description={card.description}
             href={card.href}
+			actionLabel={t.openModule}
           />
         ))}
       </div>
     </section>
   );
 }
-
-// ! i18n: move dashboard card titles, descriptions, and action label into the i18n dictionary.

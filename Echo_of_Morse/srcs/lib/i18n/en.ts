@@ -139,6 +139,48 @@ const en = {
 		languageSwitcher: "Language switcher",
 	},
 
+	dashboard: {
+		modulesLabel: "Dashboard modules",
+
+		openModule: "Open module →",
+
+		learningTitle: "Learning",
+		learningDescription: "Practice Morse code and improve your decoding skills.",
+
+		chatTitle: "Chat",
+		chatDescription: "Communicate with other users through real-time chat.",
+
+		competitionTitle: "Competition",
+		competitionDescription: "Join challenges and compare your performance.",
+	},
+
+	home: {
+		onlineNow: "Online now",
+		usersConnected: "{count} users connected",
+
+		introTitle: "A Project of Morse?",
+		introDescription: "Morse code becomes here a way to learn signals, rhythm, communication, and interaction.",
+
+		historyTitle: "History of Morse",
+		historyParagraph1: "Morse code was developed in the nineteenth century as a way to send messages over long distances through the electric telegraph. It transformed written language into short and long signals, now known as dots and dashes.",
+		historyParagraph2: "The system is named after Samuel Morse, who worked with collaborators such as Alfred Vail to create a practical communication method for the telegraph.",
+		historyParagraph3: "Morse code played an important role in railway networks, maritime communication, military operations, journalism, and emergency rescue.",
+		historyParagraph4: "Although it is no longer the main system of global communication, Morse code remains a powerful historical medium and a useful learning tool.",
+
+		onlineFriends: "Online friends",
+		checkingSession: "Checking your session...",
+		onlineFriendsDescription: "Friends currently available for chat or competition.",
+		loadingOnlineFriends: "Loading online friends...",
+		noFriendsOnline: "No friends online for now.",
+		viewAllFriends: "View all friends",
+		unknownUser: "Unknown user",
+		avatarAlt: "{displayName}'s avatar",
+		chat: "Chat",
+		invite: "Invite",
+		pending: "Pending",
+		inviteAlreadyPending: "A game invitation is already pending.",
+		inviteSent: "Game invitation sent to {displayName}. Waiting for their response.",
+	},
 
 };
 

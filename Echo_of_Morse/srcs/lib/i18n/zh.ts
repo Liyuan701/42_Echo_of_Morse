@@ -139,6 +139,49 @@ const zh = {
 		//------------------ languageSwitcher ------------------
 		languageSwitcher: "语言切换",
 	},
+
+	dashboard: {
+		modulesLabel: "仪表盘模块",
+
+		openModule: "打开模块 →",
+
+		learningTitle: "学习",
+		learningDescription: "练习摩斯码，提升你的识别能力。",
+
+		chatTitle: "聊天",
+		chatDescription: "通过实时聊天和其他用户交流。",
+
+		competitionTitle: "比赛",
+		competitionDescription: "参加挑战并比较你的表现。",
+	},
+
+	home: {
+		onlineNow: "当前在线",
+		usersConnected: "{count} 位用户在线",
+
+		introTitle: "摩斯项目？",
+		introDescription: "摩斯码在这里成为学习信号、节奏、交流和互动的一种方式。",
+
+		historyTitle: "摩斯码的历史",
+		historyParagraph1: "摩斯码诞生于十九世纪，最初用于通过电报远距离发送信息。它把文字转换成短信号和长信号，也就是现在说的点和划。",
+		historyParagraph2: "这个系统以 Samuel Morse 命名。他和 Alfred Vail 等合作者一起，为电报创造了一种实用的通信方法。",
+		historyParagraph3: "摩斯码曾在铁路、海上通信、军事、新闻和紧急救援中发挥重要作用。它让信息传递得比信件和报纸更快。",
+		historyParagraph4: "虽然它现在不再是全球通信的主要方式，但摩斯码仍然是一种重要的历史媒介，也是一种有用的学习工具。",
+
+		onlineFriends: "在线好友",
+		checkingSession: "正在检查登录状态...",
+		onlineFriendsDescription: "当前可以聊天或比赛的好友。",
+		loadingOnlineFriends: "正在加载在线好友...",
+		noFriendsOnline: "目前没有在线好友。",
+		viewAllFriends: "查看所有好友",
+		unknownUser: "未知用户",
+		avatarAlt: "{displayName} 的头像",
+		chat: "聊天",
+		invite: "邀请",
+		pending: "等待中",
+		inviteAlreadyPending: "已经有一个比赛邀请在等待中。",
+		inviteSent: "已向 {displayName} 发送比赛邀请，等待对方回应。",
+	},
 };
 
 export default zh;

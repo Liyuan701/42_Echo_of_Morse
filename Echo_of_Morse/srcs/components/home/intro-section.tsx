@@ -1,18 +1,19 @@
+"use client";
+import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui";
 import styles from "./home.module.css";
 
 export default function IntroSection() {
+	const { dictionary } = useI18n();
+	const t = dictionary.home;
+
   return (
     <Card className={styles.sectionBlock}>
-      <h2 className={styles.sectionTitle}>A Project of Morse?</h2>
+      <h2 className={styles.sectionTitle}>{t.introTitle}</h2>
 
       <p className={styles.sectionText}>
-        Morse code becomes here a way to learn signals, rhythm, communication,
-        and interaction.
+        {t.introDescription}
       </p>
     </Card>
   );
 }
-
-// ! i18n: move home page titles, descriptive paragraphs, online-user labels, empty states, buttons, and alert messages into the i18n dictionary.
-// ! i18n: keep dynamic values such as onlineCount and displayName as interpolation variables.

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Card, Button } from "@/components/ui";
 import styles from "./online-friend.module.css";
+import { useI18n } from "@/lib/i18n";
+
 
 type ApiFriendship = {
   id: number;
@@ -30,6 +32,9 @@ type OnlineFriend = {
 };
 
 export default function OnlineFriendsPreview() {
+	const { dictionary } = useI18n();
+	const t = dictionary.home;
+
   const { data: session, status } = useSession();
 
   const currentUserId = (session?.user as { id?: string } | undefined)?.id;
@@ -94,7 +99,7 @@ export default function OnlineFriendsPreview() {
     const alreadyPending = pendingGameInviteFriendIds.includes(friendId);
 
     if (alreadyPending) {
-      window.alert("A game invitation is already pending.");
+      window.alert(t.inviteAlreadyPending);
       return;
     }
 
@@ -107,16 +112,14 @@ export default function OnlineFriendsPreview() {
     // ! and create / join a game room only after the receiver accepts.
     setPendingGameInviteFriendIds((prev) => [...prev, friendId]);
 
-    window.alert(
-      `Game invitation sent to ${displayName}. Waiting for their response.`
-    );
+    window.alert(t.inviteSent.replace("{displayName}", displayName));
   }
 
   if (status === "loading") {
     return (
       <Card className={styles.card}>
-        <h2 className={styles.title}>Online friends</h2>
-        <p className={styles.description}>Checking your session...</p>
+        <h2 className={styles.title}>{t.onlineFriends}</h2>
+        <p className={styles.description}>{t.checkingSession}</p>
       </Card>
     );
   }
@@ -129,9 +132,9 @@ export default function OnlineFriendsPreview() {
     <Card className={styles.card}>
       <div className={styles.header}>
         <div>
-          <h2 className={styles.title}>Online friends</h2>
+          <h2 className={styles.title}>{t.onlineFriends}</h2>
           <p className={styles.description}>
-            Friends currently available for chat or competition.
+            {t.onlineFriendsDescription}
           </p>
         </div>
       </div>
@@ -139,12 +142,12 @@ export default function OnlineFriendsPreview() {
       {/* //! Liyuan: replace mock online friends with real current user's online friends from auth/database */}
       {/* //! current version: this component now uses session.user.id and /api/friends instead of mockFriends */}
       {isLoadingFriends ? (
-        <p className={styles.empty}>Loading online friends...</p>
+        <p className={styles.empty}>{t.loadingOnlineFriends}</p>
       ) : onlineFriends.length > 0 ? (
         <ul className={styles.list}>
           {onlineFriends.map((friend) => {
             const profileHref = `/users/${friend.id}`;
-            const displayName = friend.username || "Unknown user";
+            const displayName = friend.username || t.unknownUser;
             const avatarLetter = displayName.charAt(0).toUpperCase();
 
             const isGameInvitePending = pendingGameInviteFriendIds.includes(
@@ -152,8 +155,8 @@ export default function OnlineFriendsPreview() {
             );
 
             const inviteButtonLabel = isGameInvitePending
-              ? "Pending"
-              : "Invite";
+              ? t.pending 
+			  : t.invite;
 
             return (
               <li key={friend.id} className={styles.item}>
@@ -162,7 +165,7 @@ export default function OnlineFriendsPreview() {
                     <img
                       className={styles.avatar}
                       src={friend.image}
-                      alt={`${displayName}'s avatar`}
+                      alt={t.avatarAlt.replace("{displayName}", displayName)}
                     />
                   ) : (
                     <span className={styles.avatarFallback}>
@@ -178,7 +181,7 @@ export default function OnlineFriendsPreview() {
 
                 <div className={styles.actions}>
                   <Link href="/chat" className={styles.chatLink}>
-                    Chat
+                    {t.chat}
                   </Link>
 
                   <Button
@@ -197,17 +200,12 @@ export default function OnlineFriendsPreview() {
           })}
         </ul>
       ) : (
-        <p className={styles.empty}>No friends online for now.</p>
+        <p className={styles.empty}>{t.noFriendsOnline}</p>
       )}
 
       <Link href="/chat" className={styles.viewAllLink}>
-        View all friends
+        {t.viewAllFriends}
       </Link>
     </Card>
   );
 }
-
-// ! i18n: move home page titles, descriptive paragraphs, online-user labels, empty states, buttons, and alert messages into the i18n dictionary.
-// ! i18n: keep dynamic values such as onlineCount and displayName as interpolation variables.
-// ! i18n: move game invitation labels and messages into the i18n dictionary.
-// ! i18n: dynamic game invitation strings should use displayName as an interpolation variable.
