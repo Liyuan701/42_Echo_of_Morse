@@ -9,20 +9,6 @@ type LearningProgressCardProps = {
   totalLevels: number;
 };
 
-function formatLearningTime(minutes: number): string {
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  if (remainingMinutes === 0) {
-    return `${hours}h`;
-  }
-
-  return `${hours}h ${remainingMinutes}min`;
-}
 
 export default function LearningProgressCard({
   progress,
@@ -49,19 +35,10 @@ export default function LearningProgressCard({
       </div>
 
       <dl className={styles.progressStats}>
-        <div>
-          <dt>{t.today}</dt>
-          <dd>{formatLearningTime(progress.todayLearningMinutes)}</dd>
-        </div>
 
         <div>
           <dt>{t.accuracy}</dt>
           <dd>{progress.globalAccuracy}%</dd>
-        </div>
-
-        <div>
-          <dt>{t.reaction}</dt>
-          <dd>{progress.averageReactionTime}s</dd>
         </div>
 
         <div>
