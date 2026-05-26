@@ -1,39 +1,39 @@
+"use client";
+import { useI18n } from "@/lib/i18n";
 import Link from "next/link";
 import styles from "./footer.module.css";
 
 export default function Footer() {
+	const { dictionary } = useI18n();
+	const t = dictionary.layout;
+
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <div>
-          <p className={styles.brand}>Echoes of Morse</p>
+          <p className={styles.brand}>{t.brand}</p>
 
           <p className={styles.description}>
-            Learn, communicate, and compete through Morse code.
+            {t.footerDescription}
           </p>
         </div>
 
-        <nav className={styles.nav} aria-label="Footer navigation">
+        <nav className={styles.nav} aria-label={t.footerNavigation}>
           <Link href="/privacy-policy" className={styles.link}>
-            Privacy Policy
+            {t.privacyPolicy}
           </Link>
 
           <Link href="/terms-of-service" className={styles.link}>
-            Terms of Service
+            {t.termsOfService}
           </Link>
 
-          {/* //! yren: replace this static Login link with auth/session logic if needed */}
-          {/* //! yren: if user is logged in, this could become Profile or Logout instead of Login */}
           <Link href="/login" className={styles.link}>
-            Login
+            {t.login}
           </Link>
         </nav>
       </div>
 
-      <p className={styles.copyright}>© 2026 Echoes of Morse</p>
+      <p className={styles.copyright}>{t.copyright}</p>
     </footer>
   );
 }
-
-// ! i18n: move all navigation labels, aria-labels, footer links, and footer description into the i18n dictionary.
-// ! i18n: keep the brand name "Echoes of Morse" unchanged unless the team decides to translate the product name.

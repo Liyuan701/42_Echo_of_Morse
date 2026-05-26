@@ -1,3 +1,6 @@
+"use client";
+import { useI18n } from "@/lib/i18n";
+
 import Link from "next/link";
 import type { UserLearningProgress } from "@/types/learning";
 import styles from "@/components/learning/css/Learning.module.css";
@@ -9,32 +12,35 @@ type LearningEntryCardsProps = {
 export default function LearningEntryCards({
   progress,
 }: LearningEntryCardsProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.learning;
+
   return (
-    <section className={styles.entryGrid} aria-label="Learning options">
+    <section className={styles.entryGrid} aria-label={t.learningOptions}>
       <article className={styles.entryCard}>
         <div>
-          <p className={styles.cardLabel}>Levels</p>
+          <p className={styles.cardLabel}>{t.levels}</p>
 
-          <h2 className={styles.entryTitle}>Choose a level</h2>
+          <h2 className={styles.entryTitle}>{t.chooseLevel}</h2>
 
           <p className={styles.cardText}>
-            View all Morse levels and continue with an unlocked level.
+           	{t.levelsDescription}
           </p>
         </div>
 
         <Link className={styles.primaryButton} href="/learning/levels">
-          Open levels
+          {t.openLevels}
         </Link>
       </article>
 
       <article className={styles.entryCard}>
         <div>
-          <p className={styles.cardLabel}>Play</p>
+          <p className={styles.cardLabel}>{t.play}</p>
 
-          <h2 className={styles.entryTitle}>Review completed levels</h2>
+          <h2 className={styles.entryTitle}>{t.reviewCompletedLevels}</h2>
 
           <p className={styles.cardText}>
-            Practice a random level you have already completed.
+            {t.playDescription}
           </p>
         </div>
 
@@ -51,7 +57,7 @@ export default function LearningEntryCards({
             or redirect to the current level.
         */}
         <Link className={styles.primaryButton} href="/learning/play">
-          Play
+          {t.play}
         </Link>
       </article>
     </section>

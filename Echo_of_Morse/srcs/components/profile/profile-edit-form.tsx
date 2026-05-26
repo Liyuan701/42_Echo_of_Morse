@@ -225,7 +225,6 @@ export default function ProfileEditForm() {
 
             {/* ========================================== informations éditables ========================================== */}
             <div className={styles.identity}>
-              <p className={styles.status}>{t.online}</p>
  				<div className={styles.editFields}>
 					<Input
 						label={t.username}

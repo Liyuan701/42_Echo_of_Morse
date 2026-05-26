@@ -66,7 +66,7 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(toUserDTO(user));
+    return NextResponse.json(toUserDTO(user, friendCount));
   } catch (error) {
     console.error(error);
 
@@ -103,10 +103,11 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { username, email, image } = body as {
+    const { username, email, image, bio } = body as {
       username?: string;
       email?: string;
       image?: string;
+      bio?:string;
     };
 
     const updatedUser = await prisma.user.update({
@@ -115,6 +116,8 @@ export async function PUT(
         ...(username && { username }),
         ...(email && { email }),
         ...(image && { image }),
+        //allow blank bio.
+        ...(bio !== undefined && { bio }), 
       },
       select: {
         id: true,

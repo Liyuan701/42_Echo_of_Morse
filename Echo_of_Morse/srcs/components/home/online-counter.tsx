@@ -143,3 +143,9 @@ export default function OnlineCounter() {
   </Card>
   );
 }
+
+// ! i18n: move home page titles, descriptive paragraphs, online-user labels, empty states, buttons, and alert messages into the i18n dictionary.
+// ! i18n: keep dynamic values such as onlineCount and displayName as interpolation variables.
+//? yren to jdu:
+//? TODO_i18n: This component is server-side, so it cannot use useI18n directly.
+//? Ask the owner whether to pass translated labels as props or convert it to a client component.
