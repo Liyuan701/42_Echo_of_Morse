@@ -143,4 +143,29 @@ httpServer.listen(3001, () => {
   console.log("WS SERVER RUNNING ON 3001");
 });
 
+
+function shutdown() {
+  console.log("✅ Shutting down...");
+
+  io.close(() => {
+    console.log("Socket.IO closed");
+
+    httpServer.close(() => {
+      console.log("HTTP server closed");
+      process.exit(0);
+    });
+  });
+
+  // emergency timeout
+  setTimeout(() => {
+    console.error("Force shutdown");
+    process.exit(1);
+  }, 5000);
+}
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
+
+
+
 setInterval(cleanupUsers, 60000);
