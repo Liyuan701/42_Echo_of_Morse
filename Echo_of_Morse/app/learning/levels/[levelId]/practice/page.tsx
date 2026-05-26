@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageShell from "@/components/layout/page-shell";
 import PracticeSession from "@/components/learning/Practice/practiceSession";
@@ -22,21 +21,6 @@ export default function PracticePage({ params }: PracticePageProps) {
 			<PageShell>
 				<section className={styles.learningPage}>
 					<div className={styles.learningContainer}>
-						{/* c’est une petite navigation comme Learning / Levels / Level 3 practice */}
-						<nav className={styles.breadcrumb}>
-							<Link className={styles.link} href="/learning">
-								Learning
-							</Link>
-							<span aria-hidden="true"> / </span>
-							<Link className={styles.link} href="/learning/levels">
-								Levels
-							</Link>
-							<span aria-hidden="true"> / </span>
-							<span className={styles.breadcrumbCurrent}>
-								Level {levelId} practice
-							</span>
-						</nav>
-
 						<PracticeSession levelId={levelId} />
 					</div>
 				</section>

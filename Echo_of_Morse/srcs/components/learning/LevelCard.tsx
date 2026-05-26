@@ -1,3 +1,6 @@
+"use client";
+import { useI18n } from "@/lib/i18n";
+
 import Link from "next/link";
 import type { MorseLevel, UserLearningProgress } from "@/types/learning";
 import { getLevelStatus } from "@/lib/learning/levelAccess";
@@ -9,6 +12,9 @@ type LevelCardProps = {
 };
 
 export default function LevelCard({ level, progress }: LevelCardProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.learning;
+
   // TODO_BACKEND: 
   //! Liyuan: Level status depends on real user progress from the backend.
   // Required progress fields:
@@ -27,7 +33,7 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
       <div>
         <div className={styles.levelTop}>
           <h2 id={`level-${level.level}-title`} className={styles.levelTitle}>
-            {level.title}
+            {t.levelLabel.replace("{level}", String(level.level))}
           </h2>
 
           <span
@@ -39,7 +45,7 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
           </span>
         </div>
 
-        <div className={styles.characterList} aria-label="New characters">
+        <div className={styles.characterList} aria-label={t.newCharacters}>
           {level.newCharacters.map((character) => (
             <span className={styles.characterPill} key={character}>
               {character}
@@ -49,17 +55,17 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
 
         <dl className={styles.levelMeta}>
           <div className={styles.metaBox}>
-            <dt className={styles.metaLabel}>Questions</dt>
+            <dt className={styles.metaLabel}>{t.questions}</dt>
             <dd className={styles.metaValue}>{level.questionCount}</dd>
           </div>
 
           <div className={styles.metaBox}>
-            <dt className={styles.metaLabel}>Pass</dt>
+            <dt className={styles.metaLabel}>{t.pass}</dt>
             <dd className={styles.metaValue}>{level.passCondition}</dd>
           </div>
 
           <div className={styles.metaBox}>
-            <dt className={styles.metaLabel}>Review</dt>
+            <dt className={styles.metaLabel}>{t.review}</dt>
             <dd className={styles.metaValue}>{level.reviewRatio}</dd>
           </div>
         </dl>
@@ -67,7 +73,7 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
 
       {isLocked ? (
         <button className={styles.disabledButton} type="button" disabled>
-          Locked
+          {t.locked}
         </button>
       ) : (
         <>
@@ -82,7 +88,7 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
             className={styles.primaryButton}
             href={`/learning/levels/${level.level}/practice`}
           >
-            Start practice
+            {t.startPractice}
           </Link>
         </>
       )}

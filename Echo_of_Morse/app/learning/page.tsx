@@ -1,3 +1,6 @@
+"use client";
+import { useI18n } from "@/lib/i18n";
+
 import PageShell from "@/components/layout/page-shell";
 import LearningProgressCard from "@/components/learning/LearningProgressCard";
 import LearningEntryCards from "@/components/learning/LearningEntryCards";
@@ -6,6 +9,9 @@ import { mockLearningProgress } from "@/components/learning/data/mockLearningPro
 import styles from "@/components/learning/css/Learning.module.css";
 
 export default function LearningPage() {
+	const { dictionary } = useI18n();
+	const t = dictionary.learning;
+
   // TODO_BACKEND:
   //! Liyuan: Replace mockLearningProgress with the current user's real learning progress.
   // Suggested API: GET /api/learning/progress
@@ -34,11 +40,11 @@ export default function LearningPage() {
             <section className={styles.hero}>
 
               <h1 id="learning-title" className={styles.title}>
-                Learn Morse Code
+                {t.pageTitle}
               </h1>
 
               <p className={styles.description}>
-                Continue your Morse training through mixed practice levels.
+                {t.pageDescription}
               </p>
             </section>
 

@@ -64,60 +64,6 @@ const en = {
 		usernameOrEmailInUse: "Username or email already in use.",
 	},
 
-	learningPractice: {
-		//------------------ top left ------------------
-		level: "Level",
-
-		//------------------ left ------------------
-		decodeSignal: "Decode signal",
-		listenPrompt: "Listen or watch the signal, then press the matching key.",
-		playing: "Playing...",
-		replaySignal: "Replay signal",
-		encodeCharacter: "Encode character",
-		encodePrompt: "Use Left Arrow for dot and Right Arrow for dash. Press Enter to submit.",
-
-		//------------------ top right ------------------
-		correctCount: "Correct",
-
-		//------------------ right ------------------
-		yourAnswer: "Your answer",
-		leftDot: "Dot",
-		rightDash: "Dash",
-		delete: "Delete",
-		submit: "Submit",
-		pressMatching: "Press the matching character on your keyboard.",
-		buildMorse: "Build the Morse code with the arrow keys.",
-		correct: "Correct",
-		wrong: "Wrong",
-
-		//------------------ bottom ------------------
-		audio: "Audio",
-		light: "Light",
-
-		//------------------ result ------------------
-		complete: "complete",
-
-		levelPassed: "Level passed",
-		tryAgain: "Try again",
-
-		resultSummary: "You answered {correctCount} of {questionCount} correctly.",
-		passConditionText: "Pass condition: {passCount} / {questionCount}.",
-
-		accuracy: "Accuracy",
-		status: "Status",
-		unlockedNext: "Unlocked next",
-		needsReview: "Needs review",
-
-		practiceAgain: "Practice again",
-
-		signalOn: "Signal on",
-		signalSettings: "Signal settings",
-		signalOff: "Signal off",
-		
-		//------------------ error ------------------
-		noQuestion: "No question available."
-	},
-
 	layout: {
 		//------------------ navbar ------------------
 		brand: "Echoes of Morse",
@@ -180,6 +126,107 @@ const en = {
 		pending: "Pending",
 		inviteAlreadyPending: "A game invitation is already pending.",
 		inviteSent: "Game invitation sent to {displayName}. Waiting for their response.",
+	},
+
+	//=========================================== learning =========================================== 
+	learningPractice: {
+		//------------------ top left ------------------
+		level: "Level",
+
+		//------------------ left ------------------
+		decodeSignal: "Decode signal",
+		listenPrompt: "Listen or watch the signal, then press the matching key.",
+		playing: "Playing...",
+		replaySignal: "Replay signal",
+		encodeCharacter: "Encode character",
+		encodePrompt: "Use Left Arrow for dot and Right Arrow for dash. Press Enter to submit.",
+
+		//------------------ top right ------------------
+		correctCount: "Correct",
+
+		//------------------ right ------------------
+		yourAnswer: "Your answer",
+		leftDot: "Dot",
+		rightDash: "Dash",
+		delete: "Delete",
+		submit: "Submit",
+		pressMatching: "Press the matching character on your keyboard.",
+		buildMorse: "Build the Morse code with the arrow keys.",
+		correct: "Correct",
+		wrong: "Wrong",
+
+		//------------------ bottom ------------------
+		audio: "Audio",
+		light: "Light",
+
+		//------------------ result ------------------
+		complete: "complete",
+
+		levelPassed: "Level passed",
+		tryAgain: "Try again",
+
+		resultSummary: "You answered {correctCount} of {questionCount} correctly.",
+		passConditionText: "Pass condition: {passCount} / {questionCount}.",
+
+		accuracy: "Accuracy",
+		status: "Status",
+		unlockedNext: "Unlocked next",
+		needsReview: "Needs review",
+
+		practiceAgain: "Practice again",
+
+		signalOn: "Signal on",
+		signalSettings: "Signal settings",
+		signalOff: "Signal off",
+		
+		//------------------ error ------------------
+		noQuestion: "No question available."
+	},
+
+	learning: {
+		//------------------ app/learning/page.tsx ------------------
+		pageTitle: "Learn Morse Code",
+		pageDescription: "Continue your Morse training through mixed practice levels.",
+
+		//------------------ srcs/components/learning/LearningProgressCard.tsx ------------------
+		yourProgress: "Your progress",
+		levelLabel: "Level {level}",
+		completedLevels: "You have completed {completed} of {total} levels.",
+		today: "Today",
+		accuracy: "Accuracy",
+		reaction: "Reaction",
+		sessions: "Sessions",
+		minutes: "{minutes} min",
+		hours: "{hours}h",
+		hoursMinutes: "{hours}h {minutes}min",
+
+		//------------------ srcs/components/learning/LearningEntryCards.tsx ------------------
+		learningOptions: "Learning options",
+		levels: "Levels",
+		chooseLevel: "Choose a level",
+		levelsDescription: "View all Morse levels and continue with an unlocked level.",
+		openLevels: "Open levels",
+
+		play: "Play",
+		reviewCompletedLevels: "Review completed levels",
+		playDescription: "Practice a random level you have already completed.",
+
+		
+		//------------------ app/learning/levels/page.tsx ------------------
+		levelsPageDescription: "The path covers letters, numbers, and punctuation. Each level uses mixed practice: sometimes you decode Morse signals, sometimes you encode characters with the keyboard.",
+		breadcrumbLearning: "Learning",
+		breadcrumbLevels: "Levels",
+
+		//------------------ srcs/components/learning/LevelGrid.tsx ------------------
+		morseLevels: "Morse levels",
+
+		//------------------ srcs/components/learning/LevelCard.tsx ------------------
+		newCharacters: "New characters",
+		questions: "Questions",
+		pass: "Pass",
+		review: "Review",
+		locked: "Locked",
+		startPractice: "Start practice",
 	},
 
 };

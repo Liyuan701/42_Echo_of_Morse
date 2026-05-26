@@ -63,60 +63,6 @@ const fr = {
 		genericError: "Une erreur est survenue lors de l'inscription.",
 		usernameOrEmailInUse: "Le nom d'utilisateur ou l'email est déjà utilisé.",
 	},
-	
-	learningPractice: {
-		//------------------ en haut à gauche ------------------
-		level: "Niveau",
-
-		//------------------ à gauche ------------------
-		decodeSignal: "Decoder le signal",
-		listenPrompt: "Ecoutez ou observez le signal, puis appuyez sur la touche correspondante.",
-		playing: "Lecture...",
-		replaySignal: "Rejouer le signal",
-		encodeCharacter: "Encoder le caractere",
-		encodePrompt: "Utilisez Fleche gauche pour le point et Fleche droite pour le trait. Appuyez sur Entree pour valider.",
-
-		//------------------ en haut à droite ------------------
-		correctCount: "correctes",
-
-		//------------------ à droite ------------------
-		yourAnswer: "Votre reponse",
-		leftDot: "Point",
-		rightDash: "Trait",
-		delete: "Supprimer",
-		submit: "Valider",
-		pressMatching: "Appuyez sur le caractere correspondant au clavier.",
-		buildMorse: "Composez le code Morse avec les fleches du clavier.",
-		correct: "Correct",
-		wrong: "Erreur",
-
-		//------------------ en bas ------------------
-		audio: "Son",
-		light: "Lumiere",
-
-		//------------------ resultat ------------------
-		complete: "termine",
-
-		levelPassed: "Niveau reussi",
-		tryAgain: "Reessayer",
-
-		resultSummary: "Vous avez répondu correctement à {correctCount} question(s) sur {questionCount}.",
-		passConditionText: "Condition de réussite : {passCount} / {questionCount}.",
-
-		accuracy: "Précision",
-		status: "Statut",
-		unlockedNext: "Niveau suivant debloque",
-		needsReview: "Revision necessaire",
-
-		practiceAgain: "Recommencer",
-
-		signalOn: "Signal allume",
-		signalSettings: "Parametres du signal",
-		signalOff: "Signal eteint",
-
-		//------------------ error ------------------
-		noQuestion: "Aucune question disponible."
-	},
 
 	layout: {
 		//------------------ navbar ------------------
@@ -181,6 +127,109 @@ const fr = {
 		inviteAlreadyPending: "Une invitation de jeu est déjà en attente.",
 		inviteSent: "Invitation envoyée à {displayName}. En attente de sa réponse.",
 	},
+
+	//=========================================== learning =========================================== 
+	learningPractice: {
+		//------------------ en haut à gauche ------------------
+		level: "Niveau",
+
+		//------------------ à gauche ------------------
+		decodeSignal: "Decoder le signal",
+		listenPrompt: "Ecoutez ou observez le signal, puis appuyez sur la touche correspondante.",
+		playing: "Lecture...",
+		replaySignal: "Rejouer le signal",
+		encodeCharacter: "Encoder le caractere",
+		encodePrompt: "Utilisez Fleche gauche pour le point et Fleche droite pour le trait. Appuyez sur Entree pour valider.",
+
+		//------------------ en haut à droite ------------------
+		correctCount: "correctes",
+
+		//------------------ à droite ------------------
+		yourAnswer: "Votre reponse",
+		leftDot: "Point",
+		rightDash: "Trait",
+		delete: "Supprimer",
+		submit: "Valider",
+		pressMatching: "Appuyez sur le caractere correspondant au clavier.",
+		buildMorse: "Composez le code Morse avec les fleches du clavier.",
+		correct: "Correct",
+		wrong: "Erreur",
+
+		//------------------ en bas ------------------
+		audio: "Son",
+		light: "Lumiere",
+
+		//------------------ resultat ------------------
+		complete: "termine",
+
+		levelPassed: "Niveau reussi",
+		tryAgain: "Reessayer",
+
+		resultSummary: "Vous avez répondu correctement à {correctCount} question(s) sur {questionCount}.",
+		passConditionText: "Condition de réussite : {passCount} / {questionCount}.",
+
+		accuracy: "Précision",
+		status: "Statut",
+		unlockedNext: "Niveau suivant debloque",
+		needsReview: "Revision necessaire",
+
+		practiceAgain: "Recommencer",
+
+		signalOn: "Signal allume",
+		signalSettings: "Parametres du signal",
+		signalOff: "Signal eteint",
+
+		//------------------ error ------------------
+		noQuestion: "Aucune question disponible."
+	},
+
+	learning: {
+		//------------------ app/learning/page.tsx ------------------
+		pageTitle: "Apprendre le code Morse",
+		pageDescription: "Continuez votre entraînement Morse avec des niveaux de pratique mixte.",
+
+		//------------------ srcs/components/learning/LearningProgressCard.tsx ------------------
+		yourProgress: "Votre progression",
+		levelLabel: "Niveau {level}",
+		completedLevels: "Vous avez terminé {completed} niveau(x) sur {total}.",
+		today: "Aujourd'hui",
+		accuracy: "Précision",
+		reaction: "Réaction",
+		sessions: "Sessions",
+		minutes: "{minutes} min",
+		hours: "{hours} h",
+		hoursMinutes: "{hours} h {minutes} min",
+
+		//------------------ srcs/components/learning/LearningEntryCards.tsx ------------------
+		learningOptions: "Options d'apprentissage",
+		levels: "Niveaux",
+		chooseLevel: "Choisir un niveau",
+		levelsDescription: "Voir tous les niveaux Morse et continuer avec un niveau débloqué.",
+		openLevels: "Ouvrir les niveaux",
+
+		play: "Jouer",
+		reviewCompletedLevels: "Réviser les niveaux terminés",
+		playDescription: "Pratiquez un niveau déjà terminé au hasard.",
+
+		
+		//------------------ app/learning/levels/page.tsx ------------------
+		levelsPageDescription: "Le parcours couvre les lettres, les chiffres et la ponctuation. Chaque niveau utilise une pratique mixte : parfois vous décodez des signaux Morse, parfois vous encodez des caractères au clavier.",
+		breadcrumbLearning: "Apprentissage",
+		breadcrumbLevels: "Niveaux",
+
+		//------------------ srcs/components/learning/LevelGrid.tsx ------------------
+		morseLevels: "Niveaux Morse",
+
+		//------------------ srcs/components/learning/LevelCard.tsx ------------------
+		newCharacters: "Nouveaux caractères",
+		questions: "Questions",
+		pass: "Réussite",
+		review: "Révision",
+		locked: "Verrouillé",
+		startPractice: "Commencer",
+	},
+
+
 
 };
 

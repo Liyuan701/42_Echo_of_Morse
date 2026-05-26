@@ -1,3 +1,6 @@
+"use client";
+import { useI18n } from "@/lib/i18n";
+
 import Link from "next/link";
 import PageShell from "@/components/layout/page-shell";
 import { morseLevels } from "@/components/learning/data/morseLevels";
@@ -6,6 +9,10 @@ import LevelGrid from "@/components/learning/LevelGrid";
 import styles from "@/components/learning/css/Learning.module.css";
 
 export default function LevelsPage() {
+
+	const { dictionary } = useI18n();
+	const t = dictionary.learning;
+
   // TODO_BACKEND:
   //! Liyuan: Replace mockLearningProgress with the current user's real progress.
   // This data is used to decide whether each level is completed, current,
@@ -26,22 +33,20 @@ export default function LevelsPage() {
           <div className={styles.learningContainer}>
             <nav className={styles.breadcrumb} aria-label="Breadcrumb">
               <Link className={styles.link} href="/learning">
-                Learning
+                {t.breadcrumbLearning}
               </Link>
               <span aria-hidden="true"> / </span>
-              <span className={styles.breadcrumbCurrent}>Levels</span>
+              <span className={styles.breadcrumbCurrent}>{t.breadcrumbLevels}</span>
             </nav>
             
             <section className={styles.hero}>
 
               <h1 id="levels-title" className={styles.title}>
-                Morse Levels
+                {t.breadcrumbLevels}
               </h1>
 
               <p className={styles.description}>
-                The path covers letters, numbers, and punctuation. Each level
-                uses mixed practice: sometimes you decode Morse signals,
-                sometimes you encode characters with the keyboard.
+                {t.levelsPageDescription}
               </p>
             </section>
 
