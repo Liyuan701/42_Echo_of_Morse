@@ -130,31 +130,29 @@ const zh = {
 
 	//=========================================== learning =========================================== 
 	learningPractice: {
-		//------------------ en haut à gauch ------------------
+		//------------------ titre ------------------
 		level: "等级",
 
-		//------------------ à gauche ------------------
+		//------------------ exo ------------------
 		decodeSignal: "识别信号",
-		listenPrompt: "听声音或观察灯光信号，然后按下对应字符。",//删
 		playing: "播放中...",
 		replaySignal: "重播信号",
-		
 		encodeCharacter: "输入摩斯码",
-		encodePrompt: "左箭头输入点，右箭头输入划。按 Enter 提交。",//删
 
 		//------------------ en haut à doite ------------------
 		correctCount: "题正确",
 
-		//------------------ à droite ------------------
+		//------------------ réponse ------------------
 		yourAnswer: "你的答案",
 		leftDot: ".",
 		rightDash: "-",
 		delete: "删除",
 		submit: "提交",
-		pressMatching: "请按下键盘上对应的字符。",//删
-		buildMorse: "使用方向键输入摩斯码。",//删
+
 		correct: "正确",
 		wrong: "错误",
+		correctAnswerText: "正确答案是 {answer}",
+		nextQuestion: "下一题",
 
 		helpTitle: "键盘操作提示：",
 		decodeHelpText: "听声音或观察灯光信号，然后按下对应字符。",
@@ -163,6 +161,10 @@ const zh = {
 		//------------------ en bas ------------------
 		audio: "声音",
 		light: "灯光",
+
+		//------------------ cheatSheet ------------------
+		cheatSheetTitle: "摩斯提示卡",
+		playSound: "播放",
 
 		//------------------ resultat ------------------
 		complete: "完成",
@@ -183,7 +185,7 @@ const zh = {
 		signalOn: "信号亮起",
 		signalSettings: "信号设置",
 		signalOff: "信号关闭",
-
+		
 		//------------------ error ------------------
 		noQuestion: "没有可用题目。"
 	},

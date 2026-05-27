@@ -8,9 +8,12 @@ import styles from "@/components/learning/css/PracticeSession.module.css";
 import PracticeResult from "./practiceResult";
 import type { Question } from "./practiceTypes";
 import PracticeSettings from "./practiceSettings";
-import { LEVEL_RULES, type LevelId } from "./practiceData";
-import { createQuestionList, toDisplayMorse, wait } from "./practiceUtils";
+import { createQuestionList, getCharactersForLevel, wait } from "./practiceUtils";
 import { submitPracticeResult } from "./practiceApi";
+import PracticeCheatSheet from "./practiceCheatSheet";
+import { LEVEL_RULES, MORSE_LEVELS, type LevelId } from "./practiceData";
+import PracticePrompt from "./practicePrompt";
+import PracticeAnswer from "./practiceAnswer";
 
 // typeof ==> prendre le type d’une variable déjà existante
 // AudioContext ==> une API du navigateur pour créer et jouer du son.
@@ -53,7 +56,8 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 
 	//en train de jouer ou non
 	//eviter de joue plusieur fois, controle les bouton et image
-	const [isPlaying, setIsPlaying] = useState(false);
+	const [questionPlaying, setQuestionPlaying] = useState(false);
+	const [cheatSheetPlaying, setCheatSheetPlaying] = useState(false);
 
 	const progressText = `${questionIndex} / ${rule.questionCount}`;
 
@@ -66,6 +70,9 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 			? question.character
 			: question.morse
 		: "";
+
+	const { newCharacters, reviewCharacters } = getCharactersForLevel(safeLevelId);
+	const cheatSheetItems = [...reviewCharacters, ...newCharacters];
 
 	//========================================== function ==========================================
 	// --------- set audio ---------
@@ -111,37 +118,59 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 		await context.close();
 	}
 
-	// --------- joue avec le son et la lumière ---------
+	// --------- joue un signal Morse donné, avec le son et la lumière ---------
+	async function playMorse(
+		morse: string, 
+		useLight: boolean, 
+		isBusy: boolean,
+		setBusy: (setBusyParam: boolean) => void
+	) {
+		if (isBusy) {
+			return;
+		}
+
+		setBusy(true);
+
+		//for...of --> prendre chaque valeur une par une
+		//lit un char dans str
+		for (const symbol of morse) {
+			const duration = symbol === "." ? 160 : 420;
+
+			//ouvrir
+			if (useLight && visualEnabled) {
+				setBulbOn(true);
+			}
+
+			//attendre
+			await playTone(duration);
+
+			//fermer
+			if (useLight) {
+				setBulbOn(false);
+			}
+
+			//attendre(separateur entre les symboles)
+			await wait(160);
+		}
+
+		setBusy(false);
+	}
+
+	// --------- joue le signal de la question actuelle ---------
 	async function playSignal() {
 		if (!question) {
 			return;
 		}
-		if (isPlaying) {
-			return;
-		}
 
-		setIsPlaying(true);
+		await playMorse(question.morse, true, questionPlaying, setQuestionPlaying);
+	}
 
-		//for...of --> prendre chaque valeur une par une
-		//lit un char dans str
-		for (const symbol of question.morse) {
-			const duration = (symbol === "." ? 160 : 420);
-
-			if (visualEnabled) {
-				setBulbOn(true);
-			}
-
-			await playTone(duration);
-
-			setBulbOn(false);
-			await wait(160);
-		}
-
-		setIsPlaying(false);
+	async function playCheatSheetMorse(morse: string) {
+		await playMorse(morse, false, cheatSheetPlaying, setCheatSheetPlaying);
 	}
 
 	//--------- pass à la prochaine exo, si fini, envoie les resulta au api ---------
-	function goToNextQuestion(wasCorrect: boolean) {
+	function goToNextQuestion(wasCorrect: boolean, delay = 700) {
 		if (wasCorrect) {
 			//ici count peut avoir la dernière valeur donnée par React
 			//si utilise directement (correctCount + 1), peut etre on voit pas la valeur plus recent
@@ -179,7 +208,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 			setQuestionIndex((index) => index + 1);
 			setAnswer("");
 			setFeedback("");
-		}, 700);
+		}, delay);
 	}
 
 	//--------- verifier la reponse(character) pour la mode decode ---------
@@ -196,8 +225,10 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 		const wasCorrect = normalized === expectedAnswer;
 
 		setAnswer(normalized);
-		setFeedback(wasCorrect ? t.correct : `${t.wrong}: ${question.character}`);
-		goToNextQuestion(wasCorrect);
+		setFeedback(wasCorrect ? t.correct : t.wrong);
+		if (wasCorrect) {
+			goToNextQuestion(true);
+		}
 	}
 
 	//--------- verifier la reponse(morse) pour la mode encode ---------
@@ -211,8 +242,14 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 
 		const wasCorrect = answer === expectedAnswer;
 
-		setFeedback(wasCorrect ? t.correct : `${t.wrong}: ${toDisplayMorse(question.morse)}`);
-		goToNextQuestion(wasCorrect);
+		setFeedback(wasCorrect ? t.correct : t.wrong);
+		if (wasCorrect) {
+			goToNextQuestion(true);
+		}
+	}
+
+	function handleNextQuestion() {
+		goToNextQuestion(false, 0);
 	}
 
 	useEffect(() => {
@@ -226,6 +263,12 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 				return;
 			}
 
+			//--------- lorsque feedback est error ----------
+			if (feedback && feedback !== t.correct && event.key === "Enter") {
+				event.preventDefault();
+				handleNextQuestion();
+				return;
+			}
 			//--------- la mode encode(morse) ---------
 			if (question.mode === "encode") {
 				if (event.key === "ArrowLeft") {
@@ -321,104 +364,38 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 				</div>
 			</div>
 
-			{/*======================== carte d'exo ========================*/}
 			<div className={styles.practiceGrid}>
-				<section className={styles.promptPanel}>
-					{/*------------ affiche pour la mode: encode/decode ------------*/}
-					<div className={styles.modeBadge}>
-						{question.mode === "decode" ? t.decodeSignal : t.encodeCharacter}
-					</div>
-
-					{question.mode === "decode" ? (
-						<>
-							{/*------------ ampoule ------------*/}
-							<div
-								className={`${styles.bulb} ${bulbOn ? styles.bulbOn : ""} ${!visualEnabled ? styles.bulbHidden : "" }`}
-							>
-								💡
-							</div>
-
-							{/*------------ bouton pour rejouer le signa ------------*/}
-							<button
-								type="button"
-								className={styles.secondaryAction}
-								onClick={playSignal}
-								disabled={isPlaying}
-							>
-								{isPlaying ? t.playing : t.replaySignal}
-							</button>
-						</>
-					) : (
-						<>
-							{/* ------------ la mode encode: la lettre et text ------------ */}
-							<div className={styles.characterPrompt}>{question.character}</div>
-						</>
-					)}
-				</section>
+				{/* ======================== carte d'exo ======================== */}
+				<PracticePrompt
+					question={question}
+					bulbOn={bulbOn}
+					visualEnabled={visualEnabled}
+					isPlaying={questionPlaying}
+					t={t}
+					onReplaySignal={playSignal}
+				/>
 
 				{/*======================== carte de reponse ========================*/}
-				<section className={styles.answerPanel}>
-					{/* ------------ la partie reponse (decode) ------------ */}
-					<div className={styles.answerBox}>
-						<span>{t.yourAnswer}</span>
-						<strong>
-							{question.mode === "decode"
-								? answer
-								: toDisplayMorse(answer)}
-						</strong>
-					</div>
-
-					{/* ------------ la partie reponse (encode) ------------ */}
-					{question.mode === "encode" ? (
-						<div className={styles.keyGrid}>
-							<button
-								type="button"
-								className={styles.morseKey}
-								onClick={() => setAnswer((value) =>  value + ".")}
-							>
-								{t.leftDot}
-							</button>
-
-							<button
-								type="button"
-								className={styles.morseKey}
-								onClick={() => setAnswer((value) =>  value + "-")}
-							>
-								{t.rightDash}
-							</button>
-
-							<button
-								type="button"
-								className={styles.deleteKey}
-								onClick={() => setAnswer((value) => value.slice(0, -1))}
-							>
-								{t.delete}
-							</button>
-
-							<button type="button" onClick={submitEncodeAnswer}>
-								{t.submit}
-							</button>
-
-						</div>
-					) : null}
-
-					{/* ------------ la partie resultat ------------ */}
-					{feedback ? (
-						<p
-							className={`${styles.feedback} ${feedback === t.correct ? styles.feedbackGood : styles.feedbackBad}`}
-						>
-							{feedback}
-						</p>
-					) : (
-						<p className={styles.hint}>
-							<strong>{t.helpTitle}</strong>
-							<br />
-							{question.mode === "decode" ? t.decodeHelpText : t.encodeHelpText}
-						</p>
-					)}
-				</section>
+				<PracticeAnswer
+					question={question}
+					answer={answer}
+					feedback={feedback}
+					t={t}
+					onAddDot={() => setAnswer((value) => value + ".")}
+					onAddDash={() => setAnswer((value) => value + "-")}
+					onDelete={() => setAnswer((value) => value.slice(0, -1))}
+					onSubmitEncode={submitEncodeAnswer}
+					onNextQuestion={handleNextQuestion}
+				/>
 			</div>
 
+			<PracticeCheatSheet
+				items={cheatSheetItems}
+				title={t.cheatSheetTitle}
+				playLabel={t.playSound}
+				onPlay={playCheatSheetMorse}
+			/>
+			
 			<PracticeSettings
 				audioLabel={t.audio}
 				lightLabel={t.light}

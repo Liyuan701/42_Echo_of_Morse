@@ -130,40 +130,43 @@ const en = {
 
 	//=========================================== learning =========================================== 
 	learningPractice: {
-		//------------------ top left ------------------
+		//------------------ titre ------------------
 		level: "Level",
 
-		//------------------ left ------------------
+		//------------------ exo ------------------
 		decodeSignal: "Decode signal",
-		listenPrompt: "Listen or watch the signal, then press the matching key.",
 		playing: "Playing...",
 		replaySignal: "Replay signal",
 		encodeCharacter: "Encode character",
-		encodePrompt: "Use Left Arrow for dot and Right Arrow for dash. Press Enter to submit.",
 
-		//------------------ top right ------------------
+		//------------------ en haut à doite ------------------
 		correctCount: "Correct",
 
-		//------------------ right ------------------
+		//------------------ réponse ------------------
 		yourAnswer: "Your answer",
 		leftDot: ".",
 		rightDash: "-",
 		delete: "Delete",
 		submit: "Submit",
-		pressMatching: "Press the matching character on your keyboard.",
-		buildMorse: "Build the Morse code with the arrow keys.",
+
 		correct: "Correct",
 		wrong: "Wrong",
+		correctAnswerText: "The correct answer is {answer}",
+		nextQuestion: "Next question",
 
 		helpTitle: "Keyboard help:",
 		decodeHelpText: "Listen to the sound or watch the light signal, then press the matching character.",
 		encodeHelpText: "Press Left Arrow for dot, Right Arrow for dash, and Enter to submit.",
 
-		//------------------ bottom ------------------
+		//------------------ en bas ------------------
 		audio: "Audio",
 		light: "Light",
 
-		//------------------ result ------------------
+		//------------------ cheatSheet ------------------
+		cheatSheetTitle: "Morse reference card",
+		playSound: "Play",
+
+		//------------------ resultat ------------------
 		complete: "complete",
 
 		levelPassed: "Level passed",
