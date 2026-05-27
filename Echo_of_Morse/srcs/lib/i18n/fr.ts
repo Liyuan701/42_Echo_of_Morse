@@ -130,34 +130,41 @@ const fr = {
 
 	//=========================================== learning =========================================== 
 	learningPractice: {
-		//------------------ en haut à gauche ------------------
+		//------------------ titre ------------------
 		level: "Niveau",
 
-		//------------------ à gauche ------------------
+		//------------------ exo ------------------
 		decodeSignal: "Decoder le signal",
-		listenPrompt: "Ecoutez ou observez le signal, puis appuyez sur la touche correspondante.",
 		playing: "Lecture...",
 		replaySignal: "Rejouer le signal",
 		encodeCharacter: "Encoder le caractere",
-		encodePrompt: "Utilisez Fleche gauche pour le point et Fleche droite pour le trait. Appuyez sur Entree pour valider.",
 
-		//------------------ en haut à droite ------------------
+		//------------------ en haut à doite ------------------
 		correctCount: "correctes",
 
-		//------------------ à droite ------------------
+		//------------------ réponse ------------------
 		yourAnswer: "Votre reponse",
-		leftDot: "Point",
-		rightDash: "Trait",
+		leftDot: ".",
+		rightDash: "-",
 		delete: "Supprimer",
 		submit: "Valider",
-		pressMatching: "Appuyez sur le caractere correspondant au clavier.",
-		buildMorse: "Composez le code Morse avec les fleches du clavier.",
+
 		correct: "Correct",
 		wrong: "Erreur",
+		correctAnswerText: "La bonne réponse est {answer}",
+		nextQuestion: "Question suivante",
+
+		helpTitle: "Aide clavier :",
+		decodeHelpText: "Écoutez le son ou regardez le signal lumineux, puis appuyez sur le caractère correspondant.",
+		encodeHelpText: "Appuyez sur la flèche gauche pour le point, sur la flèche droite pour le trait, puis sur Entrée pour valider.",
 
 		//------------------ en bas ------------------
 		audio: "Son",
 		light: "Lumiere",
+
+		//------------------ cheatSheet ------------------
+		cheatSheetTitle: "Carte de référence Morse",
+		playSound: "Écouter",
 
 		//------------------ resultat ------------------
 		complete: "termine",

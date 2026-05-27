@@ -75,6 +75,10 @@
 	padding: 24px;
 }
 
+.nextAction {
+	justify-self: end;
+}
+
 .modeBadge {
 	display: inline-flex;
 	min-height: 30px;
@@ -183,7 +187,6 @@
 	cursor: pointer;
 }
 
-.keyGrid button:nth-child(3),
 .secondaryAction {
 	background: #ffffff;
 	color: #111111;
@@ -196,6 +199,23 @@
 	color: #888888;
 	cursor: not-allowed;
 }
+
+/* bouton pour point et trait */
+.keyGrid .morseKey {
+	background: #ffffff;
+	color: #111111;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 1.45rem;
+	line-height: 1;
+} 
+
+/*bouton pour supp*/
+.keyGrid .deleteKey {
+	border-color: #d6d6d6;
+	background: #eeeeee;
+	color: #555555;
+}
+
 
 .feedback,
 .hint {
@@ -283,6 +303,114 @@
 .primaryAction {
 	width: fit-content;
 }
+
+
+/* ================= cheatSheet ================= */
+.cheatSheet {
+	border: 1px solid #e5e5e5;
+	border-radius: 18px;
+	background: #ffffff;
+	box-shadow: 0 18px 42px rgba(0, 0, 0, 0.05);
+}
+
+.cheatSheetToggle {
+	display: inline-flex;
+	width: 100%;
+	min-height: 48px;
+	align-items: center;
+	gap: 8px;
+	padding: 0 18px;
+	border: 0;
+	background: transparent;
+	color: #111111;
+	font-size: 1rem;
+	font-weight: 850;
+	cursor: pointer;
+	text-align: left;
+}
+
+.cheatSheetArrow {
+	width: 1em;
+	color: #555555;
+	font-size: 0.9rem;
+}
+
+.cheatSheetContent {
+	padding: 0 18px 18px;
+}
+
+.cheatSheetGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 10px;
+}
+
+.cheatSheetItem {
+	display: grid;
+	grid-template-columns: 42px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 12px;
+	min-height: 58px;
+	padding: 12px 14px;
+	border: 1px solid #eeeeee;
+	border-radius: 14px;
+	background: #fafafa;
+}
+
+.cheatSheetItem strong {
+	display: grid;
+	width: 38px;
+	height: 38px;
+	place-items: center;
+	border-radius: 10px;
+	background: #111111;
+	color: #ffffff;
+	font-size: 1.05rem;
+	font-weight: 900;
+}
+
+.cheatSheetItem span {
+	color: #333333;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 1rem;
+	font-weight: 850;
+	overflow-wrap: anywhere;
+}
+
+.cheatSheetSoundButton {
+	display: inline-flex;
+	min-height: 34px;
+	align-items: center;
+	gap: 6px;
+	padding: 0 12px;
+	border: 1px solid #dddddd;
+	border-radius: 999px;
+	background: #ffffff;
+	color: #111111;
+	font-size: 0.85rem;
+	font-weight: 800;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.cheatSheetSoundButton span {
+	font-family: inherit;
+	font-size: 0.85rem;
+	font-weight: 800;
+}
+
+.cheatSheetSoundButton span:first-child {
+	font-size: 1rem;
+	line-height: 1;
+}
+
+.cheatSheetSoundButton:hover {
+	border-color: #111111;
+	background: #f5f5f5;
+}
+
+
+
 
 @media (max-width: 860px) {
 	.practiceHeader {

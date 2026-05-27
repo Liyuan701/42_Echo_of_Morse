@@ -37,7 +37,7 @@ export function toDisplayMorse(morse: string) {
 	//flat() --> transforme char** en char*
 	//filter() --> prendre les contenue selon index
 	// cad garde lorsque true（item.level < levelId）
-function getCharactersForLevel(levelId: LevelId) {
+export function getCharactersForLevel(levelId: LevelId) {
 	const allCharacters = MORSE_LEVELS.flat();
 	const newCharacters = MORSE_LEVELS[levelId - 1] ?? [];
 	const reviewCharacters = allCharacters.filter((item) => item.level < levelId);
