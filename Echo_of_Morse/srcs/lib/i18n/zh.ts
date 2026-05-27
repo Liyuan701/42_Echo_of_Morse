@@ -135,26 +135,30 @@ const zh = {
 
 		//------------------ à gauche ------------------
 		decodeSignal: "识别信号",
-		listenPrompt: "听声音或观察灯光信号，然后按下对应字符。",
+		listenPrompt: "听声音或观察灯光信号，然后按下对应字符。",//删
 		playing: "播放中...",
 		replaySignal: "重播信号",
 		
 		encodeCharacter: "输入摩斯码",
-		encodePrompt: "左箭头输入点，右箭头输入划。按 Enter 提交。",
+		encodePrompt: "左箭头输入点，右箭头输入划。按 Enter 提交。",//删
 
 		//------------------ en haut à doite ------------------
 		correctCount: "题正确",
 
 		//------------------ à droite ------------------
 		yourAnswer: "你的答案",
-		leftDot: "点",
-		rightDash: "划",
+		leftDot: ".",
+		rightDash: "-",
 		delete: "删除",
 		submit: "提交",
-		pressMatching: "请按下键盘上对应的字符。",
-		buildMorse: "使用方向键输入摩斯码。",
+		pressMatching: "请按下键盘上对应的字符。",//删
+		buildMorse: "使用方向键输入摩斯码。",//删
 		correct: "正确",
 		wrong: "错误",
+
+		helpTitle: "键盘操作提示：",
+		decodeHelpText: "听声音或观察灯光信号，然后按下对应字符。",
+		encodeHelpText: "左箭头输入点，右箭头输入划。按 Enter 提交。",
 
 		//------------------ en bas ------------------
 		audio: "声音",

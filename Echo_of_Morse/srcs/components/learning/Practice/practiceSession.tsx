@@ -338,9 +338,6 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 								💡
 							</div>
 
-							{/*------------ text pour la facon de reponse ------------*/}
-							<p className={styles.promptText}>{t.listenPrompt}</p>
-
 							{/*------------ bouton pour rejouer le signa ------------*/}
 							<button
 								type="button"
@@ -355,7 +352,6 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 						<>
 							{/* ------------ la mode encode: la lettre et text ------------ */}
 							<div className={styles.characterPrompt}>{question.character}</div>
-							<p className={styles.promptText}>{t.encodePrompt}</p>
 						</>
 					)}
 				</section>
@@ -377,6 +373,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 						<div className={styles.keyGrid}>
 							<button
 								type="button"
+								className={styles.morseKey}
 								onClick={() => setAnswer((value) =>  value + ".")}
 							>
 								{t.leftDot}
@@ -384,6 +381,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 
 							<button
 								type="button"
+								className={styles.morseKey}
 								onClick={() => setAnswer((value) =>  value + "-")}
 							>
 								{t.rightDash}
@@ -391,6 +389,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 
 							<button
 								type="button"
+								className={styles.deleteKey}
 								onClick={() => setAnswer((value) => value.slice(0, -1))}
 							>
 								{t.delete}
@@ -399,6 +398,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 							<button type="button" onClick={submitEncodeAnswer}>
 								{t.submit}
 							</button>
+
 						</div>
 					) : null}
 
@@ -411,7 +411,9 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 						</p>
 					) : (
 						<p className={styles.hint}>
-							{question.mode === "decode" ? t.pressMatching : t.buildMorse}
+							<strong>{t.helpTitle}</strong>
+							<br />
+							{question.mode === "decode" ? t.decodeHelpText : t.encodeHelpText}
 						</p>
 					)}
 				</section>

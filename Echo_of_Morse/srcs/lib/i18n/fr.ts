@@ -146,14 +146,18 @@ const fr = {
 
 		//------------------ à droite ------------------
 		yourAnswer: "Votre reponse",
-		leftDot: "Point",
-		rightDash: "Trait",
+		leftDot: ".",
+		rightDash: "-",
 		delete: "Supprimer",
 		submit: "Valider",
 		pressMatching: "Appuyez sur le caractere correspondant au clavier.",
 		buildMorse: "Composez le code Morse avec les fleches du clavier.",
 		correct: "Correct",
 		wrong: "Erreur",
+
+		helpTitle: "Aide clavier :",
+		decodeHelpText: "Écoutez le son ou regardez le signal lumineux, puis appuyez sur le caractère correspondant.",
+		encodeHelpText: "Appuyez sur la flèche gauche pour le point, sur la flèche droite pour le trait, puis sur Entrée pour valider.",
 
 		//------------------ en bas ------------------
 		audio: "Son",

@@ -146,14 +146,18 @@ const en = {
 
 		//------------------ right ------------------
 		yourAnswer: "Your answer",
-		leftDot: "Dot",
-		rightDash: "Dash",
+		leftDot: ".",
+		rightDash: "-",
 		delete: "Delete",
 		submit: "Submit",
 		pressMatching: "Press the matching character on your keyboard.",
 		buildMorse: "Build the Morse code with the arrow keys.",
 		correct: "Correct",
 		wrong: "Wrong",
+
+		helpTitle: "Keyboard help:",
+		decodeHelpText: "Listen to the sound or watch the light signal, then press the matching character.",
+		encodeHelpText: "Press Left Arrow for dot, Right Arrow for dash, and Enter to submit.",
 
 		//------------------ bottom ------------------
 		audio: "Audio",

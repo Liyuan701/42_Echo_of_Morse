@@ -183,7 +183,6 @@
 	cursor: pointer;
 }
 
-.keyGrid button:nth-child(3),
 .secondaryAction {
 	background: #ffffff;
 	color: #111111;
@@ -196,6 +195,23 @@
 	color: #888888;
 	cursor: not-allowed;
 }
+
+/* bouton pour point et trait */
+.keyGrid .morseKey {
+	background: #ffffff;
+	color: #111111;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 1.45rem;
+	line-height: 1;
+} 
+
+/*bouton pour supp*/
+.keyGrid .deleteKey {
+	border-color: #d6d6d6;
+	background: #eeeeee;
+	color: #555555;
+}
+
 
 .feedback,
 .hint {
