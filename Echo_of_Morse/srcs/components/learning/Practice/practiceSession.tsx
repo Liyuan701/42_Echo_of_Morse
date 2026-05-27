@@ -4,6 +4,7 @@
 import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import styles from "@/components/learning/css/PracticeSession.module.css";
+import Link from "next/link";
 
 import PracticeResult from "./practiceResult";
 import type { Question } from "./practiceTypes";
@@ -354,9 +355,15 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 				{/*======================== en haut ========================*/}
 			<div className={styles.practiceHeader}>
 				{/*------------ affiche le niveau en haut ------------*/}
-				<div>
-					<h1 id="practice-title" className={styles.practiceTitle}> {t.level} {safeLevelId} </h1>
-				</div>
+					<div className={styles.practiceTitleBlock}>
+						<Link className={styles.backToLevelsButton} href="/learning/levels">
+							‹
+						</Link>
+
+						<h1 id="practice-title" className={styles.practiceTitle}>
+							{t.level} {safeLevelId}
+						</h1>
+					</div>
 				{/*------------ nb d'exo correct et progression  ------------*/}
 				<div className={styles.scoreBox}>
 					<span>{progressText}</span>

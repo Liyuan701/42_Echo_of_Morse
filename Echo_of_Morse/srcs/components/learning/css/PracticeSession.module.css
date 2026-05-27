@@ -409,7 +409,34 @@
 	background: #f5f5f5;
 }
 
+/* ================= practiceHeader: bouton retourner ================= */
+.practiceTitleBlock {
+	display: grid;
+	gap: 18px;
+	justify-items: start;
+}
 
+.backToLevelsButton {
+	display: flex;
+	width: 42px;
+	height: 42px;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #dddddd;
+	border-radius: 999px;
+	background: #ffffff;
+	color: #111111;
+	font-size: 1.45rem;
+	font-weight: 800;
+	line-height: 1;
+	text-decoration: none;
+	transform: translateX(-24px);
+}
+
+.backToLevelsButton:hover {
+	border-color: #111111;
+	background: #f5f5f5;
+}
 
 
 @media (max-width: 860px) {
