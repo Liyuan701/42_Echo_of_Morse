@@ -140,13 +140,8 @@ export default function OnlineFriendsPreview() {
                   {friend.avatarUrl ? (
                     <img
                       className={styles.avatar}
-<<<<<<< HEAD
                       src={friend.avatarUrl}
                       alt={`${displayName}'s avatar`}
-=======
-                      src={friend.image}
-                      alt={t.avatarAlt.replace("{displayName}", displayName)}
->>>>>>> main
                     />
                   ) : (
                     <span className={styles.avatarFallback}>

@@ -1,64 +1,35 @@
-<<<<<<< HEAD
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { getUserLearningProgress } from "@/lib/learning/progressService";
-=======
-"use client";
-import { useI18n } from "@/lib/i18n";
-
->>>>>>> main
-import PageShell from "@/components/layout/page-shell";
-import LearningProgressCard from "@/components/learning/LearningProgressCard";
-import LearningEntryCards from "@/components/learning/LearningEntryCards";
 import { morseLevels } from "@/components/learning/data/morseLevels";
-import styles from "@/components/learning/css/Learning.module.css";
+import LearningPageClient from "@/components/learning/LearningPageClient"
 
-<<<<<<< HEAD
+/**
+ * Server Component
+ * Responsible for:
+ * - Authentication check
+ * - Fetching user learning progress from backend
+ * - Passing data to client component
+ */
 export default async function LearningPage() {
+  // Get current user session from NextAuth
   const session = await getServerSession(authOptions);
+
+  // If user is not logged in, redirect to login page
   if (!session?.user?.id) redirect("/login");
-=======
-export default function LearningPage() {
-	const { dictionary } = useI18n();
-	const t = dictionary.learning;
 
-  // TODO_BACKEND:
-  //! Liyuan: Replace mockLearningProgress with the current user's real learning progress.
-  // Suggested API: GET /api/learning/progress
-  // Required fields:
-  // - currentLevel
-  // - unlockedLevels
-  // - completedLevels
-  // - globalAccuracy
-  // - averageReactionTime
-  // - totalSessions
-  // - todayLearningMinutes
-  // - weakCharacters
-  const progress = mockLearningProgress;
->>>>>>> main
-
+  // Fetch user's learning progress from database or API
   const progress = await getUserLearningProgress(session.user.id);
+
+  // Total number of learning levels (static data for now)
   const totalLevels = morseLevels.length;
 
+  // Pass data to Client Component for rendering UI
   return (
-    <main id="main-content">
-      <PageShell>
-        <section className={styles.learningPage} aria-labelledby="learning-title">
-          <div className={styles.learningContainer}>
-            <section className={styles.hero}>
-              <h1 id="learning-title" className={styles.title}>
-                {t.pageTitle}
-              </h1>
-              <p className={styles.description}>
-                {t.pageDescription}
-              </p>
-            </section>
-            <LearningProgressCard progress={progress} totalLevels={totalLevels} />
-            <LearningEntryCards progress={progress} />
-          </div>
-        </section>
-      </PageShell>
-    </main>
+    <LearningPageClient
+      progress={progress}
+      totalLevels={totalLevels}
+    />
   );
 }
