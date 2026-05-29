@@ -9,12 +9,7 @@ type LevelCardProps = {
 };
 
 export default function LevelCard({ level, progress }: LevelCardProps) {
-  // TODO_BACKEND: 
-  //! Liyuan: Level status depends on real user progress from the backend.
-  // Required progress fields:
-  // - currentLevel
-  // - unlockedLevels
-  // - completedLevels
+
   const status = getLevelStatus(level.level, progress);
 
   const isLocked = status === "locked";
@@ -71,13 +66,6 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
         </button>
       ) : (
         <>
-          {/*
-            TODO_BACKEND / TODO_PRACTICE:
-            //! Liyuan: The practice page should validate that this level is unlocked
-            before starting the session.
-            Route contract:
-            /learning/levels/[levelId]/practice
-          */}
           <Link
             className={styles.primaryButton}
             href={`/learning/levels/${level.level}/practice`}

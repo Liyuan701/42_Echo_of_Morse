@@ -1,23 +1,5 @@
 import type { MorseLevel } from "@/types/learning";
 
-// TODO_BACKEND:
-//! Liyuan : Static mock level configuration for the Learning module.
-// This can remain frontend-side for the first version.
-// If levels are stored in the database later, replace this with:
-// GET /api/learning/levels
-//
-// Expected backend shape per level:
-// {
-//   level: number;
-//   title: string;
-//   newCharacters: string[];
-//   reviewFrom: string;
-//   newRatio: string;
-//   reviewRatio: string;
-//   questionCount: number;
-//   passCondition: string;
-// }
-
 export const morseLevels: MorseLevel[] = [
   {
     level: 1,
@@ -161,5 +143,3 @@ export const morseLevels: MorseLevel[] = [
     passCondition: "≥ 80% (24/30)",
   },
 ];
-
-//代表某个用户的学习进度。现在用 mock，之后可以从后端 API 拿。
