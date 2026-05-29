@@ -115,8 +115,6 @@ export default function OnlineFriendsPreview() {
         </div>
       </div>
 
-      {/* //! Liyuan: replace mock online friends with real current user's online friends from auth/database */}
-      {/* //! current version: this component now uses session.user.id and /api/friends instead of mockFriends */}
       {isLoadingFriends ? (
         <p className={styles.empty}>{t.loadingOnlineFriends}</p>
       ) : onlineFriends.length > 0 ? (
@@ -140,13 +138,8 @@ export default function OnlineFriendsPreview() {
                   {friend.avatarUrl ? (
                     <img
                       className={styles.avatar}
-<<<<<<< HEAD
                       src={friend.avatarUrl}
                       alt={`${displayName}'s avatar`}
-=======
-                      src={friend.image}
-                      alt={t.avatarAlt.replace("{displayName}", displayName)}
->>>>>>> main
                     />
                   ) : (
                     <span className={styles.avatarFallback}>
