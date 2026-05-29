@@ -14,6 +14,7 @@ export const mockFriends: Friend[] = [
     lastMessage: "See you in the arena.",
     lastMessageAt: "12:30",
     isOnline: true,
+    image: null,
   },
   {
     id: "2",
@@ -24,6 +25,7 @@ export const mockFriends: Friend[] = [
     lastMessage: "Can we test the chat module?",
     lastMessageAt: "11:48",
     isOnline: false,
+    image: null,
   },
   {
     id: "3",
@@ -34,6 +36,7 @@ export const mockFriends: Friend[] = [
     lastMessage: "... --- ...",
     lastMessageAt: "Yesterday",
     isOnline: true,
+    image: null,
   },
 ];
 
@@ -94,7 +97,7 @@ export const mockMessages: ChatMessage[] = [
     rawText: "Hello, are you ready?",
     translatedText:
       ".... . .-.. .-.. --- / .- .-. . / -.-- --- ..- / .-. . .- -.. -.-- ..--..",
-    mode: "language-to-morse",
+    mode: "LANGUAGE_TO_MORSE",
     createdAt: "12:25",
   },
   {
@@ -103,7 +106,7 @@ export const mockMessages: ChatMessage[] = [
     sender: "me",
     rawText: "Yes, I am ready.",
     translatedText: "-.-- . ... / .. / .- -- / .-. . .- -.. -.--",
-    mode: "language-to-morse",
+    mode: "LANGUAGE_TO_MORSE",
     createdAt: "12:27",
   },
 ];

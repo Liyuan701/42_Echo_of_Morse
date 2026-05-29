@@ -7,9 +7,9 @@
 import type { MessageMode } from "@/lib/mappers/chat-mode";
 
 export type ChatMode =
-  | "language-to-morse"
+  | "LANGUAGE_TO_MORSE"
   | "morse-to-language"
-  | "language-only"
+  | "LANGUAGE_ONLY"
   | "morse-only"
   | "text-to-morse-only";
 //"morse-only"->If the user enters "Morse" directly, the system will not convert it
@@ -24,6 +24,7 @@ export type Friend = {
   lastMessage: string;
   lastMessageAt: string;
   isOnline: boolean;
+  image: string | null;
 };
 
 export type ChatMessage = {

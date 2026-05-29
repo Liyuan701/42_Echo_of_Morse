@@ -11,14 +11,53 @@
 // });
 
 
+//-------------------------------------------------------------------------------------
+
+// const { Server } = require("socket.io");
+
+// const io = new Server(3001, {
+//   cors: { origin: "*" }
+// });
+
+// io.on("connection", (socket) => {
+//   console.log("User connected");
+
+//   socket.on("send-morse", (data) => {
+//     socket.broadcast.emit("receive-morse", data);
+//   });
+
+//   socket.on("disconnect", () => {
+//     console.log("User disconnected");
+//   });
+// });
+
+
+//----------------------------------------------------------------------
+
 const { Server } = require("socket.io");
 
 // Init server
-const io = new Server(3001, {
+
+// const io = new Server(3001, {
+//   cors: { origin: "*" },
+//   pingInterval: 25000,
+//   pingTimeout: 20000,
+// });
+
+const express = require("express");
+const http = require("http");
+
+const app = express();
+const httpServer = http.createServer(app);
+
+
+const io = new Server(httpServer, {
+  path: "/socket.io/",
   cors: { origin: "*" },
   pingInterval: 25000,
   pingTimeout: 20000,
 });
+
 
 // API calls
 async function setUserOnline(userId) {
@@ -62,10 +101,10 @@ async function cleanupUsers() {
 }
 
 // Socket handlers
-function handleConnection(socket) {
+async function handleConnection(socket) {
   const userId = socket.handshake.auth.userId;
   if (userId) {
-    setUserOnline(userId);
+    await setUserOnline(userId);
   }
 
   socket.on("send-morse", (data) => {
@@ -84,8 +123,49 @@ function handleDisconnect(userId) {
 }
 
 // Start logic
-io.on("connection", handleConnection);
+// io.on("connection", handleConnection);
+
+io.on("connection", (socket) => {
+  console.log("✅ CLIENT CONNECTED:", socket.id);
+
+  console.log("Current count:", io.engine.clientsCount);
+
+  io.emit("users-count", io.engine.clientsCount);
+
+  socket.on("disconnect", (reason) => {
+    console.log("❌ CLIENT DISCONNECTED", socket.id, reason);
+
+    io.emit("users-count", io.engine.clientsCount);
+  });
+});
+
+httpServer.listen(3001, () => {
+  console.log("WS SERVER RUNNING ON 3001");
+});
+
+
+function shutdown() {
+  console.log("✅ Shutting down...");
+
+  io.close(() => {
+    console.log("Socket.IO closed");
+
+    httpServer.close(() => {
+      console.log("HTTP server closed");
+      process.exit(0);
+    });
+  });
+
+  // emergency timeout
+  setTimeout(() => {
+    console.error("Force shutdown");
+    process.exit(1);
+  }, 5000);
+}
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
+
+
+
 setInterval(cleanupUsers, 60000);
-
-
-

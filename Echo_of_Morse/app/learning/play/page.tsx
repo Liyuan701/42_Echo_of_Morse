@@ -84,3 +84,7 @@ export default async function LearningPlayPage() {
     </main>
   );
 }
+
+//? yren to jdu:
+//? TODO_i18n: This page is server-side, so it cannot use useI18n directly.
+//? Please decide whether to pass translated labels as props or convert the UI part to a client component.

@@ -14,7 +14,8 @@ type ChatWindowProps = {
   chatMode: ChatMode;
   composerError: string;
   onChangeChatMode: (mode: ChatMode) => void;
-  onSendMessage: (text: string) => boolean;
+  // onSendMessage: (text: string) => boolean;
+  onSendMessage: (text: string) => Promise<boolean>;
   onCloseChat: () => void;
 };
 

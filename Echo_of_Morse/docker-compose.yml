@@ -13,9 +13,15 @@ services:
     image: owasp/modsecurity-crs:nginx
     container_name: transcendence_waf
     restart: always
+    # ports:
+    #   - "80:8080"
+    #   - "443:8443"
+    # ports:
+    #   - "80:80"
+    #   - "443:443"
     ports:
-      - "80:8080"
-      - "443:8443"
+    - "8080:80"
+    - "8443:443"
     environment:
       - BACKEND=http://web:3000       # redirige vers Next.js
       - MODSEC_RULE_ENGINE=On         # bloque les attaques (SQLi, XSS, etc.)
@@ -23,10 +29,10 @@ services:
       - ANOMALY_INBOUND=5
       - ANOMALY_OUTBOUND=4
     volumes:
-      # Monte la config WebSocket dans nginx du WAF.
-      # nginx inclut automatiquement tous les .conf de /etc/nginx/conf.d/
-      # Ce fichier ajoute le routage /socket.io/ → ws:3001
-      - ./docker/nginx/websocket.conf:/etc/nginx/conf.d/websocket.conf
+      # Monte la config WebSocket dans le template nginx du WAF.
+      # location_common.conf.template est inclus à l'intérieur du bloc server {}
+      # C'est le seul endroit où un bloc location peut être ajouté dans cette image.
+      - ./docker/nginx/location_common.conf.template:/etc/nginx/templates/includes/location_common.conf.template
     depends_on:
       - web
       - ws
@@ -72,6 +78,8 @@ services:
       - vault-init
     networks:
       - transcendence_network
+    env_file:
+      - .env
 
   # ============================================================
   # HashiCorp Vault — gestionnaire de secrets

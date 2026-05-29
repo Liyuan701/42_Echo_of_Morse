@@ -1,5 +1,7 @@
 // check the login, go query in DBmm and return id/username/avatar/online
 
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/prisma";
 import { getServerSession } from "next-auth";
@@ -18,6 +20,12 @@ export async function GET(request: NextRequest) {
 
     if (!query) {
       return NextResponse.json([]);
+    }
+
+    // const userId = session.user?.id as string;
+
+    if (!session?.user?.id) {
+      throw new Error("Unauthorized");
     }
 
     const users = await prisma.user.findMany({
