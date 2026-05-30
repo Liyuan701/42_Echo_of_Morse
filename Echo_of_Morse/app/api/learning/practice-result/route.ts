@@ -1,19 +1,26 @@
 import { getServerSession } from "next-auth";
+import { NextRequest } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/prisma";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { levelId, passed, answers } = await req.json();
+  //console.log("answers received:", JSON.stringify(answers)); // debug log
+  //console.log("levelId:", levelId, "passed:", passed); //debug log
   const userId = session.user.id;
 
   // 1. Update UserLetterProgress for each answered question
+  
   for (const { char, correct } of answers) {
+    //console.log("looking for char:", JSON.stringify(char));//debug log 
     const letter = await prisma.letter.findUnique({ where: { char } });
+    //console.log("letter found:", letter);//debug log
+
     if (!letter) continue;
 
     const existing = await prisma.userLetterProgress.findUnique({
@@ -61,6 +68,7 @@ export async function POST(req: Request) {
         lastReviewed: now,
       },
     });
+    console.log("upserted:", char, correct);
   }
 
   // 2. Level up if passed current level
