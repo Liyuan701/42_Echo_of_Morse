@@ -212,6 +212,7 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { getSocket } from "@/lib/socket";
 import type { Socket } from "socket.io-client";
+import { useSession } from "next-auth/react";
 
 type SocketContextType = {
   socket: Socket | null;
@@ -228,6 +229,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   const socket = useMemo(() => getSocket(), []);
 
+  const { data: session, status } = useSession();
+  console.log("✅ session =", session);
   useEffect(() => {
     if (!socket) return;
 
