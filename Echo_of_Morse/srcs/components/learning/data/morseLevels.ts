@@ -148,7 +148,6 @@ export const morseLevels: MorseLevel[] = [
     title: "Level 12",
     newCharacters: [
       "+ .-.-.",
-      "- -....-",
       "_ ..--.-",
       '" .-..-.',
       "$ ...-..-",

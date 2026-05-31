@@ -13,9 +13,21 @@ export type UserLearningProgress = {
   currentLevel: number;
   unlockedLevels: number[];
   completedLevels: number[];
-  globalAccuracy: number;
-  averageReactionTime: number;
-  totalSessions: number;
-  todayLearningMinutes: number;
+
+  /**
+   * Global accuracy across all completed learning practice sessions.
+   * Formula:
+   * totalCorrectAnswers / totalAnsweredQuestions * 100
+   * null means there is not enough backend data yet.
+   */
+  globalAccuracy: number | null;
+
+  /**
+   * Number of completed learning practice sessions.
+   * One completed level practice = one practice session.
+   * null means the backend does not return this data yet.
+   */
+  totalPracticeSessions: number | null;
+
   weakCharacters: string[];
 };

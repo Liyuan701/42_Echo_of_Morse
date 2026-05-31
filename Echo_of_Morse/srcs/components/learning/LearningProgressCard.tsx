@@ -1,6 +1,6 @@
 "use client";
-import { useI18n } from "@/lib/i18n";
 
+import { useI18n } from "@/lib/i18n";
 import type { UserLearningProgress } from "@/types/learning";
 import styles from "@/components/learning/css/Learning.module.css";
 
@@ -9,14 +9,16 @@ type LearningProgressCardProps = {
   totalLevels: number;
 };
 
-
 export default function LearningProgressCard({
   progress,
   totalLevels,
 }: LearningProgressCardProps) {
+  const { dictionary } = useI18n();
+  const t = dictionary.learning;
 
-	const { dictionary } = useI18n();
-	const t = dictionary.learning;
+  const hasGlobalAccuracy = progress.globalAccuracy !== null;
+  const hasPracticeSessions = progress.totalPracticeSessions !== null;
+  const shouldShowStats = hasGlobalAccuracy || hasPracticeSessions;
 
   return (
     <section className={styles.progressCard} aria-labelledby="progress-title">
@@ -29,23 +31,28 @@ export default function LearningProgressCard({
 
         <p className={styles.cardText}>
           {t.completedLevels
-			.replace("{completed}", String(progress.completedLevels.length))
-			.replace("{total}", String(totalLevels))}
+            .replace("{completed}", String(progress.completedLevels.length))
+            .replace("{total}", String(totalLevels))}
         </p>
       </div>
 
-      <dl className={styles.progressStats}>
+      {shouldShowStats && (
+        <dl className={styles.progressStats}>
+          {hasGlobalAccuracy && (
+            <div>
+              <dt>{t.globalAccuracy}</dt>
+              <dd>{progress.globalAccuracy}%</dd>
+            </div>
+          )}
 
-        <div>
-          <dt>{t.accuracy}</dt>
-          <dd>{progress.globalAccuracy}%</dd>
-        </div>
-
-        <div>
-          <dt>{t.sessions}</dt>
-          <dd>{progress.totalSessions}</dd>
-        </div>
-      </dl>
+          {hasPracticeSessions && (
+            <div>
+              <dt>{t.practiceSessions}</dt>
+              <dd>{progress.totalPracticeSessions}</dd>
+            </div>
+          )}
+        </dl>
+      )}
     </section>
   );
 }
