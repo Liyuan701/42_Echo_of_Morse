@@ -1,6 +1,5 @@
 "use client";
 import { useI18n } from "@/lib/i18n";
-
 import Link from "next/link";
 import type { MorseLevel, UserLearningProgress } from "@/types/learning";
 import { getLevelStatus } from "@/lib/learning/levelAccess";
@@ -12,17 +11,10 @@ type LevelCardProps = {
 };
 
 export default function LevelCard({ level, progress }: LevelCardProps) {
-	const { dictionary } = useI18n();
-	const t = dictionary.learning;
+  const { dictionary } = useI18n();
+  const t = dictionary.learning;
 
-  // TODO_BACKEND: 
-  //! Liyuan: Level status depends on real user progress from the backend.
-  // Required progress fields:
-  // - currentLevel
-  // - unlockedLevels
-  // - completedLevels
   const status = getLevelStatus(level.level, progress);
-
   const isLocked = status === "locked";
 
   return (
@@ -76,21 +68,12 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
           {t.locked}
         </button>
       ) : (
-        <>
-          {/*
-            TODO_BACKEND / TODO_PRACTICE:
-            //! Liyuan: The practice page should validate that this level is unlocked
-            before starting the session.
-            Route contract:
-            /learning/levels/[levelId]/practice
-          */}
-          <Link
-            className={styles.primaryButton}
-            href={`/learning/levels/${level.level}/practice`}
-          >
-            {t.startPractice}
-          </Link>
-        </>
+        <Link
+          className={styles.primaryButton}
+          href={`/learning/levels/${level.level}/practice`}
+        >
+          {t.startPractice}
+        </Link>
       )}
     </article>
   );

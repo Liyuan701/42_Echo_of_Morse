@@ -48,6 +48,76 @@ async function main() {
     created.map((u) => [u.username, u])
   );
 
+
+
+console.log("Creating learner user...");
+
+const learnerPassword = await bcrypt.hash("mdp", 10);
+
+const learner = await prisma.user.create({
+  data: {
+    username: "learner",
+    email: "learner@test.com",
+    passwordHash: learnerPassword,
+    learningLevel: 1,
+    bio: "AI test user",
+  },
+});
+
+console.log("Creating learner letter progress...");
+
+const letters = await prisma.letter.findMany();
+
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+for (const letter of letters) {
+  const totalSeen = rand(3, 25);
+  const wrongCount = rand(0, Math.floor(totalSeen * 0.5));
+  const correctCount = totalSeen - wrongCount;
+
+  const accuracy = correctCount / totalSeen;
+
+  const mastery = Math.max(
+    0,
+    Math.min(10, Math.round(accuracy * 10))
+  );
+
+  const now = new Date();
+
+  const interval = Math.max(1, Math.round(mastery * 1.5));
+
+  const nextReviewAt = new Date(
+    now.getTime() + interval * 24 * 60 * 60 * 1000
+  );
+
+  const easeFactor =
+    accuracy > 0.8 ? 2.6 :
+    accuracy > 0.5 ? 2.2 :
+    1.7;
+
+  await prisma.userLetterProgress.create({
+    data: {
+      userId: learner.id,
+      letterId: letter.id,
+
+      mastery,
+
+      correctCount,
+      wrongCount,
+      totalSeen,
+
+      interval,
+      easeFactor,
+      nextReviewAt,
+      lastReviewed: now,
+    },
+  });
+}
+
+
+
 console.log("Creating FULL friendships...");
 
 const group = ["lifan", "yren", "jdu", "mlaurent", "gustav"];
