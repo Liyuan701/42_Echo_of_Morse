@@ -16,9 +16,16 @@ export default function LearningProgressCard({
   const { dictionary } = useI18n();
   const t = dictionary.learning;
 
-  const hasGlobalAccuracy = progress.globalAccuracy !== null;
-  const hasPracticeSessions = progress.totalPracticeSessions !== null;
-  const shouldShowStats = hasGlobalAccuracy || hasPracticeSessions;
+  const globalAccuracyText =
+    progress.globalAccuracy !== null && progress.globalAccuracy !== undefined
+      ? `${progress.globalAccuracy}%`
+      : "—";
+
+  const practiceSessionsText =
+    progress.totalPracticeSessions !== null &&
+    progress.totalPracticeSessions !== undefined
+      ? String(progress.totalPracticeSessions)
+      : "—";
 
   return (
     <section className={styles.progressCard} aria-labelledby="progress-title">
@@ -36,23 +43,17 @@ export default function LearningProgressCard({
         </p>
       </div>
 
-      {shouldShowStats && (
-        <dl className={styles.progressStats}>
-          {hasGlobalAccuracy && (
-            <div>
-              <dt>{t.globalAccuracy}</dt>
-              <dd>{progress.globalAccuracy}%</dd>
-            </div>
-          )}
+      <dl className={styles.progressStats}>
+        <div>
+          <dt>{t.globalAccuracy}</dt>
+          <dd>{globalAccuracyText}</dd>
+        </div>
 
-          {hasPracticeSessions && (
-            <div>
-              <dt>{t.practiceSessions}</dt>
-              <dd>{progress.totalPracticeSessions}</dd>
-            </div>
-          )}
-        </dl>
-      )}
+        <div>
+          <dt>{t.practiceSessions}</dt>
+          <dd>{practiceSessionsText}</dd>
+        </div>
+      </dl>
     </section>
   );
 }
