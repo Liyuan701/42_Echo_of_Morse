@@ -1,18 +1,30 @@
+import { notFound } from "next/navigation";
 import PageShell from "@/components/layout/page-shell";
-import { Card } from "@/components/ui";
-import styles from "./competition.module.css";
+import RadioLobbyClient from "@/components/competition/RadioLobbyPage/RadioLobbyClient";
+import {
+  getRadioConfig,
+  isValidRadioId,
+} from "@/components/competition/mockData/mockCompetitionData";
 
-export default function CompetitionPage() {
+type RadioLobbyPageProps = {
+  params: {
+    radioId: string;
+  };
+};
+
+export default function RadioLobbyPage({ params }: RadioLobbyPageProps) {
+  const { radioId } = params;
+
+  if (!isValidRadioId(radioId)) {
+    notFound();
+  }
+
+  const radio = getRadioConfig(radioId);
+
   return (
     <main id="main-content">
       <PageShell>
-        <Card>
-          <h1 className={styles.title}>Competition</h1>
-
-          <p className={styles.description}>
-            RadioLobby page.
-          </p>
-        </Card>
+        <RadioLobbyClient radio={radio} />
       </PageShell>
     </main>
   );
