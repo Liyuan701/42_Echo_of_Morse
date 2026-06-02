@@ -1,23 +1,5 @@
 import type { MorseLevel } from "@/types/learning";
 
-// TODO_BACKEND:
-//! Liyuan : Static mock level configuration for the Learning module.
-// This can remain frontend-side for the first version.
-// If levels are stored in the database later, replace this with:
-// GET /api/learning/levels
-//
-// Expected backend shape per level:
-// {
-//   level: number;
-//   title: string;
-//   newCharacters: string[];
-//   reviewFrom: string;
-//   newRatio: string;
-//   reviewRatio: string;
-//   questionCount: number;
-//   passCondition: string;
-// }
-
 export const morseLevels: MorseLevel[] = [
   {
     level: 1,
@@ -32,7 +14,7 @@ export const morseLevels: MorseLevel[] = [
   {
     level: 2,
     title: "Level 2",
-    newCharacters: ["N —.", "M ——", "S ...", "O ———"],
+    newCharacters: ["N —.", "M --", "S ...", "O ---"],
     reviewFrom: "Level 1",
     newRatio: "70% new",
     reviewRatio: "30% review",
@@ -52,7 +34,7 @@ export const morseLevels: MorseLevel[] = [
   {
     level: 4,
     title: "Level 4",
-    newCharacters: ["U ..—", "C —.—.", "F ..—.", "G ——."],
+    newCharacters: ["U ..—", "C —.—.", "F ..—.", "G --."],
     reviewFrom: "Levels 1-3",
     newRatio: "60% new",
     reviewRatio: "40% review",
@@ -62,7 +44,7 @@ export const morseLevels: MorseLevel[] = [
   {
     level: 5,
     title: "Level 5",
-    newCharacters: ["P .——.", "B —...", "W .——", "Y —.——"],
+    newCharacters: ["P .--.", "B —...", "W .--", "Y —.--"],
     reviewFrom: "Levels 1-4",
     newRatio: "55% new",
     reviewRatio: "45% review",
@@ -72,7 +54,7 @@ export const morseLevels: MorseLevel[] = [
   {
     level: 6,
     title: "Level 6",
-    newCharacters: ["K —.—", "V ...—", "X —..—", "J .———"],
+    newCharacters: ["K —.—", "V ...—", "X —..—", "J .---"],
     reviewFrom: "Levels 1-5",
     newRatio: "55% new",
     reviewRatio: "45% review",
@@ -82,7 +64,7 @@ export const morseLevels: MorseLevel[] = [
   {
     level: 7,
     title: "Level 7",
-    newCharacters: ["Q ——.—", "Z ——.."],
+    newCharacters: ["Q --.—", "Z --.."],
     reviewFrom: "Levels 1-6",
     newRatio: "40% new",
     reviewRatio: "60% review",
@@ -92,7 +74,7 @@ export const morseLevels: MorseLevel[] = [
   {
     level: 8,
     title: "Level 8",
-    newCharacters: ["0 —————", "1 .————", "2 ..———", "3 ...——", "4 ....—"],
+    newCharacters: ["0 -----", "1 .----", "2 ..---", "3 ...--", "4 ....—"],
     reviewFrom: "Levels 1-7",
     newRatio: "50% new",
     reviewRatio: "50% review",
@@ -102,7 +84,7 @@ export const morseLevels: MorseLevel[] = [
   {
     level: 9,
     title: "Level 9",
-    newCharacters: ["5 .....", "6 —....", "7 ——...", "8 ———..", "9 ————."],
+    newCharacters: ["5 .....", "6 —....", "7 --...", "8 ---..", "9 ----."],
     reviewFrom: "Levels 1-8",
     newRatio: "45% new",
     reviewRatio: "55% review",
@@ -148,7 +130,6 @@ export const morseLevels: MorseLevel[] = [
     title: "Level 12",
     newCharacters: [
       "+ .-.-.",
-      "- -....-",
       "_ ..--.-",
       '" .-..-.',
       "$ ...-..-",
@@ -161,5 +142,3 @@ export const morseLevels: MorseLevel[] = [
     passCondition: "≥ 80% (24/30)",
   },
 ];
-
-//代表某个用户的学习进度。现在用 mock，之后可以从后端 API 拿。

@@ -8,26 +8,17 @@ import styles from "./online-friend.module.css";
 import { useI18n } from "@/lib/i18n";
 
 
-type ApiFriendship = {
-  id: number;
-  sender: {
-    id: string;
-    username: string;
-    image: string | null;
-    isOnline: boolean;
-  };
-  receiver: {
-    id: string;
-    username: string;
-    image: string | null;
-    isOnline: boolean;
-  };
+type ApiFriend = {
+  id: string;
+  username: string;
+  avatarUrl: string | null;
+  isOnline: boolean;
 };
 
 type OnlineFriend = {
   id: string;
   username: string;
-  image: string | null;
+  avatarUrl: string | null;
   isOnline: boolean;
 };
 
@@ -61,29 +52,14 @@ export default function OnlineFriendsPreview() {
     async function fetchOnlineFriends() {
       try {
         setIsLoadingFriends(true);
-
-        // ! Liyuan : replace this endpoint if the final friends API uses another route.
-        // ! Expected response shape: an array of friendships containing sender and receiver.
-        // ! The current user can be either sender or receiver, so the UI must extract the opposite user.
         const response = await fetch(`/api/friends?userId=${currentUserId}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch friends.");
         }
-
-        const friendships = (await response.json()) as ApiFriendship[];
-
-        const friends = friendships
-          .map((friendship) => {
-            if (friendship.sender.id === currentUserId) {
-              return friendship.receiver;
-            }
-
-            return friendship.sender;
-          })
-          .filter((friend) => friend.isOnline);
-
-        setOnlineFriends(friends);
+        const friends = (await response.json()) as ApiFriend[];
+        const onlineOnly = friends.filter((f) => f.isOnline);
+        setOnlineFriends(onlineOnly);
       } catch (error) {
         console.error(error);
         setOnlineFriends([]);
@@ -139,8 +115,6 @@ export default function OnlineFriendsPreview() {
         </div>
       </div>
 
-      {/* //! Liyuan: replace mock online friends with real current user's online friends from auth/database */}
-      {/* //! current version: this component now uses session.user.id and /api/friends instead of mockFriends */}
       {isLoadingFriends ? (
         <p className={styles.empty}>{t.loadingOnlineFriends}</p>
       ) : onlineFriends.length > 0 ? (
@@ -161,11 +135,11 @@ export default function OnlineFriendsPreview() {
             return (
               <li key={friend.id} className={styles.item}>
                 <Link href={profileHref} className={styles.profileLink}>
-                  {friend.image ? (
+                  {friend.avatarUrl ? (
                     <img
                       className={styles.avatar}
-                      src={friend.image}
-                      alt={t.avatarAlt.replace("{displayName}", displayName)}
+                      src={friend.avatarUrl}
+                      alt={`${displayName}'s avatar`}
                     />
                   ) : (
                     <span className={styles.avatarFallback}>

@@ -224,6 +224,8 @@ const fr = {
 
 		//------------------ srcs/components/learning/LevelGrid.tsx ------------------
 		morseLevels: "Niveaux Morse",
+		globalAccuracy: "Réussite globale",
+		practiceSessions: "Pratiques terminées",
 
 		//------------------ srcs/components/learning/LevelCard.tsx ------------------
 		newCharacters: "Nouveaux caractères",

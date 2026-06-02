@@ -43,19 +43,6 @@ export default function LearningEntryCards({
             {t.playDescription}
           </p>
         </div>
-
-        {/*
-          TODO_PLAY:
-          //! Liyuan: This button uses a stable route.
-          The random selection should happen inside /learning/play,
-          not inside this home page component.
-          Final behavior:
-          - /learning/play reads the current user's completedLevels.
-          - It randomly selects one completed level.
-          - It redirects to /learning/levels/[selectedLevel]/practice.
-          - If no level has been completed yet, it should show an empty state
-            or redirect to the current level.
-        */}
         <Link className={styles.primaryButton} href="/learning/play">
           {t.play}
         </Link>

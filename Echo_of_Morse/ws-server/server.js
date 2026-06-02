@@ -35,21 +35,11 @@
 //----------------------------------------------------------------------
 
 const { Server } = require("socket.io");
-
-// Init server
-
-// const io = new Server(3001, {
-//   cors: { origin: "*" },
-//   pingInterval: 25000,
-//   pingTimeout: 20000,
-// });
-
 const express = require("express");
 const http = require("http");
 
 const app = express();
 const httpServer = http.createServer(app);
-
 
 const io = new Server(httpServer, {
   path: "/socket.io/",
@@ -88,7 +78,6 @@ async function setUserOffline(userId) {
   }
 }
 
-
 // To complete the server.io heartbeat, in case of server crash.
 async function cleanupUsers() {
   try {
@@ -125,19 +114,79 @@ function handleDisconnect(userId) {
 // Start logic
 // io.on("connection", handleConnection);
 
+// io.on("connection", (socket) => {
+//   console.log("✅ CLIENT CONNECTED:", socket.id);
+
+//   console.log("Current count:", io.engine.clientsCount);
+
+//   io.emit("users-count", io.engine.clientsCount);
+
+//   socket.on("disconnect", (reason) => {
+//     console.log("❌ CLIENT DISCONNECTED", socket.id, reason);
+
+//     io.emit("users-count", io.engine.clientsCount);
+//   });
+// });
+
+const onlineUsers = new Map();
+
+function emitUserCount() {
+  io.emit("users-count", onlineUsers.size);
+  io.emit("online-users", [...onlineUsers.keys()]);
+  console.log(
+  "Users:",
+  onlineUsers.size,
+  "Sockets (tabs):",
+  io.engine.clientsCount
+);
+}
+
+
 io.on("connection", (socket) => {
-  console.log("✅ CLIENT CONNECTED:", socket.id);
+  // const userId = socket.handshake.auth.userId; ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌  Should be this with auth
+  const userId = socket.handshake.query.userId;
 
-  console.log("Current count:", io.engine.clientsCount);
+  if (!userId) {
+    console.log("❌ NO USER ID");
+    socket.disconnect();
+    return;
+  }
 
-  io.emit("users-count", io.engine.clientsCount);
+  if (!onlineUsers.has(userId)) {
+    onlineUsers.set(userId, new Set());
+  }
+
+  onlineUsers.get(userId).add(socket.id);
+
+  console.log("✅ USER ONLINE:", userId);
+
+  emitUserCount();
 
   socket.on("disconnect", (reason) => {
-    console.log("❌ CLIENT DISCONNECTED", socket.id, reason);
 
-    io.emit("users-count", io.engine.clientsCount);
+    console.log(
+      "❌ DISCONNECT",
+      userId,
+      socket.id,
+      "reason:",
+      reason
+    );
+
+    const sockets = onlineUsers.get(userId);
+
+    if (!sockets) return;
+
+    sockets.delete(socket.id);
+
+    if (sockets.size === 0) {
+      onlineUsers.delete(userId);
+      console.log("❌ USER OFFLINE:", userId);
+    }
+    emitUserCount();
   });
 });
+
+
 
 httpServer.listen(3001, () => {
   console.log("WS SERVER RUNNING ON 3001");

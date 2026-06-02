@@ -1,6 +1,6 @@
 "use client";
-import { useI18n } from "@/lib/i18n";
 
+import { useI18n } from "@/lib/i18n";
 import type { UserLearningProgress } from "@/types/learning";
 import styles from "@/components/learning/css/Learning.module.css";
 
@@ -9,14 +9,23 @@ type LearningProgressCardProps = {
   totalLevels: number;
 };
 
-
 export default function LearningProgressCard({
   progress,
   totalLevels,
 }: LearningProgressCardProps) {
+  const { dictionary } = useI18n();
+  const t = dictionary.learning;
 
-	const { dictionary } = useI18n();
-	const t = dictionary.learning;
+  const globalAccuracyText =
+    progress.globalAccuracy !== null && progress.globalAccuracy !== undefined
+      ? `${progress.globalAccuracy}%`
+      : "—";
+
+  const practiceSessionsText =
+    progress.totalPracticeSessions !== null &&
+    progress.totalPracticeSessions !== undefined
+      ? String(progress.totalPracticeSessions)
+      : "—";
 
   return (
     <section className={styles.progressCard} aria-labelledby="progress-title">
@@ -29,21 +38,20 @@ export default function LearningProgressCard({
 
         <p className={styles.cardText}>
           {t.completedLevels
-			.replace("{completed}", String(progress.completedLevels.length))
-			.replace("{total}", String(totalLevels))}
+            .replace("{completed}", String(progress.completedLevels.length))
+            .replace("{total}", String(totalLevels))}
         </p>
       </div>
 
       <dl className={styles.progressStats}>
-
         <div>
-          <dt>{t.accuracy}</dt>
-          <dd>{progress.globalAccuracy}%</dd>
+          <dt>{t.globalAccuracy}</dt>
+          <dd>{globalAccuracyText}</dd>
         </div>
 
         <div>
-          <dt>{t.sessions}</dt>
-          <dd>{progress.totalSessions}</dd>
+          <dt>{t.practiceSessions}</dt>
+          <dd>{practiceSessionsText}</dd>
         </div>
       </dl>
     </section>
