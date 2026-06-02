@@ -25,6 +25,7 @@ export default function MatchmakingPanel({
           <h2 id="matchmaking-panel" className={styles.panelTitle}>
             Matchmaking Queue
           </h2>
+
           <p className={styles.panelText}>
             Join this radio queue. When at least two players are ready, one
             ready player can start the decoding session.
@@ -60,6 +61,6 @@ export default function MatchmakingPanel({
 
 {/* //! yongyue i18n: move matchmaking texts and button labels into the i18n dictionary. */}
 
-// //! Liyuan: real data for button:
+// Liyuan: real data for button - connected
 // canStartGame currently comes from local mock readyPlayers.
 // Later it should come from the server-confirmed ready queue.

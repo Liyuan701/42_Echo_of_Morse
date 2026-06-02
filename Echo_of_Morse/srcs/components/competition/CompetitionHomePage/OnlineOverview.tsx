@@ -3,30 +3,47 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui";
 import { useSocket } from "@/providers/socket-provider";
-import type { OnlineOverviewData } from "../mockData/competitionTypes";
 import styles from "@/../app/competition/competition.module.css";
 
 type OnlineOverviewProps = {
-  overview: OnlineOverviewData;
+  overview: {
+    totalOnlineUsers: number;
+    radioUsers: Record<string, number>;
+  };
 };
 
 export default function OnlineOverview({ overview }: OnlineOverviewProps) {
   const { socket, isConnected } = useSocket();
-  const [onlineNow, setOnlineNow] = useState(overview.onlineNow);
+
+  const [onlineNow, setOnlineNow] = useState(overview.totalOnlineUsers);
+  const [radioUsers, setRadioUsers] = useState(overview.radioUsers);
 
   useEffect(() => {
-    if (!socket) {
-      return;
-    }
+    if (!socket) return;
 
     function handleUsersCount(count: number) {
       setOnlineNow(count);
     }
 
+    /**
+     * optional: future event for live lobby updates
+     */
+    function handleRadioUpdate(data: {
+      radioId: string;
+      count: number;
+    }) {
+      setRadioUsers((prev) => ({
+        ...prev,
+        [data.radioId]: data.count,
+      }));
+    }
+
     socket.on("users-count", handleUsersCount);
+    socket.on("radio-users-update", handleRadioUpdate);
 
     return () => {
       socket.off("users-count", handleUsersCount);
+      socket.off("radio-users-update", handleRadioUpdate);
     };
   }, [socket]);
 
@@ -43,30 +60,25 @@ export default function OnlineOverview({ overview }: OnlineOverviewProps) {
         </div>
 
         <div className={styles.statRow}>
-          <dt>Currently playing</dt>
-          <dd>{overview.currentlyPlaying}</dd>
-        </div>
-
-        <div className={styles.statRow}>
           <dt>Radio Wave 01</dt>
-          <dd>{overview.radioUsers["01"]}</dd>
+          <dd>{radioUsers["01"] ?? 0}</dd>
         </div>
 
         <div className={styles.statRow}>
           <dt>Radio Wave 02</dt>
-          <dd>{overview.radioUsers["02"]}</dd>
+          <dd>{radioUsers["02"] ?? 0}</dd>
         </div>
 
         <div className={styles.statRow}>
           <dt>Radio Wave 03</dt>
-          <dd>{overview.radioUsers["03"]}</dd>
+          <dd>{radioUsers["03"] ?? 0}</dd>
         </div>
       </dl>
 
       <p className={styles.socketHint}>
         {isConnected
-          ? "Socket connected. Online count currently follows the temporary socket users-count event."
-          : "Socket not connected. Showing mock online data."}
+          ? "Live data connected via socket."
+          : "Disconnected. Showing database snapshot."}
       </p>
     </Card>
   );
@@ -74,8 +86,7 @@ export default function OnlineOverview({ overview }: OnlineOverviewProps) {
 
 {/* //! yongyue i18n: move Online Overview labels into the i18n dictionary. */}
 
-// //! Liyuan:real data:
-// users-count currently comes from temporary socket connection count.
-// Later it should be replaced by authenticated online users count
-// and real competition overview data:
+// Liyuan:real data-connected:
+// authenticated online users count
+// real competition overview data:
 // onlineNow, currentlyPlaying, users per radio.

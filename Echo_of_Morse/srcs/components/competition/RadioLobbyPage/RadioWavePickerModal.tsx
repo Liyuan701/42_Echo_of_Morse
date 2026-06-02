@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui";
 import { radioConfigs } from "@/components/competition/mockData/mockCompetitionData";
-import type { RadioId } from "@/components/competition/mockData/competitionTypes";
+import type { RadioId } from "@/types/competition";
 import styles from "./css/radio-wave-picker-modal.module.css";
 
 type RadioWavePickerModalProps = {

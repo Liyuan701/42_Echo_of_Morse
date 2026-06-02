@@ -1,0 +1,110 @@
+"use client";
+
+import styles from "@/components/learning/css/Learning.module.css";
+import {
+  mockLetterProgress,
+  type LetterProgress,
+} from "@/components/learning/data/mockLetterProgress";
+
+function getAccuracy(correctCount: number, totalSeen: number): number {
+  if (totalSeen === 0) {
+    return 0;
+  }
+
+  return Math.round((correctCount / totalSeen) * 100);
+}
+
+function getVisibleLetters(letters: LetterProgress[]): LetterProgress[] {
+  return [...letters].sort((a, b) => {
+    const accuracyA = getAccuracy(a.correctCount, a.totalSeen);
+    const accuracyB = getAccuracy(b.correctCount, b.totalSeen);
+
+    if (a.totalSeen === 0 && b.totalSeen > 0) {
+      return 1;
+    }
+
+    if (a.totalSeen > 0 && b.totalSeen === 0) {
+      return -1;
+    }
+
+    return accuracyA - accuracyB;
+  });
+}
+
+export default function LetterProgressPreview() {
+  const visibleLetters = getVisibleLetters(mockLetterProgress);
+
+  return (
+    <section className={styles.letterChartCard}>
+      <div className={styles.letterChartHeader}>
+        <div>
+          <p className={styles.cardLabel}>Progression par caractère</p>
+
+          <h2 className={styles.entryTitle}>Taux de réussite par caractère</h2>
+
+          <p className={styles.cardText}>
+            Chaque barre représente le taux de réussite d’un caractère. Les
+            caractères les plus faibles apparaissent en premier.
+          </p>
+        </div>
+      </div>
+
+      <div className={styles.verticalChartWrapper}>
+        <div className={styles.verticalChartScale} aria-hidden="true">
+          <span>100%</span>
+          <span>75%</span>
+          <span>50%</span>
+          <span>25%</span>
+          <span>0%</span>
+        </div>
+
+        <div className={styles.verticalChartScroll}>
+          <div className={styles.verticalChart}>
+            {visibleLetters.map((letter) => {
+              const accuracy = getAccuracy(
+                letter.correctCount,
+                letter.totalSeen
+              );
+
+              return (
+                <div
+                  className={styles.verticalChartItem}
+                  key={letter.character}
+                >
+                  <div className={styles.verticalChartBarArea}>
+                    <span className={styles.verticalChartValue}>
+                      {accuracy}%
+                    </span>
+
+                    <div
+                      className={styles.verticalChartBar}
+                      style={{ height: `${accuracy}%` }}
+                      aria-label={`${letter.character}: ${accuracy}% success rate`}
+                      title={`${letter.character} ${letter.morse}: ${accuracy}% · ${letter.correctCount}/${letter.totalSeen} correct · ${letter.wrongCount} wrong`}
+                    />
+                  </div>
+
+                  <div className={styles.verticalChartLabel}>
+                    <strong>{letter.character}</strong>
+                    <span>{letter.morse}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <p className={styles.chartScrollHint}>
+        Faites défiler horizontalement pour voir tous les caractères.
+      </p>
+
+      <p className={styles.cardText}>
+        Les barres sont calculées avec correctCount / totalSeen. Les caractères
+        sans historique apparaissent à 0%.
+      </p>
+    </section>
+  );
+}
+
+//! Yongyue: i18n

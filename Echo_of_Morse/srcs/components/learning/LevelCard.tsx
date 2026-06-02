@@ -1,5 +1,6 @@
 "use client";
 import { useI18n } from "@/lib/i18n";
+
 import Link from "next/link";
 import type { MorseLevel, UserLearningProgress } from "@/types/learning";
 import { getLevelStatus } from "@/lib/learning/levelAccess";
@@ -54,11 +55,6 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
           <div className={styles.metaBox}>
             <dt className={styles.metaLabel}>{t.pass}</dt>
             <dd className={styles.metaValue}>{level.passCondition}</dd>
-          </div>
-
-          <div className={styles.metaBox}>
-            <dt className={styles.metaLabel}>{t.review}</dt>
-            <dd className={styles.metaValue}>{level.reviewRatio}</dd>
           </div>
         </dl>
       </div>

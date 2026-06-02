@@ -115,7 +115,7 @@ export default function InviteFriendsPanel({
 
     setPendingInviteFriendIds((previousIds) => [...previousIds, friend.id]);
 
-    // TODO backend / socket:
+
     //! Liyuan
     // Backend/socket note:
     // This is only a local pending state for the frontend prototype. No API

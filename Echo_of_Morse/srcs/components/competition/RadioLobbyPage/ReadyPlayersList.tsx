@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui";
-import type { RadioUser } from "../mockData/competitionTypes";
+import type { RadioUser } from "@/types/competition";
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
 
 type ReadyPlayersListProps = {
@@ -44,7 +44,3 @@ export default function ReadyPlayersList({
 }
 
 {/* //! yongyue i18n: move ready players labels and empty state into the i18n dictionary. */}
-
-// //! Liyuan: real data:
-// readyPlayers currently comes from local mock state.
-// Later it should come from radio:ready-list-updated socket event.

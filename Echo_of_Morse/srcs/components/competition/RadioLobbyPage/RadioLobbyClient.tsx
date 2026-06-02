@@ -1,54 +1,45 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSocket } from "@/providers/socket-provider";
+
 import InviteFriendsPanel from "./InviteFriendsPanel";
 import LobbyUserList from "./LobbyUserList";
 import MatchmakingPanel from "./MatchmakingPanel";
 import RadioHeader from "./RadioHeader";
 import ReadyPlayersList from "./ReadyPlayersList";
-import { mockRadioUsersByRadioId } from "@/components/competition/mockData/mockCompetitionData";
-import {
-  RADIO_LOBBY_MAX_USERS,
-  type RadioConfig,
-  type RadioUser,
-} from "@/components/competition/mockData/competitionTypes";
+
+import { RADIO_LOBBY_MAX_USERS } from "@/config/competition";
+import type { RadioConfig, RadioUser } from "@/types/competition";
+
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
 
 type RadioLobbyClientProps = {
   radio: RadioConfig;
+
+  initialUsers: RadioUser[];
 };
 
-export default function RadioLobbyClient({ radio }: RadioLobbyClientProps) {
+export default function RadioLobbyClient({
+  radio,
+  initialUsers,
+}: RadioLobbyClientProps) {
   const router = useRouter();
+  const { socket } = useSocket();
 
-  // //! Liyuan real data:
-  // This is temporary mock lobby data.
-  // Backend/socket note:
-  // The lobby user list is still mock data. It does not represent real users
-  // currently connected to this radio lobby yet.
-  // Later it should come from socket events such as:
-  // radio:join, radio:leave, radio:user-list-updated.
-  const [users, setUsers] = useState<RadioUser[]>(
-    mockRadioUsersByRadioId[radio.id]
-  );
-
+  const [users, setUsers] = useState<RadioUser[]>(initialUsers);
   const [message, setMessage] = useState("");
 
-  const currentUser = users.find((user) => user.isCurrentUser);
+  const currentUser = users.find((u) => u.isCurrentUser);
 
   const readyPlayers = useMemo(
-    () => users.filter((user) => user.status === "ready"),
+    () => users.filter((u) => u.status === "ready"),
     [users]
   );
 
-  // Backend/socket note:
-  // The ready queue is derived from local React state for the frontend
-  // prototype. It is not a server-confirmed queue yet, so it cannot be used as
-  // the source of truth for real matchmaking.
-
   const mockFriends = useMemo(
-    () => users.filter((user) => user.isFriend && !user.isCurrentUser),
+    () => users.filter((u) => u.isFriend && !u.isCurrentUser),
     [users]
   );
 
@@ -56,30 +47,57 @@ export default function RadioLobbyClient({ radio }: RadioLobbyClientProps) {
   const canStartGame = isCurrentUserReady && readyPlayers.length >= 2;
   const isLobbyFull = users.length >= RADIO_LOBBY_MAX_USERS;
 
+  /**
+   * =========================================================
+   * SOCKET SYNC LAYER
+   * =========================================================
+   */
+  useEffect(() => {
+    if (!socket) return;
+
+    function handleUserListUpdated(updatedUsers: RadioUser[]) {
+      setUsers(updatedUsers);
+    }
+
+    function handleReadyListUpdated(updatedUsers: RadioUser[]) {
+      setUsers(updatedUsers);
+    }
+
+    function handleGameCreated(payload: {
+      radioId: string;
+      sessionId: string;
+    }) {
+      router.push(
+        `/competition/radio/${payload.radioId}/session/${payload.sessionId}`
+      );
+    }
+
+    socket.on("radio:user-list-updated", handleUserListUpdated);
+    socket.on("radio:ready-list-updated", handleReadyListUpdated);
+    socket.on("radio:game-created", handleGameCreated);
+
+    return () => {
+      socket.off("radio:user-list-updated", handleUserListUpdated);
+      socket.off("radio:ready-list-updated", handleReadyListUpdated);
+      socket.off("radio:game-created", handleGameCreated);
+    };
+  }, [socket, router]);
+
+  /**
+   * =========================================================
+   * ACTIONS (socket emit)
+   * =========================================================
+   */
   function handleToggleReady() {
     setMessage("");
 
-    setUsers((previousUsers) =>
-      previousUsers.map((user) => {
-        if (!user.isCurrentUser) {
-          return user;
-        }
+    if (!socket) return;
 
-        return {
-          ...user,
-          status: user.status === "ready" ? "idle" : "ready",
-        };
-      })
-    );
-
-    // //! Liyuan：real data:
-    // Replace local state update with socket events.
-    // Expected events:
-    // socket.emit("radio:ready", { radioId: radio.id })
-    // socket.emit("radio:unready", { radioId: radio.id })
-    // Server should broadcast:
-    // socket.on("radio:user-list-updated", users)
-    // socket.on("radio:ready-list-updated", readyPlayers)
+    if (isCurrentUserReady) {
+      socket.emit("radio:unready", { radioId: radio.id });
+    } else {
+      socket.emit("radio:ready", { radioId: radio.id });
+    }
   }
 
   function handleStartGame() {
@@ -95,13 +113,11 @@ export default function RadioLobbyClient({ radio }: RadioLobbyClientProps) {
       return;
     }
 
-    const mockSessionId = `mock-session-${Date.now()}`;
+    if (!socket) return;
 
-    // //! Liyuan：real data:
-    // This mock sessionId should be replaced by a real game session created by backend/socket.
-    // Backend/socket note:
-    // At the moment, Start Game only redirects the current browser to the
-    // session route. It does not move every ready player into the same session.
+    socket.emit("radio:start-game", { radioId: radio.id });
+  }
+
     // The backend/socket layer must create the session, choose all server-ready
     // players, and broadcast the sessionId so every participant redirects
     // together.
@@ -113,9 +129,6 @@ export default function RadioLobbyClient({ radio }: RadioLobbyClientProps) {
     // Then all ready players should be redirected to:
     // /competition/radio/[radioId]/session/[sessionId]
 
-    router.push(`/competition/radio/${radio.id}/session/${mockSessionId}`);
-  }
-
   return (
     <div className={styles.page}>
       <RadioHeader radio={radio} usersCount={users.length} />
@@ -125,7 +138,7 @@ export default function RadioLobbyClient({ radio }: RadioLobbyClientProps) {
           <LobbyUserList users={users} />
 
           <MatchmakingPanel
-            isCurrentUserReady={isCurrentUserReady}
+            isCurrentUserReady={!!isCurrentUserReady}
             readyPlayersCount={readyPlayers.length}
             canStartGame={canStartGame}
             message={message}
