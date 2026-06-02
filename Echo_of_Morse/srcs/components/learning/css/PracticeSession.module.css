@@ -1,6 +1,14 @@
+/* ============================================= practiceSession.tsx ============================================= */
+
 .practiceShell {
 	display: grid;
 	gap: 22px;
+}
+
+.practiceGrid {
+	display: grid;
+	grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+	gap: 18px;
 }
 
 .practiceHeader {
@@ -10,8 +18,7 @@
 	gap: 18px;
 }
 
-.practiceTitle,
-.resultTitle {
+.practiceTitle{
 	margin: 0;
 	color: #111111;
 	font-size: clamp(1.8rem, 3vw, 2.6rem);
@@ -42,12 +49,35 @@
 	font-weight: 850;
 }
 
-.practiceGrid {
+.practiceTitleBlock {
 	display: grid;
-	grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
 	gap: 18px;
+	justify-items: start;
 }
 
+.backToLevelsButton {
+	display: flex;
+	width: 42px;
+	height: 42px;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #dddddd;
+	border-radius: 999px;
+	background: #ffffff;
+	color: #111111;
+	font-size: 1.45rem;
+	font-weight: 800;
+	line-height: 1;
+	text-decoration: none;
+	transform: translateX(-24px);
+}
+
+.backToLevelsButton:hover {
+	border-color: #111111;
+	background: #f5f5f5;
+}
+
+/* ============ shared ============ */
 .promptPanel,
 .answerPanel,
 .settingsPanel,
@@ -58,6 +88,16 @@
 	box-shadow: 0 18px 42px rgba(0, 0, 0, 0.05);
 }
 
+.secondaryAction {
+	background: #ffffff;
+	color: #111111;
+}
+
+.primaryAction {
+	width: fit-content;
+}
+
+/* ============================================= practicePrompt.tsx ============================================= */
 .promptPanel {
 	display: grid;
 	min-height: 440px;
@@ -66,17 +106,6 @@
 	gap: 20px;
 	padding: 28px;
 	text-align: center;
-}
-
-.answerPanel {
-	display: grid;
-	align-content: start;
-	gap: 18px;
-	padding: 24px;
-}
-
-.nextAction {
-	justify-self: end;
 }
 
 .modeBadge {
@@ -142,6 +171,92 @@
 	line-height: 1.7;
 }
 
+/* ============================================= practiceAnswer.tsx ============================================= */
+.keyGrid button,
+.primaryAction,
+.secondaryAction {
+	min-height: 44px;
+	padding: 0 16px;
+	border: 1px solid #111111;
+	border-radius: 999px;
+	background: #111111;
+	color: #ffffff;
+	font-size: 0.92rem;
+	font-weight: 800;
+	cursor: pointer;
+}
+
+.keyGrid button:disabled,
+.secondaryAction:disabled {
+	border-color: #dddddd;
+	background: #eeeeee;
+	color: #888888;
+	cursor: not-allowed;
+}
+
+/* bouton pour point et trait */
+.keyGrid .morseKey {
+	background: #ffffff;
+	color: #111111;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 1.45rem;
+	line-height: 1;
+} 
+
+/*bouton pour supp*/
+.keyGrid .deleteKey {
+	border-color: #d6d6d6;
+	background: #eeeeee;
+	color: #555555;
+}
+
+.feedback,
+.hint {
+	margin: 0;
+	padding: 14px 16px;
+	border-radius: 16px;
+	font-size: 0.95rem;
+	font-weight: 800;
+}
+
+.hint {
+	background: #f5f5f5;
+	color: #555555;
+}
+
+.feedbackGood {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.feedbackBad {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+/* reponse retournee */
+.feedbackMorseAnswer {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	margin-left: 8px;
+	vertical-align: middle;
+}
+
+.morseDot {
+	width: 5px;
+	height: 5px;
+	border-radius: 0;
+	background: currentColor;
+}
+
+.morseDash {
+	width: 15px;
+	height: 5px;
+	border-radius: 0;
+	background: currentColor;
+}
+
 .answerBox {
 	display: grid;
 	gap: 10px;
@@ -173,74 +288,18 @@
 	gap: 10px;
 }
 
-.keyGrid button,
-.primaryAction,
-.secondaryAction {
-	min-height: 44px;
-	padding: 0 16px;
-	border: 1px solid #111111;
-	border-radius: 999px;
-	background: #111111;
-	color: #ffffff;
-	font-size: 0.92rem;
-	font-weight: 800;
-	cursor: pointer;
+.answerPanel {
+	display: grid;
+	align-content: start;
+	gap: 18px;
+	padding: 24px;
 }
 
-.secondaryAction {
-	background: #ffffff;
-	color: #111111;
+.nextAction {
+	justify-self: end;
 }
 
-.keyGrid button:disabled,
-.secondaryAction:disabled {
-	border-color: #dddddd;
-	background: #eeeeee;
-	color: #888888;
-	cursor: not-allowed;
-}
-
-/* bouton pour point et trait */
-.keyGrid .morseKey {
-	background: #ffffff;
-	color: #111111;
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-	font-size: 1.45rem;
-	line-height: 1;
-} 
-
-/*bouton pour supp*/
-.keyGrid .deleteKey {
-	border-color: #d6d6d6;
-	background: #eeeeee;
-	color: #555555;
-}
-
-
-.feedback,
-.hint {
-	margin: 0;
-	padding: 14px 16px;
-	border-radius: 16px;
-	font-size: 0.95rem;
-	font-weight: 800;
-}
-
-.hint {
-	background: #f5f5f5;
-	color: #555555;
-}
-
-.feedbackGood {
-	background: #dcfce7;
-	color: #166534;
-}
-
-.feedbackBad {
-	background: #fee2e2;
-	color: #991b1b;
-}
-
+/* ============================================= settings ============================================= */
 .settingsPanel {
 	display: flex;
 	gap: 18px;
@@ -256,56 +315,7 @@
 	font-weight: 800;
 }
 
-.resultPanel {
-	display: grid;
-	gap: 20px;
-	padding: 32px;
-}
-
-.resultText {
-	max-width: 620px;
-	margin: 0;
-	color: #555555;
-	line-height: 1.7;
-}
-
-.resultStats {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 180px));
-	gap: 12px;
-}
-
-.resultStats div {
-	padding: 16px;
-	border: 1px solid #eeeeee;
-	border-radius: 18px;
-	background: #fafafa;
-}
-
-.resultStats span,
-.resultStats strong {
-	display: block;
-}
-
-.resultStats span {
-	color: #666666;
-	font-size: 0.8rem;
-	font-weight: 800;
-}
-
-.resultStats strong {
-	margin-top: 8px;
-	color: #111111;
-	font-size: 1.35rem;
-	font-weight: 900;
-}
-
-.primaryAction {
-	width: fit-content;
-}
-
-
-/* ================= cheatSheet ================= */
+/* ============================================= cheatSheet ============================================= */
 .cheatSheet {
 	border: 1px solid #e5e5e5;
 	border-radius: 18px;
@@ -409,35 +419,122 @@
 	background: #f5f5f5;
 }
 
-/* ================= practiceHeader: bouton retourner ================= */
-.practiceTitleBlock {
-	display: grid;
-	gap: 18px;
-	justify-items: start;
+/* ============================================= practiceResult.tsx ============================================= */
+
+/* description pour indiquer le niveau */
+.kicker {
+	margin: 0;
+	color: #666666;
+	font-size: 0.82rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	justify-self: start;
 }
 
-.backToLevelsButton {
+.resultTitle {
+	margin: 0;
+	color: #111111;
+	font-size: clamp(1.8rem, 3vw, 2.6rem);
+	line-height: 1;
+	font-weight: 850;
+	text-align: center;
+}
+
+.resultActions {
 	display: flex;
-	width: 42px;
-	height: 42px;
+	width: 100%;
+	max-width: 620px;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-top: 36px;
+}
+
+.resultRightActions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.resultButton {
+	display: inline-flex;
+	width: 170px;
+	min-height: 46px;
 	align-items: center;
 	justify-content: center;
-	border: 1px solid #dddddd;
+	padding: 0 16px;
 	border-radius: 999px;
-	background: #ffffff;
-	color: #111111;
-	font-size: 1.45rem;
-	font-weight: 800;
-	line-height: 1;
+	font-size: 0.92rem;
+	font-weight: 850;
 	text-decoration: none;
-	transform: translateX(-24px);
+	cursor: pointer;
 }
 
-.backToLevelsButton:hover {
-	border-color: #111111;
-	background: #f5f5f5;
+.resultBackButton {
+	border: 1px solid #d6d6d6;
+	background: #eeeeee;
+	color: #333333;
 }
 
+.resultRetryButton {
+	border: 1px solid #d6d6d6;
+	background: #ffffff;
+	color: #555555;
+}
+
+.resultNextButton {
+	border: 1px solid #111111;
+	background: #111111;
+	color: #ffffff;
+}
+
+.resultPanel {
+	display: grid;
+	justify-items: center;
+	gap: 28px;
+	padding: 32px;
+}
+
+.resultText {
+	display: grid;
+	gap: 4px;
+	max-width: 620px;
+	text-align: center;
+}
+
+.resultStats {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(240px, 1fr));
+	max-width: 620px;
+	gap: 12px;
+}
+
+.resultStats div {
+	padding: 16px;
+	border: 1px solid #eeeeee;
+	border-radius: 18px;
+	background: #fafafa;
+}
+
+.resultStats span,
+.resultStats strong {
+	display: block;
+}
+
+.resultStats span {
+	color: #666666;
+	font-size: 0.8rem;
+	font-weight: 800;
+}
+
+.resultStats strong {
+	margin-top: 8px;
+	color: #111111;
+	font-size: 1.35rem;
+	font-weight: 900;
+}
+
+/* ============================================= mobile ============================================= */
 
 @media (max-width: 860px) {
 	.practiceHeader {

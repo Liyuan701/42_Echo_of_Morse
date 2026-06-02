@@ -8,11 +8,16 @@ export type PracticeResultPayload = {
 };
 
 export async function submitPracticeResult(payload: PracticeResultPayload) {
-	await fetch("/api/learning/practice-result", {
+	
+	const response = await fetch("/api/learning/practice-result", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(payload),
 	});
+
+	if (!response.ok) {
+		throw new Error("Failed to save practice result");
+	}
 }

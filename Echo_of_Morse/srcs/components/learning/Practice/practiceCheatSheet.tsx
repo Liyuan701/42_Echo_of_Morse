@@ -3,7 +3,6 @@
 import { useState } from "react";
 import styles from "@/components/learning/css/PracticeSession.module.css";
 import type { CharacterItem } from "./practiceTypes";
-import { toDisplayMorse } from "./practiceUtils";
 
 type PracticeCheatSheetProps = {
 	items: CharacterItem[];

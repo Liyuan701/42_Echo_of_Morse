@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "@/components/learning/css/PracticeSession.module.css";
 
 type PracticeResultProps = {
@@ -18,7 +19,10 @@ type PracticeResultProps = {
 		status: string;
 		unlockedNext: string;
 		needsReview: string;
+
 		practiceAgain: string;
+		backToLevels: string;
+		nextLevel: string;
 	};
 	//recevoir une fonction onRestart qui retourne rien et pas besoin d'avoir param
 	onRestart: () => void;
@@ -40,20 +44,23 @@ export default function PracticeResult({
 				<p className={styles.kicker}>
 					{t.level} {levelId} {t.complete}
 				</p>
-				{/*------------------ une phrase pour resultat ------------------*/}
+				{/*------------------ titre resultat ------------------*/}
 				<h1 className={styles.resultTitle}>
-					{hasPassed ? t.levelPassed : t.tryAgain}
+					{hasPassed ? `🎉 ${t.levelPassed} 🎉` : t.tryAgain}
 				</h1>
 
 				{/*------------------ des donnees pour resultat ------------------*/}
 				<p className={styles.resultText}>
-					{t.resultSummary
-						.replace("{correctCount}", String(correctCount))
-						.replace("{questionCount}", String(questionCount))}
-					{" "}
-					{t.passConditionText
-						.replace("{passCount}", String(passCount))
-						.replace("{questionCount}", String(questionCount))}
+					<span>
+						{t.resultSummary
+							.replace("{correctCount}", String(correctCount))
+							.replace("{questionCount}", String(questionCount))}
+					</span>
+					<span>
+						{t.passConditionText
+							.replace("{passCount}", String(passCount))
+							.replace("{questionCount}", String(questionCount))}
+					</span>
 				</p>
 
 				<div className={styles.resultStats}>
@@ -68,13 +75,36 @@ export default function PracticeResult({
 					</div>
 				</div>
 
-				<button
-					type="button"
-					className={styles.primaryAction}
-					onClick={onRestart}
-				>
-					{t.practiceAgain}
-				</button>
+				{/*------------------ des boutons ------------------*/}
+				<div className={styles.resultActions}>
+					<Link
+						className={`${styles.resultButton} ${styles.resultBackButton}`}
+						href="/learning/levels"
+					>
+						{t.backToLevels}
+					</Link>
+
+					<div className={styles.resultRightActions}>
+						<button
+							type="button"
+							className={`${styles.resultButton} 
+										${ hasPassed ? styles.resultRetryButton : styles.resultNextButton}`}
+							onClick={onRestart}
+						>
+							{t.practiceAgain}
+						</button>
+
+						{hasPassed && levelId < 12 ? (
+							<Link
+								className={`${styles.resultButton} ${styles.resultNextButton}`}
+								href={`/learning/levels/${levelId + 1}/practice`}
+							>
+								{t.nextLevel}
+							</Link>
+						) : null}
+					</div>
+
+				</div>
 			</div>
 		</section>
 	);

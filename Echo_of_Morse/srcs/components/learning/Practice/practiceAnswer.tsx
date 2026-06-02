@@ -1,6 +1,5 @@
 import styles from "@/components/learning/css/PracticeSession.module.css";
 import type { Question } from "./practiceTypes";
-import { toDisplayMorse } from "./practiceUtils";
 
 type PracticeAnswerProps = {
 	question: Question;
@@ -38,7 +37,20 @@ export default function PracticeAnswer({
 	onNextQuestion,
 }: PracticeAnswerProps) {
 
-	const correctAnswer = question.mode === "decode" ? question.character : toDisplayMorse(question.morse);
+	const correctAnswer = question.mode === "decode" ? question.character : question.morse;
+
+	function displayMorseAnswer(morse: string) {
+		//.split("") pour séparer chaque charactere
+		//.map((symbol, index) => ( ... )) pour transformer chaque charactere dans un tableau
+		return morse.split("").map((symbol, index) => (
+			<span
+				// ici key ==> aide pour react pour différencier les éléments d'une liste
+				key={`${symbol}-${index}`}
+				className={symbol === "." ? styles.morseDot : styles.morseDash}
+			/>
+		));
+	}
+
 
 	return (
 		<section className={styles.answerPanel}>
@@ -100,11 +112,18 @@ export default function PracticeAnswer({
 						{feedback !== t.correct ? (
 							<>
 								<br />
-								{t.correctAnswerText.replace("{answer}", correctAnswer)}
+								<span>{t.correctAnswerText}</span>
+								{question.mode === "encode" ? (
+									<span className={styles.feedbackMorseAnswer}>
+										{displayMorseAnswer(correctAnswer)}
+									</span>
+								) : (
+									<span>{correctAnswer}</span>
+								)}
 							</>
 						) : null}
 					</p>
-
+					
 					{feedback !== t.correct ? (
 						<button
 							type="button"

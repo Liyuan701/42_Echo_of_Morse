@@ -12,7 +12,7 @@ import PracticeSettings from "./practiceSettings";
 import { createQuestionList, getCharactersForLevel, wait } from "./practiceUtils";
 import { submitPracticeResult } from "./practiceApi";
 import PracticeCheatSheet from "./practiceCheatSheet";
-import { LEVEL_RULES, MORSE_LEVELS, type LevelId } from "./practiceData";
+import { LEVEL_RULES, type LevelId } from "./practiceData";
 import PracticePrompt from "./practicePrompt";
 import PracticeAnswer from "./practiceAnswer";
 
@@ -323,7 +323,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 	}, [question]);
 
 	if (!question) {
-		return <Card><h1>{t.userNotFound}</h1></Card>;
+		return <div><h1>{t.noQuestion}</h1></div>;
 	}
 
 	//========================================== page affiche ==========================================
