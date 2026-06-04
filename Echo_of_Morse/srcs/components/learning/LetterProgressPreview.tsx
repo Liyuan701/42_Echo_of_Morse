@@ -1,49 +1,45 @@
+//This version is connected with real db data. 
+
 "use client";
 
 import styles from "@/components/learning/css/Learning.module.css";
-import {
-  mockLetterProgress,
-  type LetterProgress,
-} from "@/components/learning/data/mockLetterProgress";
+import type { LetterProgress } from "@/types/learning";
 
+// Calcule le taux de réussite en pourcentage
 function getAccuracy(correctCount: number, totalSeen: number): number {
-  if (totalSeen === 0) {
-    return 0;
-  }
-
+  if (totalSeen === 0) return 0;
   return Math.round((correctCount / totalSeen) * 100);
 }
 
+// Trie les caractères du plus faible au plus fort en fonction de leur taux de réussite
 function getVisibleLetters(letters: LetterProgress[]): LetterProgress[] {
   return [...letters].sort((a, b) => {
     const accuracyA = getAccuracy(a.correctCount, a.totalSeen);
     const accuracyB = getAccuracy(b.correctCount, b.totalSeen);
 
-    if (a.totalSeen === 0 && b.totalSeen > 0) {
-      return 1;
-    }
-
-    if (a.totalSeen > 0 && b.totalSeen === 0) {
-      return -1;
-    }
+    if (a.totalSeen === 0 && b.totalSeen > 0) return 1;
+    if (a.totalSeen > 0 && b.totalSeen === 0) return -1;
 
     return accuracyA - accuracyB;
   });
 }
 
-export default function LetterProgressPreview() {
-  const visibleLetters = getVisibleLetters(mockLetterProgress);
+// Affiche une barre de progression pour chaque caractère, triée du plus faible au plus fort
+type LetterProgressPreviewProps = {
+  letterProgress: LetterProgress[];
+};
+
+export default function LetterProgressPreview({ letterProgress }: LetterProgressPreviewProps) {
+  const visibleLetters = getVisibleLetters(letterProgress);
 
   return (
     <section className={styles.letterChartCard}>
       <div className={styles.letterChartHeader}>
         <div>
           <p className={styles.cardLabel}>Progression par caractère</p>
-
           <h2 className={styles.entryTitle}>Taux de réussite par caractère</h2>
-
           <p className={styles.cardText}>
-            Chaque barre représente le taux de réussite d’un caractère. Les
+            Chaque barre représente le taux de réussite d'un caractère. Les
             caractères les plus faibles apparaissent en premier.
           </p>
         </div>
@@ -61,21 +57,12 @@ export default function LetterProgressPreview() {
         <div className={styles.verticalChartScroll}>
           <div className={styles.verticalChart}>
             {visibleLetters.map((letter) => {
-              const accuracy = getAccuracy(
-                letter.correctCount,
-                letter.totalSeen
-              );
+              const accuracy = getAccuracy(letter.correctCount, letter.totalSeen);
 
               return (
-                <div
-                  className={styles.verticalChartItem}
-                  key={letter.character}
-                >
+                <div className={styles.verticalChartItem} key={letter.character}>
                   <div className={styles.verticalChartBarArea}>
-                    <span className={styles.verticalChartValue}>
-                      {accuracy}%
-                    </span>
-
+                    <span className={styles.verticalChartValue}>{accuracy}%</span>
                     <div
                       className={styles.verticalChartBar}
                       style={{ height: `${accuracy}%` }}
@@ -83,7 +70,6 @@ export default function LetterProgressPreview() {
                       title={`${letter.character} ${letter.morse}: ${accuracy}% · ${letter.correctCount}/${letter.totalSeen} correct · ${letter.wrongCount} wrong`}
                     />
                   </div>
-
                   <div className={styles.verticalChartLabel}>
                     <strong>{letter.character}</strong>
                     <span>{letter.morse}</span>
@@ -97,11 +83,6 @@ export default function LetterProgressPreview() {
 
       <p className={styles.chartScrollHint}>
         Faites défiler horizontalement pour voir tous les caractères.
-      </p>
-
-      <p className={styles.cardText}>
-        Les barres sont calculées avec correctCount / totalSeen. Les caractères
-        sans historique apparaissent à 0%.
       </p>
     </section>
   );
