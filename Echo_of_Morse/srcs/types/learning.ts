@@ -28,6 +28,15 @@ export type UserLearningProgress = {
    * null means the backend does not return this data yet.
    */
   totalPracticeSessions: number | null;
-
   weakCharacters: string[];
+  letterProgress: LetterProgress[]; 
+};
+
+export type LetterProgress = {
+  character: string;
+  morse: string;
+  correctCount: number;
+  wrongCount: number;
+  totalSeen: number;
+  mastery: number;
 };
