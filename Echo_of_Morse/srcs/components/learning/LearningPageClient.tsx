@@ -1,7 +1,6 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
-import type { UserLearningProgress } from "@/types/learning";
 
 import PageShell from "@/components/layout/page-shell";
 import LearningProgressCard from "@/components/learning/LearningProgressCard";
@@ -9,18 +8,19 @@ import LearningEntryCards from "@/components/learning/LearningEntryCards";
 import LetterProgressPreview from "@/components/learning/LetterProgressPreview";
 import styles from "@/components/learning/css/Learning.module.css";
 
+type UserLearningProgress = {
+  level: number;
+  current: number;
+  total: number;
+  accuracy: number;
+  streak?: number;
+};
+
 type LearningPageClientProps = {
   progress: UserLearningProgress;
   totalLevels: number;
 };
 
-/**
- * Client Component
- * Responsible for:
- * - UI rendering
- * - Using i18n hook
- * - Displaying learning progress, character progress chart and entry cards
- */
 export default function LearningPageClient({
   progress,
   totalLevels,
