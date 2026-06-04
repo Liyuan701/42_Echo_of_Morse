@@ -86,5 +86,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 3. Increment practice sessions count
+  await prisma.user.update({
+    where: { id: userId },
+    data: { practiceSessions: { increment: 1 } },
+  });
+
   return Response.json({ ok: true });
 }
