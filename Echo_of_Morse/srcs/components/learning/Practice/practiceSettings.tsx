@@ -15,7 +15,6 @@ type PracticeSettingsProps = {
 };
 
 export default function PracticeSettings({
-	label,
 	audioLabel,
 	lightLabel,
 	audioEnabled,
