@@ -20,7 +20,11 @@ import PracticeAnswer from "./practiceAnswer";
 // typeof ==> get the type of an existing variable
 // AudioContext ==> a browser API to create and play sound
 // webkitAudioContext is the old name for Safari
-type BrowserWindow = Window & { webkitAudioContext?: typeof AudioContext };
+type AudioContextConstructor = typeof AudioContext;
+
+type BrowserWindow = Window & { 
+					AudioContext?: AudioContextConstructor; 
+					webkitAudioContext?: AudioContextConstructor;};
 
 export default function PracticeSession({ levelId }: { levelId: number }) {
 	//========================================== init ==========================================
@@ -332,7 +336,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 	}, [question]);
 
 	if (!question) {
-		return <div><h1>{t.userNotFound}</h1></div>;
+		return <div><h1>{t.noQuestion}</h1></div>;
 	}
 
 	//========================================== rendered page ==========================================
