@@ -20,8 +20,8 @@ services:
     #   - "80:80"
     #   - "443:443"
     ports:
-    - "8080:80"
-    - "8443:443"
+    - "8080:8080"
+    - "8443:8443"
     environment:
       - BACKEND=http://web:3000       # redirige vers Next.js
       - MODSEC_RULE_ENGINE=On         # bloque les attaques (SQLi, XSS, etc.)
@@ -33,6 +33,11 @@ services:
       # location_common.conf.template est inclus à l'intérieur du bloc server {}
       # C'est le seul endroit où un bloc location peut être ajouté dans cette image.
       - ./docker/nginx/location_common.conf.template:/etc/nginx/templates/includes/location_common.conf.template
+      # Exception ModSecurity pour Socket.IO : autorise Content-Type text/plain
+      # que Socket.IO utilise dans ses requêtes POST de polling.
+      # Monté dans owasp-crs/rules/ car setup.conf inclut automatiquement *.conf
+      # de ce répertoire. Le préfixe REQUEST-999 garantit qu'il se charge en dernier.
+      - ./docker/modsecurity/socket-io-exception.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-999-SOCKETIO-EXCEPTION.conf
     depends_on:
       - web
       - ws
@@ -93,6 +98,7 @@ services:
       - "8200:8200"   # interface UI Vault accessible sur http://localhost:8200
     environment:
       - VAULT_ADDR=http://0.0.0.0:8200
+      - SKIP_SETCAP=1
     cap_add:
       - IPC_LOCK      # empêche les secrets d'être swappés sur le disque
     volumes:
@@ -110,6 +116,7 @@ services:
   vault-unseal:
     image: hashicorp/vault:latest
     container_name: transcendence_vault_unseal
+    user: root
     environment:
       - VAULT_ADDR=http://vault:8200
     volumes:

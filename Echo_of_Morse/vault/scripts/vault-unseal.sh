@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Garantit que le dossier data existe et est accessible en écriture
+# même si le repo vient d'être cloné (vault/data est dans .gitignore)
+mkdir -p /vault/data
+
 KEYS_FILE=/vault/data/init-keys.txt
 
 # Attend que Vault soit prêt à recevoir des requêtes
