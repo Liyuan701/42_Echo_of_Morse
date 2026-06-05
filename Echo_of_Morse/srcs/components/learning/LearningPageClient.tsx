@@ -41,7 +41,9 @@ export default function LearningPageClient({
                 {t.pageTitle}
               </h1>
 
-              <p className={styles.description}>{t.pageDescription}</p>
+              <p className={styles.description}>
+                {t.pageDescription}
+              </p>
             </section>
 
             <LearningProgressCard
@@ -49,7 +51,9 @@ export default function LearningPageClient({
               totalLevels={totalLevels}
             />
 
-            <LetterProgressPreview />
+            <LetterProgressPreview
+              letterProgress={progress.letterProgress}
+            />
 
             <LearningEntryCards progress={progress} />
           </div>
