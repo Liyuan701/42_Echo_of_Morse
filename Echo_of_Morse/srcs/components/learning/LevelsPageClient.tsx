@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import type { UserLearningProgress } from "@/types/learning";
 
 import PageShell from "@/components/layout/page-shell";
 import LevelGrid from "@/components/learning/LevelGrid";
@@ -9,7 +10,13 @@ import { morseLevels } from "@/components/learning/data/morseLevels";
 
 import styles from "@/components/learning/css/Learning.module.css";
 
-export default function LevelsPageClient({ progress }) {
+type LevelsPageClientProps = {
+  progress: UserLearningProgress;
+};
+
+export default function LevelsPageClient({
+  progress,
+}: LevelsPageClientProps) {
   const { dictionary } = useI18n();
   const t = dictionary.learning;
 
@@ -18,8 +25,6 @@ export default function LevelsPageClient({ progress }) {
       <PageShell>
         <section className={styles.learningPage} aria-labelledby="levels-title">
           <div className={styles.learningContainer}>
-
-            {/* Breadcrumb */}
             <nav className={styles.breadcrumb} aria-label="Breadcrumb">
               <Link className={styles.link} href="/learning">
                 {t.breadcrumbLearning}
@@ -30,7 +35,6 @@ export default function LevelsPageClient({ progress }) {
               </span>
             </nav>
 
-            {/* Title */}
             <section className={styles.hero}>
               <h1 id="levels-title" className={styles.title}>
                 {t.breadcrumbLevels}
@@ -41,9 +45,7 @@ export default function LevelsPageClient({ progress }) {
               </p>
             </section>
 
-            {/* Grid */}
             <LevelGrid levels={morseLevels} progress={progress} />
-
           </div>
         </section>
       </PageShell>

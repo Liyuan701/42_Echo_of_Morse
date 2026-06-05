@@ -224,6 +224,8 @@ const zh = {
 		
 		//------------------ srcs/components/learning/LevelGrid.tsx ------------------
 		morseLevels: "摩斯码等级",
+		globalAccuracy: "总体正确率",
+		practiceSessions: "练习次数",
 
 		//------------------ srcs/components/learning/LevelCard.tsx ------------------
 		newCharacters: "新字符",

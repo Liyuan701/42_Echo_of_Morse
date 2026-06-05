@@ -1,13 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
-if (!WS_URL) {
-  throw new Error("Missing NEXT_PUBLIC_WS_URL");
-}
-
 let socket: Socket | null = null;
-
-const randomId = Math.random().toString(36).slice(2);
 
 export function getSocket() {
   if (typeof window === "undefined") return null;
@@ -20,11 +13,9 @@ export function getSocket() {
   }
 
   if (!socket) {
-    socket = io(WS_URL, {
+    const url = process.env.NEXT_PUBLIC_WS_URL || window.location.origin;
+    socket = io(url, {
       path: "/socket.io/",
-      // auth: {
-      //   userId: session.user.id,
-      // },
       query: {
         userId,
       },

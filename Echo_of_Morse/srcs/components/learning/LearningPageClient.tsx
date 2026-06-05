@@ -14,13 +14,6 @@ type LearningPageClientProps = {
   totalLevels: number;
 };
 
-/**
- * Client Component
- * Responsible for:
- * - UI rendering
- * - Using i18n hook
- * - Displaying learning progress, character progress chart and entry cards
- */
 export default function LearningPageClient({
   progress,
   totalLevels,
@@ -41,7 +34,9 @@ export default function LearningPageClient({
                 {t.pageTitle}
               </h1>
 
-              <p className={styles.description}>{t.pageDescription}</p>
+              <p className={styles.description}>
+                {t.pageDescription}
+              </p>
             </section>
 
             <LearningProgressCard
@@ -49,7 +44,9 @@ export default function LearningPageClient({
               totalLevels={totalLevels}
             />
 
-            <LetterProgressPreview />
+            <LetterProgressPreview
+              letterProgress={progress.letterProgress}
+            />
 
             <LearningEntryCards progress={progress} />
           </div>

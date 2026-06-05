@@ -29,4 +29,5 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/public ./public
 
 # Run migrations then start the app
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+# run the seed
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/prisma db seed && npm run typecheck && npm run dev"]

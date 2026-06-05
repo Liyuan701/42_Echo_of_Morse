@@ -11,4 +11,6 @@ COPY . .
 RUN ./node_modules/.bin/prisma generate
 
 # No build step - Next.js runs in dev mode with hot reload
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && npm run dev"]
+# with typecheck
+# creat seed
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/prisma db seed && npm run typecheck && npm run dev"]
