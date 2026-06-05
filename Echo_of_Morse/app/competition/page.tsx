@@ -1,49 +1,58 @@
-import CompetitionIntro from "@/components/competition/CompetitionHomePage/CompetitionIntro";
-import OnlineOverview from "@/components/competition/CompetitionHomePage/OnlineOverview";
-import RadioWaveCard from "@/components/competition/CompetitionHomePage/RadioWaveCard";
+//This is the rabio lobby page, where users can wait for the game to start and see who else is in the lobby. 
+// It fetches the radio room data from the database and passes it to the RadioLobbyClient component.
+
+import { notFound } from "next/navigation";
 import PageShell from "@/components/layout/page-shell";
-import styles from "./competition.module.css";
+import RadioLobbyClient from "@/components/competition/RadioLobbyPage/RadioLobbyClient";
+import { prisma } from "@/server/prisma";
 
-import {
-  getOnlineOverview,
-  getRadioConfigs,
-} from "@/lib/services/competition";
+type RadioLobbyPageProps = {
+  params: {
+    radioId: string;
+  };
+};
 
-import type { RadioId } from "@/types/competition";
+export default async function RadioLobbyPage({
+  params,
+}: RadioLobbyPageProps) {
+  const radio = await prisma.radioRoom.findUnique({
+    where: { radioId: params.radioId },
+    include: {
+      lobbyPresences: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
 
-export default async function CompetitionPage() {
-  const onlineOverview = await getOnlineOverview();
-  const radioConfigs = await getRadioConfigs();
+  if (!radio) {
+    notFound();
+  }
+
+  const initialUsers = radio.lobbyPresences.map((p) => ({
+    id: p.user.id,
+    username: p.user.username,
+    image: p.user.image,
+
+    status: p.status.toLowerCase() as
+      | "idle"
+      | "ready"
+      | "playing",
+
+    displayName: p.user.username,
+    avatarUrl: p.user.image,
+    avatarInitial: p.user.username?.[0] ?? "?",
+    isFriend: false,
+  }));
 
   return (
     <main id="main-content">
       <PageShell>
-        <section className={styles.hero}>
-          <h1 className={styles.title}>Morse Radio Duels</h1>
-        </section>
-
-        <section className={styles.topGrid}>
-          <OnlineOverview overview={onlineOverview} />
-
-          <CompetitionIntro />
-        </section>
-
-        <section className={styles.radioSection}>
-          <div className={styles.radioGrid}>
-            {radioConfigs.map((radio) => {
-              const count =
-                onlineOverview.radioUsers?.[radio.id as RadioId] ?? 0;
-
-              return (
-                <RadioWaveCard
-                  key={radio.id}
-                  radio={radio}
-                  usersCount={count}
-                />
-              );
-            })}
-          </div>
-        </section>
+        <RadioLobbyClient
+          radio={radio}
+          initialUsers={initialUsers}
+        />
       </PageShell>
     </main>
   );

@@ -1,9 +1,5 @@
 import { Card } from "@/components/ui";
-import {
-  RADIO_LOBBY_MAX_USERS,
-  type RadioUser,
-  type RadioUserStatus,
-} from "../mockData/competitionTypes";
+import type { RadioUser } from "@/types/competition";
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
 
 type LobbyUserListProps = {

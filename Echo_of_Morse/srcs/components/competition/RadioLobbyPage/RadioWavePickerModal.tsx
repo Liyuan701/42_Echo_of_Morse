@@ -1,9 +1,24 @@
+//! With static test data in the page.
+//! mock data deleted
 "use client";
 
 import { Button } from "@/components/ui";
-import { radioConfigs } from "@/components/competition/mockData/mockCompetitionData";
 import type { RadioId } from "@/types/competition";
 import styles from "./css/radio-wave-picker-modal.module.css";
+
+type RadioConfig = {
+  id: RadioId;
+  name: string;
+  wpm: number;
+  description: string;
+};
+
+// temporary UI fallback (until we wire Prisma/service layer)
+const radioConfigs: RadioConfig[] = [
+  { id: "01", name: "Radio 01", wpm: 20, description: "" },
+  { id: "02", name: "Radio 02", wpm: 25, description: "" },
+  { id: "03", name: "Radio 03", wpm: 30, description: "" },
+];
 
 type RadioWavePickerModalProps = {
   isOpen: boolean;
@@ -18,16 +33,10 @@ export default function RadioWavePickerModal({
   onClose,
   onSelectRadio,
 }: RadioWavePickerModalProps) {
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
 
   return (
-    <div
-      className={styles.backdrop}
-      role="presentation"
-      onClick={onClose}
-    >
+    <div className={styles.backdrop} role="presentation" onClick={onClose}>
       <section
         className={styles.modal}
         role="dialog"
@@ -37,12 +46,10 @@ export default function RadioWavePickerModal({
       >
         <header className={styles.header}>
           <div>
-            {/* //! yongyue i18n: move this modal title into the i18n dictionary. */}
             <h2 id="radio-invite-title" className={styles.title}>
               Choose a Radio Wave
             </h2>
 
-            {/* //! yongyue i18n: move this helper text into the i18n dictionary with targetDisplayName interpolation. */}
             <p className={styles.description}>
               Invite {targetDisplayName} to join a radio lobby.
             </p>
@@ -59,7 +66,7 @@ export default function RadioWavePickerModal({
         </header>
 
         <div className={styles.radioList}>
-          {radioConfigs.map((radio) => (
+          {radioConfigs.map((radio: RadioConfig) => (
             <button
               key={radio.id}
               type="button"
@@ -76,7 +83,6 @@ export default function RadioWavePickerModal({
         </div>
 
         <footer className={styles.footer}>
-          {/* //! yongyue i18n: move this cancel label into the i18n dictionary. */}
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>

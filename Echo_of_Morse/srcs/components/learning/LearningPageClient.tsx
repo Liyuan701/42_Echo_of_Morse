@@ -8,13 +8,7 @@ import LearningEntryCards from "@/components/learning/LearningEntryCards";
 import LetterProgressPreview from "@/components/learning/LetterProgressPreview";
 import styles from "@/components/learning/css/Learning.module.css";
 
-type UserLearningProgress = {
-  level: number;
-  current: number;
-  total: number;
-  accuracy: number;
-  streak?: number;
-};
+import type { UserLearningProgress } from "@/types/learning";
 
 type LearningPageClientProps = {
   progress: UserLearningProgress;

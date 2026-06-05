@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui";
-import {
-  RADIO_LOBBY_MAX_USERS,
-  type RadioConfig,
-} from "../mockData/competitionTypes";
+import { RADIO_LOBBY_MAX_USERS, type RadioConfig } from "@/types/competition";
 import styles from "@/../app/competition/competition.module.css";
 
 type RadioWaveCardProps = {

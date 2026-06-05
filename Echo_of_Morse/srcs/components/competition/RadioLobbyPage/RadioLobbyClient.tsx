@@ -10,14 +10,15 @@ import MatchmakingPanel from "./MatchmakingPanel";
 import RadioHeader from "./RadioHeader";
 import ReadyPlayersList from "./ReadyPlayersList";
 
-import { RADIO_LOBBY_MAX_USERS } from "@/config/competition";
-import type { RadioConfig, RadioUser } from "@/types/competition";
+import { RADIO_LOBBY_MAX_USERS } from "@/types/competition";
+import type { RadioUser } from "@/types/competition";
+import type { RadioRoom } from "@prisma/client";
+import type { RadioConfig } from "@/types/competition";
 
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
 
-type RadioLobbyClientProps = {
-  radio: RadioConfig;
-
+export type RadioLobbyClientProps = {
+  radio: RadioRoom;
   initialUsers: RadioUser[];
 };
 
@@ -44,7 +45,7 @@ export default function RadioLobbyClient({
   );
 
   const isCurrentUserReady = currentUser?.status === "ready";
-  const canStartGame = isCurrentUserReady && readyPlayers.length >= 2;
+  const canStartGame = !!isCurrentUserReady && readyPlayers.length >= 2;
   const isLobbyFull = users.length >= RADIO_LOBBY_MAX_USERS;
 
   /**
@@ -94,44 +95,43 @@ export default function RadioLobbyClient({
     if (!socket) return;
 
     if (isCurrentUserReady) {
-      socket.emit("radio:unready", { radioId: radio.id });
+      socket.emit("radio:unready", { radioId: radio.radioId });
     } else {
-      socket.emit("radio:ready", { radioId: radio.id });
+      socket.emit("radio:ready", { radioId: radio.radioId });
     }
   }
 
   function handleStartGame() {
     if (!isCurrentUserReady) {
-      // //! yongyue i18n: move this message into the i18n dictionary.
       setMessage("You need to click Ready before starting a game.");
       return;
     }
 
     if (readyPlayers.length < 2) {
-      // //! yongyue i18n: move this message into the i18n dictionary.
       setMessage("Il faut au moins deux joueurs prêts pour commencer.");
       return;
     }
 
     if (!socket) return;
 
-    socket.emit("radio:start-game", { radioId: radio.id });
+    socket.emit("radio:start-game", { radioId: radio.radioId });
   }
 
-    // The backend/socket layer must create the session, choose all server-ready
-    // players, and broadcast the sessionId so every participant redirects
-    // together.
-    // Expected flow:
-    // socket.emit("radio:start-game", { radioId: radio.id })
-    // Server creates a session with all ready players.
-    // Server broadcasts:
-    // socket.on("radio:game-created", { radioId, sessionId })
-    // Then all ready players should be redirected to:
-    // /competition/radio/[radioId]/session/[sessionId]
+  /**
+   * =========================================================
+   * ADAPTER: Prisma RadioRoom -> UI RadioConfig
+   * =========================================================
+   */
+  const radioConfig: RadioConfig = {
+    id: radio.radioId as any,
+    name: radio.name,
+    wpm: radio.wpm,
+    description: radio.description,
+  };
 
   return (
     <div className={styles.page}>
-      <RadioHeader radio={radio} usersCount={users.length} />
+      <RadioHeader radio={radioConfig} usersCount={users.length} />
 
       <section className={styles.layout}>
         <div className={styles.leftColumn}>
@@ -151,7 +151,7 @@ export default function RadioLobbyClient({
 
         <div className={styles.rightColumn}>
           <InviteFriendsPanel
-            radioId={radio.id}
+            radioId={radio.radioId}
             radioName={radio.name}
             mockFriends={mockFriends}
             isLobbyFull={isLobbyFull}

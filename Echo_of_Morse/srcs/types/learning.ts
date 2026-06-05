@@ -27,7 +27,7 @@ export type UserLearningProgress = {
    * One completed level practice = one practice session.
    * null means the backend does not return this data yet.
    */
-  totalPracticeSessions: number | null;
+  totalPracticeSessions: number;
   weakCharacters: string[];
   letterProgress: LetterProgress[]; 
 };

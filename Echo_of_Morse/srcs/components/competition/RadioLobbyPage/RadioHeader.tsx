@@ -1,16 +1,19 @@
 import Link from "next/link";
-import {
-  RADIO_LOBBY_MAX_USERS,
-  type RadioConfig,
-} from "../mockData/competitionTypes";
+import type { RadioConfig } from "@/types/competition";
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
+
+// fallback UI constant (DB already defines default = 7)
+const RADIO_LOBBY_MAX_USERS = 7;
 
 type RadioHeaderProps = {
   radio: RadioConfig;
   usersCount: number;
 };
 
-export default function RadioHeader({ radio, usersCount }: RadioHeaderProps) {
+export default function RadioHeader({
+  radio,
+  usersCount,
+}: RadioHeaderProps) {
   return (
     <header className={styles.header}>
       <div>
@@ -20,9 +23,10 @@ export default function RadioHeader({ radio, usersCount }: RadioHeaderProps) {
 
         <p className={styles.kicker}>Radio Lobby</p>
         <h1 className={styles.title}>{radio.name}</h1>
+
         <p className={styles.description}>
-          {radio.description} Players in this lobby can join the ready queue and
-          start a real-time Morse decoding session together.
+          {radio.description} Players in this lobby can join the ready queue
+          and start a real-time Morse decoding session together.
         </p>
       </div>
 

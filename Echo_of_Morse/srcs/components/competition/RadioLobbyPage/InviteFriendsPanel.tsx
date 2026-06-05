@@ -3,17 +3,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Card } from "@/components/ui";
-import type {
-  ApiFriend,
-  RadioId,
-  RadioUser,
-} from "../mockData/competitionTypes";
+import type { RadioId } from "@/types/competition";
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
+
+type ApiFriend = {
+  id: string;
+  username: string;
+  displayName?: string;
+  avatarUrl: string | null;
+  isOnline: boolean;
+};
 
 type InviteFriendsPanelProps = {
   radioId: RadioId;
   radioName: string;
-  mockFriends: RadioUser[];
+  mockFriends: {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+}[];
   isLobbyFull: boolean;
 };
 
