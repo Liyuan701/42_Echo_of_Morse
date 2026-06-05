@@ -207,9 +207,71 @@
 
 //--------------------------------------------------------
 
+// "use client";
+
+// import { createContext, useContext, useEffect, useState, useMemo } from "react";
+// import { getSocket } from "@/lib/socket";
+// import type { Socket } from "socket.io-client";
+// import { useSession } from "next-auth/react";
+
+// type SocketContextType = {
+//   socket: Socket | null;
+//   isConnected: boolean;
+// };
+
+// const SocketContext = createContext<SocketContextType>({
+//   socket: null,
+//   isConnected: false,
+// });
+
+// export function SocketProvider({ children }: { children: React.ReactNode }) {
+//   const [isConnected, setIsConnected] = useState(false);
+
+//   const socket = useMemo(() => getSocket(), []);
+
+//   const { data: session, status } = useSession();
+
+//   console.log("✅ status =", status, "✅ session =", session);
+
+//   useEffect(() => {
+//     if (!socket) return;
+
+//     const handleConnect = () => {
+//       console.log("CONNECTED", socket.id);
+//       setIsConnected(true);
+//     };
+
+//     const handleDisconnect = (reason: string) => {
+//       console.log("DISCONNECTED", reason);
+//       setIsConnected(false);
+//     };
+
+//     socket.on("connect", handleConnect);
+//     socket.on("disconnect", handleDisconnect);
+
+//     return () => {
+//       socket.off("connect", handleConnect);
+//       socket.off("disconnect", handleDisconnect);
+//     };
+//   }, [socket]);
+
+//   return (
+//     <SocketContext.Provider value={{ socket, isConnected }}>
+//       {children}
+//     </SocketContext.Provider>
+//   );
+// }
+
+// export function useSocket() {
+//   return useContext(SocketContext);
+// }
+
+
+//----------------------------------------------------------------------------
+
 "use client";
 
-import { createContext, useContext, useEffect, useState, useMemo } from "react";
+import {createContext, useContext, useEffect, useState} from "react";
 import { getSocket } from "@/lib/socket";
 import type { Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
@@ -225,15 +287,30 @@ const SocketContext = createContext<SocketContextType>({
 });
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
-  const [isConnected, setIsConnected] = useState(false);
-
-  const socket = useMemo(() => getSocket(), []);
 
   const { data: session, status } = useSession();
-  console.log("✅ session =", session);
-  useEffect(() => {
-    if (!socket) return;
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    if (!session?.user?.id) return;
+
+    const socket = getSocket();
+    if (!socket) return ;
+
+    socket.auth = {
+      userId: session.user.id,
+    };
+    
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    setSocket(socket);
+    setIsConnected(socket.connected);
+    
     const handleConnect = () => {
       console.log("CONNECTED", socket.id);
       setIsConnected(true);
@@ -251,7 +328,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
     };
-  }, [socket]);
+  }, [status, session]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

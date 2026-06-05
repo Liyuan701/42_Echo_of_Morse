@@ -122,11 +122,18 @@ export default function OnlineCounter() {
   useEffect(() => {
     if (!socket) return;
 
+    console.log("ONLINE COUNTER SOCKET:", socket);
+
     const handleUsersCount = (count: number) => {
+      console.log("RECEIVED users-count:", count);
       setOnlineCount(count);
     };
 
     socket.on("users-count", handleUsersCount);
+
+    if (socket.connected) {
+      socket.emit("get-users-count");
+    }
 
     return () => {
       socket.off("users-count", handleUsersCount);
