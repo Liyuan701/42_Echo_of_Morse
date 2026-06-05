@@ -20,7 +20,7 @@ const MORSE_MAP: Record<string, string> = {
   ".": ".-.-.-", ",": "--..--", "?": "..--..", "!": "-.-.--",
   "/": "-..-.",  "(": "-.--.",  ")": "-.--.-", "&": ".-...",
   ":": "---...", ";": "-.-.-.", "=": "-...-",  "+": ".-.-.",
-  "-": "-....-", "_": "..--.-", '"': ".-..-.", "$": "...-..-", "@": ".--.-.",
+  "-": "-....-", "_": "..--.-", '"': ".-..-.", "$": "...-..-$", "@": ".--.-.",
 };
 
 export async function getUserLearningProgress(
@@ -46,15 +46,18 @@ export async function getUserLearningProgress(
 
   // Calculate the current level, completed levels, and unlocked levels based on the user's learning level
   const currentLevel = Math.min(user.learningLevel, TOTAL_LEVELS);
+
   const completedLevels = Array.from(
     { length: currentLevel - 1 },
     (_, index) => index + 1
   );
+
   const unlockedLevels = Array.from(
     { length: currentLevel },
     (_, index) => index + 1
   );
 
+  // Global stats
   const totalSeen = user.letterProgresses.reduce(
     (sum, progress) => sum + progress.totalSeen,
     0
@@ -68,16 +71,7 @@ export async function getUserLearningProgress(
   const globalAccuracy =
     totalSeen === 0 ? null : Math.round((totalCorrect / totalSeen) * 100);
 
-  const weakCharacters = user.letterProgresses
-    .filter(
-      (progress) =>
-        progress.totalSeen > 0 && progress.mastery < WEAK_MASTERY_THRESHOLD
-    )
-    .sort((a, b) => a.mastery - b.mastery)
-    .map((progress) => progress.letter.char);
-
-
-  // Map the letter progress data to include the character, Morse code, and mastery details
+  // Map letter progress first (used by weak character detection)
   const letterProgress = user.letterProgresses.map((p) => ({
     character: p.letter.char,
     morse: MORSE_MAP[p.letter.char] ?? "",
@@ -87,6 +81,15 @@ export async function getUserLearningProgress(
     mastery: p.mastery,
   }));
 
+  // Weak characters derived ONLY from letterProgress
+  const weakCharacters = letterProgress
+    .filter(
+      (p) =>
+        p.totalSeen > 0 && p.mastery < WEAK_MASTERY_THRESHOLD
+    )
+    .sort((a, b) => a.mastery - b.mastery)
+    .map((p) => p.character);
+
   return {
     currentLevel,
     unlockedLevels,
@@ -94,6 +97,6 @@ export async function getUserLearningProgress(
     globalAccuracy,
     totalPracticeSessions: user.practiceSessions,
     weakCharacters,
-    letterProgress, 
+    letterProgress,
   };
 }

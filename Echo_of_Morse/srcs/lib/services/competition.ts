@@ -1,22 +1,35 @@
 import { prisma } from "@/server/prisma";
+import type { RadioId, RadioConfig } from "@/types/competition";
+
+// strict valid ids
+const validIds = ["01", "02", "03"] as const;
+
+function isRadioId(id: string): id is RadioId {
+  return (validIds as readonly string[]).includes(id);
+}
 
 // Radio configs from DB
-export async function getRadioConfigs() {
+export async function getRadioConfigs(): Promise<RadioConfig[]> {
   const radios = await prisma.radioRoom.findMany({
     orderBy: { radioId: "asc" },
   });
 
-  return radios.map((r) => ({
-    id: r.radioId,
-    name: r.name,
-    wpm: r.wpm,
-    description: r.description,
-    maxUsers: r.maxUsers,
-  }));
+  return radios
+    .filter((r) => isRadioId(r.radioId))
+    .map((r) => ({
+      id: r.radioId,
+      name: r.name,
+      wpm: r.wpm,
+      description: r.description,
+      maxUsers: r.maxUsers,
+    }));
 }
 
-// Online overview for competition page
-export async function getOnlineOverview() {
+// Online overview
+export async function getOnlineOverview(): Promise<{
+  totalOnlineUsers: number;
+  radioUsers: Partial<Record<RadioId, number>>;
+}> {
   const totalOnlineUsers = await prisma.user.count({
     where: { isOnline: true },
   });
@@ -27,10 +40,12 @@ export async function getOnlineOverview() {
     },
   });
 
-  const radioUsers: Record<string, number> = {};
+  const radioUsers: Partial<Record<RadioId, number>> = {};
 
   for (const room of rooms) {
-    radioUsers[room.radioId] = room.lobbyPresences.length;
+    if (isRadioId(room.radioId)) {
+      radioUsers[room.radioId] = room.lobbyPresences.length;
+    }
   }
 
   return {

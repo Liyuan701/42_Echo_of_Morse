@@ -32,3 +32,16 @@ export function getLevelStatus(
 
   return "locked";
 }
+
+/**
+ * Optional helper (useful for UI safety)
+ */
+export function hasLearningProgress(
+  progress: UserLearningProgress | null | undefined
+): progress is UserLearningProgress {
+  return (
+    !!progress &&
+    Array.isArray(progress.unlockedLevels) &&
+    Array.isArray(progress.completedLevels)
+  );
+}
