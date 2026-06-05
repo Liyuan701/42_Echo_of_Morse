@@ -1,0 +1,302 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { encode } from "@/lib/morse";
+
+import styles from "./css/gameSession.module.css";
+import Answer from "./answer";
+import Ranking from "./ranking";
+import GameTimer from "./gameTimer";
+import FinalRanking from "./finalRanking";
+import MorseStream, { getSignalDuration } from "./morseStream";
+import type { GameSessionData, Player } from "./gameSessionType";
+import { getGameSessionData, mockGameSessionData } from "./gameSessionData";
+
+type GameSessionProps = {
+	radioId: string;
+	sessionId: string;
+	speedWpm: number;
+};
+
+export default function GameSession({
+	radioId,
+	sessionId,
+	speedWpm,
+}: GameSessionProps) {
+	//arder une valeur sans relancer l’affichage de la page
+	const sequenceIndexRef = useRef(1);
+	//Date.now() ==> obtenir le temps actel en ms
+	const sequenceStartRef = useRef(Date.now());
+	const sequenceStreakRef = useRef(false);
+
+	//-------------------- données de la session -------------------- 
+	const [sessionData, setSessionData] = useState<GameSessionData | null>(null);
+	const [players, setPlayers] = useState<Player[]>([]);
+	const [secondsLeft, setSecondsLeft] = useState(0);
+	const [currentText, setCurrentText] = useState("");
+	const [currentMorse, setCurrentMorse] = useState("");
+
+	//-------------------- données de la réponse -------------------- 
+	const [answer, setAnswer] = useState("");
+	const [isAnswerCorrect, setIsAnswerCorrect] = useState(false);
+	const [showMorseText, setShowMorseText] = useState(true);
+	const [isAnswerLocked, setIsAnswerLocked] = useState(false);
+
+	//-------------------- données pour aider à la gestion --------------------
+	const isFinished = secondsLeft <= 0;
+	const sequence = sessionData?.sequences ?? [];
+	const leaderboard = [...players].sort((a, b) => b.score - a.score);
+	const winner = leaderboard[0];
+
+	function resetStreak() {
+		setPlayers((currentPlayers) =>
+			currentPlayers.map((player) => {
+				if (player.id !== "me") {
+					return player;
+				}
+
+				return {
+					...player,
+					streak: 0,
+				};
+			})
+		);
+	}
+
+	//-------------------- 1e : obtention des données de la session --------------------
+	useEffect(() => {
+		let cancelled = false;
+
+		async function loadSessionData() {
+			const data = await getGameSessionData({ radioId, sessionId });
+			const firstSequence = data.sequences[0] ?? mockGameSessionData.sequences[0];
+
+			if (cancelled) {
+				return;
+			}
+
+			sequenceIndexRef.current = 1;
+			sequenceStartRef.current = Date.now();
+			sequenceStreakRef.current = false;
+			setSessionData(data);
+			setPlayers(data.players);
+			setSecondsLeft(data.duration);
+			setCurrentText(firstSequence);
+			setCurrentMorse(encode(firstSequence));
+
+			setAnswer("");
+			setIsAnswerCorrect(false);
+			setIsAnswerLocked(false);
+		}
+
+		loadSessionData();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [radioId, sessionId]);
+
+	//-------------------- gestion du timer --------------------
+	useEffect(() => {
+		if (isFinished) {
+			return;
+		}
+
+		//window.setInterval ==> excuter une fonction à intervalle régulier, selon le temps défini (ici 1000ms = 1s)
+		//diminuer le temps restant chaque seconde
+		//Math.max(value - 1, 0) ==> éviter que le temps restant devienne négatif
+		const timer = window.setInterval(() => {
+			setSecondsLeft((value) => Math.max(value - 1, 0));
+		}, 1000);
+
+		//window.clearInterval ==> arrêter l’exécution d’une fonction à intervalle régulier， sinon elle continuerait même après la fin du jeu
+		return () => window.clearInterval(timer);
+	}, [isFinished]);
+
+	//-------------------- 2e: pass à la prochaine --------------------
+	useEffect(() => {
+		if (isFinished || !sequence.length) {
+				return;
+		}
+
+		let timeoutId: number;
+
+		function nextSequence(delay: number) {
+			//window.setTimeout ==> exécuter une fonction après un délai défini (en ms)
+			timeoutId = window.setTimeout(() => {
+				//ici sequenceIndexRef.current % sequence.length ==> permet de revenir au debut
+				const nextText = sequence[sequenceIndexRef.current % sequence.length];
+				const nextMorse = encode(nextText);
+
+				sequenceIndexRef.current += 1;
+				sequenceStartRef.current = Date.now();
+				if (!sequenceStreakRef.current) {
+					resetStreak();
+				}
+				sequenceStreakRef.current = false;
+				setCurrentText(nextText);
+				setCurrentMorse(nextMorse);
+				setAnswer("");
+				setIsAnswerCorrect(false);
+				setIsAnswerLocked(false);
+
+				nextSequence(getSignalDuration(nextMorse, speedWpm));
+			}, delay);
+		}
+
+		nextSequence(getSignalDuration(currentMorse, speedWpm));
+
+		return () => window.clearTimeout(timeoutId);
+	}, [currentMorse, isFinished, sequence, speedWpm]);
+
+	//-------------------- 3e: vérifier la réponse --------------------
+
+	function updateAnswer(nextAnswer: string) {
+		if (isFinished || isAnswerLocked) {
+			return;
+		}
+		setAnswer(nextAnswer.toUpperCase());
+		setIsAnswerCorrect(false);
+	}
+
+	function submitAnswer() {
+		if (isFinished || isAnswerLocked) {
+			return;
+		}
+
+		const answerForCheck = answer.toUpperCase();
+
+		//quand vide
+		if (!answerForCheck.trim()) {
+			setIsAnswerCorrect(false);
+			return;
+		}
+
+		if (answerForCheck === currentText.toUpperCase()) {
+			setIsAnswerCorrect(true);
+			setIsAnswerLocked(true);
+			sequenceStreakRef.current = true;
+
+			setPlayers((currentPlayers) => currentPlayers.map((player) => {
+				// mettre à jour seulement le joueur actuel
+				if (player.id !== "me") {
+					return player;
+				}
+
+				//successivement
+				const nextStreak = player.streak + 1;
+				//points de base
+				const sequencePoints = currentText.replace(/\s/g, "").length;
+				//vitesse de réponse
+				const sequenceTime = Math.floor((Date.now() - sequenceStartRef.current) / 1000);
+				const speedBonus = Math.max(10 - sequenceTime, 0);
+
+				return {
+					...player,
+					total: player.total + 1,
+					correct: player.correct + 1,
+					streak: nextStreak,
+					score: player.score + sequencePoints + speedBonus + nextStreak,
+				};
+			}));
+
+			window.setTimeout(() => {
+				const nextText = sequence[sequenceIndexRef.current % sequence.length];
+				const nextMorse = encode(nextText);
+
+				sequenceIndexRef.current += 1;
+				sequenceStartRef.current = Date.now();
+				sequenceStreakRef.current = false;
+
+				setCurrentText(nextText);
+				setCurrentMorse(nextMorse);
+				setAnswer("");
+				setIsAnswerCorrect(false);
+				setIsAnswerLocked(false);
+			}, 600);
+
+			return;
+		}
+		setIsAnswerCorrect(false);
+		
+		setPlayers((currentPlayers) => currentPlayers.map((player) => {
+			if (player.id !== "me") {
+				return player;
+			}
+
+			return {
+				...player,
+				total: player.total + 1,
+				streak: 0,
+			};
+		}));
+	}
+
+    if (!sessionData) {
+		return (
+			<section className={styles.shell}>
+				<section className={styles.gameArea}>
+					Loading game session...
+				</section>
+			</section>
+		);
+	}
+
+	if (isFinished) {
+		return (
+		<section className={styles.finalShell}>
+			<FinalRanking
+				radioId={radioId}
+				players={leaderboard}
+				winner={winner}
+			/>
+		</section>
+		);
+	}
+
+  return (
+
+    <section className={styles.shell}>
+    	<Ranking players={leaderboard} />
+
+		<section className={styles.gameArea}>
+			{/* -------------------- titre -------------------- */}
+			<header className={styles.header}>
+				<div>
+					<p className={styles.eyebrow}>Radio Wave 0{radioId}</p>
+					<h1 className={styles.title}>{speedWpm} WPM Decode Session</h1>
+				</div>
+
+			{/* -------------------- temps -------------------- */}
+				<GameTimer secondsLeft={secondsLeft} />
+			</header>
+
+			{/* -------------------- case morse -------------------- */}
+			<label className={styles.soundToggle}>
+				<input
+					type="checkbox"
+					checked={showMorseText}
+					onChange={(event) => setShowMorseText(event.target.checked)}
+				/>
+				Show Morse text
+			</label>
+
+			<MorseStream
+				morse={currentMorse}
+				showMorseText={showMorseText}
+				speedWpm={speedWpm}
+				disabled={isFinished}
+			/>
+
+			<Answer
+				value={answer}
+				target={currentText}
+				disabled={isFinished || isAnswerLocked}
+				isCorrect={isAnswerCorrect}
+				onChange={updateAnswer}
+				onSubmit={submitAnswer}
+			/>
+		</section>
+    </section>
+  );
+}
