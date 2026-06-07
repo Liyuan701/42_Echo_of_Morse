@@ -9,10 +9,11 @@ type GameSessionPageProps = {
   };
 };
 
+// Speeds in words per minute (WPM)
 const RADIO_SPEEDS: Record<string, number> = {
-  "01": 8,
-  "02": 12,
-  "03": 16,
+  "01": 5,
+  "02": 10,
+  "03": 15,
 };
 
 export default function GameSessionPage({ params }: GameSessionPageProps) {

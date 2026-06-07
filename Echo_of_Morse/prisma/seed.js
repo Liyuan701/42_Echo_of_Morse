@@ -1,10 +1,9 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
-
 const prisma = new PrismaClient();
-
 const PASSWORD = "mdp";
 
+// Default users
 const users = [
   { username: "lifan", learningLevel: 3 },
   { username: "yren", learningLevel: 4 },
@@ -12,18 +11,27 @@ const users = [
   { username: "mlaurent", learningLevel: 5 },
   { username: "gustav", learningLevel: 3 },
   { username: "nobody", learningLevel: 1 },
+  { username: "top_student", learningLevel: 12 }, // top student who has level 12.
 ];
+
+// Random generator, ro create more realistic progress data for users.
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 async function main() {
   console.log("Reset database...");
 
-  await prisma.message.deleteMany();         // Message 没有 Cascade，手动删
-  await prisma.conversation.deleteMany();    // 再删 Conversation
-  await prisma.friendship.deleteMany();      // Friendship 没有 Cascade，手动删
-  await prisma.gameInvitation.deleteMany();  // 同上
-  await prisma.letter.deleteMany();          // Letter 被 UserLetterProgress 引用
-  await prisma.user.deleteMany();            // 最后删 User，Cascade 会处理其余的
+  // Clean existing data (order matters)
+  await prisma.message.deleteMany();
+  await prisma.conversation.deleteMany();
+  await prisma.friendship.deleteMany();
+  await prisma.gameInvitation.deleteMany();
+  await prisma.userLetterProgress.deleteMany();
+  await prisma.letter.deleteMany();
+  await prisma.user.deleteMany();
 
+  // Create users
   const passwordHash = await bcrypt.hash(PASSWORD, 10);
   console.log("Creating users...");
 
@@ -44,157 +52,200 @@ async function main() {
     created.push(user);
   }
 
-  const map = Object.fromEntries(
-    created.map((u) => [u.username, u])
-  );
+  const map = Object.fromEntries(created.map((u) => [u.username, u]));
 
+  // Create learner user
+  console.log("Creating learner user...");
 
+  const learnerPassword = await bcrypt.hash("mdp", 10);
 
-console.log("Creating learner user...");
-
-const learnerPassword = await bcrypt.hash("mdp", 10);
-
-const learner = await prisma.user.create({
-  data: {
-    username: "learner",
-    email: "learner@test.com",
-    passwordHash: learnerPassword,
-    learningLevel: 1,
-    bio: "AI test user",
-  },
-});
-
-console.log("Creating learner letter progress...");
-
-const letters = await prisma.letter.findMany();
-console.log("Creating letters...");
-
-const LETTERS = [
-  'A','B','C','D','E','F','G','H','I','J','K','L','M',
-  'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-  '0','1','2','3','4','5','6','7','8','9',
-  '.',',','?','!','/','-','(',')','&',':',';','=','+','_','"','$','@'
-];
-
-for (const char of LETTERS) {
-  await prisma.letter.create({ data: { char } });
-}
-
-function rand(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-for (const letter of letters) {
-  const totalSeen = rand(3, 25);
-  const wrongCount = rand(0, Math.floor(totalSeen * 0.5));
-  const correctCount = totalSeen - wrongCount;
-
-  const accuracy = correctCount / totalSeen;
-
-  const mastery = Math.max(
-    0,
-    Math.min(10, Math.round(accuracy * 10))
-  );
-
-  const now = new Date();
-
-  const interval = Math.max(1, Math.round(mastery * 1.5));
-
-  const nextReviewAt = new Date(
-    now.getTime() + interval * 24 * 60 * 60 * 1000
-  );
-
-  const easeFactor =
-    accuracy > 0.8 ? 2.6 :
-    accuracy > 0.5 ? 2.2 :
-    1.7;
-
-  await prisma.userLetterProgress.create({
+  const learner = await prisma.user.create({
     data: {
-      userId: learner.id,
-      letterId: letter.id,
-
-      mastery,
-
-      correctCount,
-      wrongCount,
-      totalSeen,
-
-      interval,
-      easeFactor,
-      nextReviewAt,
-      lastReviewed: now,
+      username: "learner",
+      email: "learner@test.com",
+      passwordHash: learnerPassword,
+      learningLevel: 1,
+      bio: "AI test user",
     },
   });
-}
 
+  // Create letters
+  console.log("Creating letters...");
 
+  const LETTERS = [
+    'A','B','C','D','E','F','G','H','I','J','K','L','M',
+    'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+    '0','1','2','3','4','5','6','7','8','9',
+    '. ',',','?','!','/','-','(',')','&',':',';','=','+','_','"','$','@'
+  ];
 
-console.log("Creating FULL friendships...");
+  for (const char of LETTERS) {
+    await prisma.letter.create({
+      data: { char },
+    });
+  }
 
-const group = ["lifan", "yren", "jdu", "mlaurent", "gustav"];
+  // Fetch letters after creation
+  const letters = await prisma.letter.findMany();
 
-for (let i = 0; i < group.length; i++) {
-  for (let j = i + 1; j < group.length; j++) {
-    const a = map[group[i]];
-    const b = map[group[j]];
+  // Create learner progress
+  console.log("Creating learner letter progress...");
 
-    // A -> B
-    await prisma.friendship.create({
+  for (const letter of letters) {
+    const totalSeen = rand(3, 25);
+    const wrongCount = rand(0, Math.floor(totalSeen * 0.5));
+    const correctCount = totalSeen - wrongCount;
+
+    const accuracy = correctCount / totalSeen;
+
+    const mastery = Math.max(
+      0,
+      Math.min(10, Math.round(accuracy * 10))
+    );
+
+    const now = new Date();
+
+    const interval = Math.max(1, Math.round(mastery * 1.5));
+
+    const nextReviewAt = new Date(
+      now.getTime() + interval * 24 * 60 * 60 * 1000
+    );
+
+    const easeFactor =
+      accuracy > 0.8 ? 2.6 :
+      accuracy > 0.5 ? 2.2 :
+      1.7;
+
+    await prisma.userLetterProgress.create({
       data: {
-        senderId: a.id,
-        receiverId: b.id,
-        status: "ACCEPTED",
+        userId: learner.id,
+        letterId: letter.id,
+        mastery,
+        correctCount,
+        wrongCount,
+        totalSeen,
+        interval,
+        easeFactor,
+        nextReviewAt,
+        lastReviewed: now,
       },
     });
   }
-}
+
+  // Create top student progress
+  console.log("Creating top student letter progress...");
+
+  const topStudent = map["top_student"];
+
+  for (const letter of letters) {
+    const totalSeen = rand(20, 80);
+    const wrongCount = rand(0, Math.floor(totalSeen * 0.1));
+    const correctCount = totalSeen - wrongCount;
+
+    const accuracy = correctCount / totalSeen;
+
+    const mastery = Math.max(
+      8,
+      Math.min(10, Math.round(accuracy * 10))
+    );
+
+    const now = new Date();
+
+    const interval = Math.max(7, Math.round(mastery * 2));
+
+    const nextReviewAt = new Date(
+      now.getTime() + interval * 24 * 60 * 60 * 1000
+    );
+
+    const easeFactor =
+      accuracy > 0.9 ? 2.8 :
+      accuracy > 0.8 ? 2.6 :
+      2.4;
+
+    await prisma.userLetterProgress.create({
+      data: {
+        userId: topStudent.id,
+        letterId: letter.id,
+        mastery,
+        correctCount,
+        wrongCount,
+        totalSeen,
+        interval,
+        easeFactor,
+        nextReviewAt,
+        lastReviewed: now,
+      },
+    });
+  }
+
+  // Create friendships
+  console.log("Creating FULL friendships...");
+
+  const group = ["lifan", "yren", "jdu", "mlaurent", "gustav"];
+
+  for (let i = 0; i < group.length; i++) {
+    for (let j = i + 1; j < group.length; j++) {
+      const a = map[group[i]];
+      const b = map[group[j]];
+
+      await prisma.friendship.create({
+        data: {
+          senderId: a.id,
+          receiverId: b.id,
+          status: "ACCEPTED",
+        },
+      });
+    }
+  }
+
+  // Create conversations and messages
   console.log("Creating conversations and messages...");
 
   const lifan = map["lifan"];
   const yren = map["yren"];
   const jdu = map["jdu"];
 
-// 对话 1：lifan <-> yren
-const [aId, bId] = lifan.id < yren.id
-  ? [lifan.id, yren.id]
-  : [yren.id, lifan.id];
+  const [aId, bId] = lifan.id < yren.id
+    ? [lifan.id, yren.id]
+    : [yren.id, lifan.id];
 
-const conv1 = await prisma.conversation.create({
-  data: {
-    userAId: aId,
-    userBId: bId,
-  },
-});
-await prisma.message.createMany({
-  data: [
-    {
-      conversationId: conv1.id,
-      senderId: lifan.id,
-      rawText: "Hello in morse",
-      translatedText: ".... . .-.. .-.. ---",
-      mode: "LANGUAGE_TO_MORSE",
+  const conv1 = await prisma.conversation.create({
+    data: {
+      userAId: aId,
+      userBId: bId,
     },
-    {
-      conversationId: conv1.id,
-      senderId: yren.id,
-      rawText: "Reply here",
-      translatedText: ".-. . .--. .-.. -.--",
-      mode: "LANGUAGE_TO_MORSE",
-    },
-  ],
-});
-// 对话 2：lifan <-> jdu
-const [cId, dId] = lifan.id < jdu.id
-  ? [lifan.id, jdu.id]
-  : [jdu.id, lifan.id];
+  });
 
-await prisma.conversation.create({
-  data: {
-    userAId: cId,
-    userBId: dId,
-  },
-});
+  await prisma.message.createMany({
+    data: [
+      {
+        conversationId: conv1.id,
+        senderId: lifan.id,
+        rawText: "Hello in morse",
+        translatedText: ".... . .-.. .-.. ---",
+        mode: "LANGUAGE_TO_MORSE",
+      },
+      {
+        conversationId: conv1.id,
+        senderId: yren.id,
+        rawText: "Reply here",
+        translatedText: ".-. . .--. .-.. -.--",
+        mode: "LANGUAGE_TO_MORSE",
+      },
+    ],
+  });
+
+  const [cId, dId] = lifan.id < jdu.id
+    ? [lifan.id, jdu.id]
+    : [jdu.id, lifan.id];
+
+  await prisma.conversation.create({
+    data: {
+      userAId: cId,
+      userBId: dId,
+    },
+  });
+
   console.log("Seed completed.");
 }
 
