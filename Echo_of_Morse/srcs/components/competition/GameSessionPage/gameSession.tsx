@@ -150,21 +150,13 @@ export default function GameSession({
 	}, [currentMorse, isFinished, sequence, speedWpm]);
 
 	//-------------------- 3e: vérifier la réponse --------------------
-
-	function updateAnswer(nextAnswer: string) {
-		if (isFinished || isAnswerLocked) {
-			return;
-		}
-		setAnswer(nextAnswer.toUpperCase());
-		setIsAnswerCorrect(false);
-	}
-
-	function submitAnswer() {
+	function checkAnswer(nextAnswer: string) {
 		if (isFinished || isAnswerLocked) {
 			return;
 		}
 
-		const answerForCheck = answer.toUpperCase();
+		const answerForCheck = nextAnswer.toUpperCase();
+		setAnswer(answerForCheck);
 
 		//quand vide
 		if (!answerForCheck.trim()) {
@@ -199,37 +191,10 @@ export default function GameSession({
 					score: player.score + sequencePoints + speedBonus + nextStreak,
 				};
 			}));
-
-			window.setTimeout(() => {
-				const nextText = sequence[sequenceIndexRef.current % sequence.length];
-				const nextMorse = encode(nextText);
-
-				sequenceIndexRef.current += 1;
-				sequenceStartRef.current = Date.now();
-				sequenceStreakRef.current = false;
-
-				setCurrentText(nextText);
-				setCurrentMorse(nextMorse);
-				setAnswer("");
-				setIsAnswerCorrect(false);
-				setIsAnswerLocked(false);
-			}, 600);
-
 			return;
 		}
-		setIsAnswerCorrect(false);
-		
-		setPlayers((currentPlayers) => currentPlayers.map((player) => {
-			if (player.id !== "me") {
-				return player;
-			}
 
-			return {
-				...player,
-				total: player.total + 1,
-				streak: 0,
-			};
-		}));
+		setIsAnswerCorrect(false);
 	}
 
     if (!sessionData) {
@@ -293,8 +258,7 @@ export default function GameSession({
 				target={currentText}
 				disabled={isFinished || isAnswerLocked}
 				isCorrect={isAnswerCorrect}
-				onChange={updateAnswer}
-				onSubmit={submitAnswer}
+				onChange={checkAnswer}
 			/>
 		</section>
     </section>

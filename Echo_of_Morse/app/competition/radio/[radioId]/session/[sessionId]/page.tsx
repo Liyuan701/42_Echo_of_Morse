@@ -19,6 +19,7 @@ export default function GameSessionPage({ params }: GameSessionPageProps) {
   const speedWpm = RADIO_SPEEDS[params.radioId];
 
   if (!speedWpm) {
+	//une fonction fournie par Next.js ==> afficher une page 404
     notFound();
   }
 

@@ -9,7 +9,6 @@ type AnswerProps = {
 	disabled: boolean;
 	isCorrect: boolean;
 	onChange: (value: string) => void;
-	onSubmit: () => void;
 };
 
 export default function Answer({
@@ -18,7 +17,6 @@ export default function Answer({
 	disabled,
 	isCorrect,
 	onChange,
-	onSubmit
 }: AnswerProps) {
 	//useRef = arder une valeur sans relancer l’affichage de la page
 	//HTMLTextAreaElement = textarea, et HTMLDivElement = div
@@ -60,9 +58,6 @@ export default function Answer({
 
 	return (
 		<section className={styles.answerBlock}>
-			<p className={styles.answerHint}>按 Enter 或按钮提交</p>
-
-			<div className={styles.answerRow}>
 			<div className={`${styles.answerField} ${isCorrect ? styles.answerCorrect : ""}`}>
 				<div ref={previewRef} className={styles.answerPreview} aria-hidden="true">
 					{/*--------------------- la reponse ---------------------*/}
@@ -103,22 +98,10 @@ export default function Answer({
 					onKeyDown={(event) => {
 						if (event.key === "Enter") {
 							event.preventDefault();
-							onSubmit();
 						}
 					}}
 				/>
 			</div>
-				<button
-					type="button"
-					className={styles.submitButton}
-					onClick={onSubmit}
-					disabled={disabled}
-				>
-					提交
-				</button>
-			</div>
 		</section>
-
-		
 	);
 }
