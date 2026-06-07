@@ -20,6 +20,12 @@ function rand(min, max) {
 }
 
 async function main() {
+  // only when the database is empty, to avoid accidentally wiping data.
+  const existing = await prisma.user.findFirst();
+  if (existing) {
+    console.log("Already seeded, skipping.");
+    process.exit(0);
+  }
   console.log("Reset database...");
 
   // Clean existing data (order matters)
