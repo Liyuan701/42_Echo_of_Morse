@@ -40,6 +40,8 @@ async function playSymbol(
 }
 
 //la duree d'un point ou d'un trait
+	//un mot standard par min = wmp * 50 dot
+	//un dot standard = 60s / (wpm * 50(dot))
 function getMorseDurations(speedWpm: number) {
 	//WPM = le nombre de mots standard (5 caractères) transmis par minute
 	const dot = Math.round(1200 / speedWpm);
@@ -160,7 +162,7 @@ export default function MorseStream({
 	);
 }
 
-export function getSignalDuration(morse: string, speedWpm: number) {
+export function getSequenceDuration(morse: string, speedWpm: number) {
 	const { dot, dash } = getMorseDurations(speedWpm);
 	const tokens = morse.trim().split(/\s+/);
 	let duration = 0;

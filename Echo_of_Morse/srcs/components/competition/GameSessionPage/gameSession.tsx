@@ -8,7 +8,7 @@ import Answer from "./answer";
 import Ranking from "./ranking";
 import GameTimer from "./gameTimer";
 import FinalRanking from "./finalRanking";
-import MorseStream, { getSignalDuration } from "./morseStream";
+import MorseStream, { getSequenceDuration } from "./morseStream";
 import type { GameSessionData, Player } from "./gameSessionType";
 import { getGameSessionData, mockGameSessionData } from "./gameSessionData";
 
@@ -140,11 +140,12 @@ export default function GameSession({
 				setIsAnswerCorrect(false);
 				setIsAnswerLocked(false);
 
-				nextSequence(getSignalDuration(nextMorse, speedWpm));
+				nextSequence(getSequenceDuration(nextMorse, speedWpm));
 			}, delay);
 		}
 
-		nextSequence(getSignalDuration(currentMorse, speedWpm));
+		//1e execution
+		nextSequence(getSequenceDuration(currentMorse, speedWpm));
 
 		return () => window.clearTimeout(timeoutId);
 	}, [currentMorse, isFinished, sequence, speedWpm]);
