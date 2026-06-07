@@ -34,82 +34,89 @@
 
 //----------------------------------------------------------------------
 
-const { Server } = require("socket.io");
-const express = require("express");
-const http = require("http");
+// const { Server } = require("socket.io");
+// const express = require("express");
+// const http = require("http");
 
-const app = express();
-const httpServer = http.createServer(app);
+// const app = express();
+// const httpServer = http.createServer(app);
 
-const io = new Server(httpServer, {
-  path: "/socket.io/",
-  cors: { origin: "*" },
-  pingInterval: 25000,
-  pingTimeout: 20000,
-});
+// const io = new Server(httpServer, {
+//   path: "/socket.io/",
+//   cors: { origin: "*" },
+//   pingInterval: 25000,
+//   pingTimeout: 20000,
+// });
 
 
-// API calls
-async function setUserOnline(userId) {
-  try {
-    await fetch("http://web:3000/api/users/status", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId, isOnline: true }),
-    });
-  } catch (err) {
-    console.error("setUserOnline error:", err.message);
-  }
-}
+// // API calls
+// async function setUserOnline(userId) {
+//   try {
+//     await fetch("http://web:3000/api/users/status", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({ userId, isOnline: true }),
+//     });
+//   } catch (err) {
+//     console.error("setUserOnline error:", err.message);
+//   }
+// }
 
-async function setUserOffline(userId) {
-  try {
-    await fetch("http://web:3000/api/users/status", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId, isOnline: false }),
-    });
-  } catch (err) {
-    console.error("setUserOffline error:", err.message);
-  }
-}
+// async function setUserOffline(userId) {
+//   try {
+//     await fetch("http://web:3000/api/users/status", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({ userId, isOnline: false }),
+//     });
+//   } catch (err) {
+//     console.error("setUserOffline error:", err.message);
+//   }
+// }
 
-// To complete the server.io heartbeat, in case of server crash.
-async function cleanupUsers() {
-  try {
-    await fetch("http://web:3000/api/users/cleanup", {
-      method: "POST",
-    });
-  } catch (err) {
-    console.error("cleanup error:", err.message);
-  }
-}
+// // To complete the server.io heartbeat, in case of server crash.
+// async function cleanupUsers() {
+//   try {
+//     await fetch("http://web:3000/api/users/cleanup", {
+//       method: "POST",
+//     });
+//   } catch (err) {
+//     console.error("cleanup error:", err.message);
+//   }
+// }
 
-// Socket handlers
-async function handleConnection(socket) {
-  const userId = socket.handshake.auth.userId;
-  if (userId) {
-    await setUserOnline(userId);
-  }
+// // Socket handlers
+// async function handleConnection(socket) {
+//   // const userId = socket.handshake.auth.userId;
+//   if (!socket.handshake.auth?.userId) {
+//     socket.disconnect();
+//     return;
+//   }
+//   if (userId) {
+//     await setUserOnline(userId);
+//   }
 
-  socket.on("send-morse", (data) => {
-    socket.broadcast.emit("receive-morse", data);
-  });
+//   socket.on("send-morse", (data) => {
+//     socket.broadcast.emit("receive-morse", data);
+//   });
 
-  socket.on("disconnect", () => {
-    handleDisconnect(userId);
-  });
-}
+//   socket.on("disconnect", () => {
+//     handleDisconnect(userId);
+//   });
+// }
 
-function handleDisconnect(userId) {
-  if (userId) {
-    setUserOffline(userId);
-  }
-}
+// function 
+// (userId) {
+//   if (userId) {
+//     setUserOffline(userId);
+//   }
+// }
+
+//----------------------------------------------------------------
 
 // Start logic
 // io.on("connection", handleConnection);
@@ -128,6 +135,20 @@ function handleDisconnect(userId) {
 //   });
 // });
 
+const { Server } = require("socket.io");
+const express = require("express");
+const http = require("http");
+
+const app = express();
+const httpServer = http.createServer(app);
+
+const io = new Server(httpServer, {
+  path: "/socket.io/",
+  cors: { origin: "*" },
+  pingInterval: 25000,
+  pingTimeout: 20000,
+});
+
 const onlineUsers = new Map();
 
 function emitUserCount() {
@@ -143,8 +164,7 @@ function emitUserCount() {
 
 
 io.on("connection", (socket) => {
-  // const userId = socket.handshake.auth.userId; ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌ ❌  Should be this with auth
-  const userId = socket.handshake.query.userId;
+  const userId = socket.handshake.auth.userId; 
 
   if (!userId) {
     console.log("❌ NO USER ID");
@@ -160,7 +180,14 @@ io.on("connection", (socket) => {
 
   console.log("✅ USER ONLINE:", userId);
 
+  socket.emit("users-count", onlineUsers.size);
+  socket.emit("online-users", [...onlineUsers.keys()]);
+
   emitUserCount();
+
+  socket.on("get-users-count", () => {
+    socket.emit("users-count", onlineUsers.size);
+  });
 
   socket.on("disconnect", (reason) => {
 
@@ -215,6 +242,14 @@ function shutdown() {
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
 
-
+async function cleanupUsers() {
+  try {
+    await fetch("http://web:3000/api/users/cleanup", {
+      method: "POST",
+    });
+  } catch (err) {
+    console.error("cleanup error:", err.message);
+  }
+}
 
 setInterval(cleanupUsers, 60000);
