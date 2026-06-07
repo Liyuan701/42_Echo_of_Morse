@@ -151,12 +151,12 @@ const en = {
 
 		correct: "Correct",
 		wrong: "Wrong",
-		correctAnswerText: "The correct answer is {answer}",
+		correctAnswerText: "The correct answer is ",
 		nextQuestion: "Next question",
 
 		helpTitle: "Keyboard help:",
-		decodeHelpText: "Listen to the sound or watch the light signal, then press the matching character.",
-		encodeHelpText: "Press Left Arrow for dot, Right Arrow for dash, and Enter to submit.",
+		decodeHelpText: "Listen to the sound or watch the light signal, then type the matching character on your keyboard.",
+		encodeHelpText: "Press Left Arrow for dot, Right Arrow for dash, Backspace to delete, and Enter to submit.",
 
 		//------------------ en bas ------------------
 		audio: "Audio",
@@ -181,10 +181,8 @@ const en = {
 		needsReview: "Needs review",
 
 		practiceAgain: "Practice again",
-
-		signalOn: "Signal on",
-		signalSettings: "Signal settings",
-		signalOff: "Signal off",
+		backToLevels: "Back to levels",
+		nextLevel: "Next level",
 		
 		//------------------ error ------------------
 		noQuestion: "No question available."

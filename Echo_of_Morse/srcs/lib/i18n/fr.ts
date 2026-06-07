@@ -151,12 +151,12 @@ const fr = {
 
 		correct: "Correct",
 		wrong: "Erreur",
-		correctAnswerText: "La bonne réponse est {answer}",
+		correctAnswerText: "La bonne réponse est ",
 		nextQuestion: "Question suivante",
 
 		helpTitle: "Aide clavier :",
-		decodeHelpText: "Écoutez le son ou regardez le signal lumineux, puis appuyez sur le caractère correspondant.",
-		encodeHelpText: "Appuyez sur la flèche gauche pour le point, sur la flèche droite pour le trait, puis sur Entrée pour valider.",
+		decodeHelpText: "Écoute le son ou observe le signal lumineux, puis saisis le caractère correspondant au clavier.",
+		encodeHelpText: "Appuie sur la flèche gauche pour un point, la flèche droite pour un trait, Backspace pour supprimer, puis Entrée pour valider.",
 
 		//------------------ en bas ------------------
 		audio: "Son",
@@ -181,10 +181,8 @@ const fr = {
 		needsReview: "Revision necessaire",
 
 		practiceAgain: "Recommencer",
-
-		signalOn: "Signal allume",
-		signalSettings: "Parametres du signal",
-		signalOff: "Signal eteint",
+		backToLevels: "Retour aux niveaux",
+		nextLevel: "Niveau suivant",
 
 		//------------------ error ------------------
 		noQuestion: "Aucune question disponible."

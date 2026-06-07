@@ -151,12 +151,12 @@ const zh = {
 
 		correct: "正确",
 		wrong: "错误",
-		correctAnswerText: "正确答案是 {answer}",
+		correctAnswerText: "正确答案是 ",
 		nextQuestion: "下一题",
 
 		helpTitle: "键盘操作提示：",
-		decodeHelpText: "听声音或观察灯光信号，然后按下对应字符。",
-		encodeHelpText: "左箭头输入点，右箭头输入划。按 Enter 提交。",
+		decodeHelpText: "听声音或观察灯光信号，然后用键盘输入对应字符。",
+		encodeHelpText: "左箭头输入点，右箭头输入划，Backspace 删除。按 Enter 提交。",
 
 		//------------------ en bas ------------------
 		audio: "声音",
@@ -181,10 +181,8 @@ const zh = {
 		needsReview: "需要复习",
 
 		practiceAgain: "重新练习",
-
-		signalOn: "信号亮起",
-		signalSettings: "信号设置",
-		signalOff: "信号关闭",
+		backToLevels: "返回等级列表",
+		nextLevel: "下一关",
 		
 		//------------------ error ------------------
 		noQuestion: "没有可用题目。"
