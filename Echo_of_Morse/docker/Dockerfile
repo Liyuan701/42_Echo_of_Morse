@@ -30,4 +30,4 @@ COPY --from=builder /app/public ./public
 
 # Run migrations then start the app
 # run the seed
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/prisma db seed && npm run typecheck && npm run dev"]
+CMD ["node", "dist/main.js"]
