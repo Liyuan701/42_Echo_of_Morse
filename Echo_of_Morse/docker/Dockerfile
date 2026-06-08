@@ -1,33 +1,38 @@
-# Stage 1: Build
+# -----------------------------
+# Builder stage
+# -----------------------------
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy the rest of the project
 COPY . .
 
-# Generate Prisma client
 RUN npx prisma generate
-
-# Build Next.js
 RUN npm run build
 
-# Stage 2: Runner
+
+# -----------------------------
+# Runner stage
+# -----------------------------
 FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Copy only what is needed to run the app
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/public ./public
+ENV NODE_ENV=production
 
-# Run migrations then start the app
-# run the seed
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/prisma db seed && npm run typecheck && npm run dev"]
+# Install ONLY production dependencies
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Copy build output only
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]

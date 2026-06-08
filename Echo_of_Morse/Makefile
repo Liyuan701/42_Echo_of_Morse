@@ -18,7 +18,7 @@ else
 endif
 
 # =========================
-# Core
+# Core (Dev)
 # =========================
 
 dev:
@@ -37,6 +37,28 @@ stop:
 	$(COMPOSE) down
 
 # =========================
+# Production
+# =========================
+
+prod:
+	$(COMPOSE) -f docker-compose.yml up -d
+
+prod-down:
+	$(COMPOSE) -f docker-compose.yml down
+
+prod-logs:
+	$(COMPOSE) -f docker-compose.yml logs -f
+
+
+# =========================
+# DB Init (IMPORTANT)
+# =========================
+
+db-init:
+	$(COMPOSE) -f docker-compose.dev.yml exec web npx prisma migrate deploy
+	$(COMPOSE) -f docker-compose.dev.yml exec web npx prisma db seed
+
+# =========================
 # Debug
 # =========================
 
@@ -48,6 +70,14 @@ logs:
 
 seed:
 	$(COMPOSE) exec web npx prisma db seed
+
+typecheck:
+	$(COMPOSE) -f docker-compose.dev.yml exec web npm run typecheck
+
+lint:
+	$(COMPOSE) -f docker-compose.dev.yml exec web npm run lint
+
+check: typecheck lint
 
 # =========================
 # Dev reset
