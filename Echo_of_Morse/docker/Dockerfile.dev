@@ -2,15 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Copy dependency files first (for caching)
+COPY package.json package-lock.json ./
 
-# Copy the project
+# Install dependencies in deterministic way
+RUN npm ci
+
+# Copy project source
 COPY . .
 
-RUN ./node_modules/.bin/prisma generate
+# Expose Next.js dev port
+EXPOSE 3000
 
-# No build step - Next.js runs in dev mode with hot reload
-# with typecheck
-# creat seed
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/prisma db seed && npm run dev"]
+# Start dev server
+CMD ["npm", "run", "dev"]

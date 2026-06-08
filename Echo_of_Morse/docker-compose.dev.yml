@@ -38,6 +38,7 @@ services:
       - db
     networks:
       - transcendence_network
+    command: sh /app/docker/dev-entrypoint.sh
 
 
   ws:
