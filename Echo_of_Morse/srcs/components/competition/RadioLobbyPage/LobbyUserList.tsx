@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui";
-import type { RadioUser } from "@/types/competition";
+import type { RadioUser, RadioUserStatus } from "@/types/competition";
+import { RADIO_LOBBY_MAX_USERS } from "@/types/competition";
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
 
 type LobbyUserListProps = {

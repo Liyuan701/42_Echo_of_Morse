@@ -11,7 +11,7 @@ import RadioHeader from "./RadioHeader";
 import ReadyPlayersList from "./ReadyPlayersList";
 
 import { RADIO_LOBBY_MAX_USERS } from "@/types/competition";
-import type { RadioUser } from "@/types/competition";
+import type { RadioUser, RadioId } from "@/types/competition";
 import type { RadioRoom } from "@prisma/client";
 import type { RadioConfig } from "@/types/competition";
 
@@ -123,7 +123,7 @@ export default function RadioLobbyClient({
    * =========================================================
    */
   const radioConfig: RadioConfig = {
-    id: radio.radioId as any,
+    id: radio.radioId,
     name: radio.name,
     wpm: radio.wpm,
     description: radio.description,

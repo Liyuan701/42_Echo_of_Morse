@@ -1,9 +1,4 @@
-/**
- * ⚠️ Legacy types
- * These will be replaced by Prisma RadioRoom gradually.
- */
-
-export type RadioId = "01" | "02" | "03";
+export type RadioId = string;
 
 export const RADIO_LOBBY_MAX_USERS = 7;
 
