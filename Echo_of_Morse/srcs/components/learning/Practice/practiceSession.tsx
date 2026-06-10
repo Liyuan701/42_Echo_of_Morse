@@ -1,4 +1,4 @@
-//* Morse practice session: handles questions, answers, sound and light.
+//* Session de pratique morse : questions, reponses, son et lumiere.
 "use client";
 
 import { useI18n } from "@/lib/i18n";
@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 import styles from "@/components/learning/css/PracticeSession.module.css";
 import Link from "next/link";
 
+import { PracticeAudio } from "./practiceAudio";
 import PracticeResult from "./practiceResult";
 import type { Question } from "./practiceTypes";
 import PracticeSettings from "./practiceSettings";
-import { createQuestionList, getCharactersForLevel, wait } from "./practiceUtils";
+import { createQuestionList, getCharactersForLevel} from "./practiceQuestionList";
 import { submitPracticeResult } from "./practiceApi";
 import type { AnswerRecord } from "./practiceApi";
 import PracticeCheatSheet from "./practiceCheatSheet";
@@ -17,55 +18,49 @@ import { LEVEL_RULES, type LevelId } from "./practiceData";
 import PracticePrompt from "./practicePrompt";
 import PracticeAnswer from "./practiceAnswer";
 
-// typeof ==> get the type of an existing variable
-// AudioContext ==> a browser API to create and play sound
-// webkitAudioContext is the old name for Safari
-type AudioContextConstructor = typeof AudioContext;
-
-type BrowserWindow = Window & { 
-					AudioContext?: AudioContextConstructor; 
-					webkitAudioContext?: AudioContextConstructor;};
-
 export default function PracticeSession({ levelId }: { levelId: number }) {
 	//========================================== init ==========================================
 	// --------- i18n ---------
 	const { dictionary } = useI18n();
 	const t = dictionary.learningPractice;
 
-	// --------- Base values for practice ---------
-	// Math.max(levelId, 1) ==> If too small, use 1
-	// Math.min(Math.max(levelId, 1), 12) ==> If too large, use 12
-	// Goal: clamp levelId between 1 and 12
+	// --------- valeurs de base ---------
+	// Math.max(levelId, 1) ==> si trop petit, on garde 1
+	// Math.min(Math.max(levelId, 1), 12) ==> si trop grand, on garde 12
+	// But : garder levelId entre 1 et 12
 	const safeLevelId = Math.min(Math.max(levelId, 1), 12) as LevelId;
 	const rule = LEVEL_RULES[safeLevelId];
 
-	// --------- useState ---------
-	// With () =>, it is called only on first render
-	// Without () =>, createQuestionList would be called on every render
-	// useState<return type>(initial value)
-	// questions is the full list of questions for this session
+	// --------- question ---------
+	// Avec () =>, appele seulement au premier rendu
+	// Sans () =>, createQuestionList serait appele a chaque rendu
+	// useState<type de retour>(valeur initiale)
+	// questions = toute la liste de la session
 	const [questions, setQuestions] = useState<Question[]>(() => createQuestionList(safeLevelId));
 	const [questionIndex, setQuestionIndex] = useState(1);
-	// question = the current question
+	// question = la question actuelle
 	const question = questions[questionIndex - 1];
 
+	// --------- verification ---------
 	const [correctCount, setCorrectCount] = useState(0);
 	const [answer, setAnswer] = useState("");
-	// result message shown when the user finishes
+	// message affiche quand l'utilisateur a fini
 	const [feedback, setFeedback] = useState("");
 	const [isFinished, setIsFinished] = useState(false);
 
+	// --------- lampe et audio ---------
 	const [audioEnabled, setAudioEnabled] = useState(true);
 	const [visualEnabled, setVisualEnabled] = useState(true);
-	// bulb = light indicator
-	const [bulbOn, setBulbOn] = useState(false);
 
-	// whether audio/signal is currently playing
-	// prevents playing multiple times, controls buttons and visuals
-	const [questionPlaying, setQuestionPlaying] = useState(false);
-	const [cheatSheetPlaying, setCheatSheetPlaying] = useState(false);
+	const {
+		bulbOn,
+		questionPlaying,
+		playQuestionMorse,
+		playCheatSheetMorse,
+	} = PracticeAudio({audioEnabled, visualEnabled,});
 
-	// --------- Answer history: one record per question answered ---------
+
+	// --------- historique des reponses ---------
 	const [answerHistory, setAnswerHistory] = useState<AnswerRecord[]>([]);
 
 	const progressText = `${questionIndex} / ${rule.questionCount}`;
@@ -73,133 +68,50 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 	const finalAccuracy = Math.round((correctCount / rule.questionCount) * 100);
 	const hasPassed = correctCount >= rule.passCount;
 
-	// Two conditions: first check if question exists, then check mode (decode or encode)
+	// Deux conditions : question existe, puis mode decode ou encode
 	const expectedAnswer = question // (=false) --> expectedAnswer = ""
 		? question.mode === "decode" // (=false) --> question.morse
 			? question.character
 			: question.morse
 		: "";
 
+	// --------- donnes cheatSheet ---------
 	const { newCharacters, reviewCharacters } = getCharactersForLevel(safeLevelId);
 	const cheatSheetItems = [...reviewCharacters, ...newCharacters];
 
-	//========================================== functions ==========================================
-	// --------- Play a short or long tone based on the given duration ---------
-	async function playTone(duration: number) {
-		// If audio is disabled, still wait to keep the rhythm for the light.
-		if (!audioEnabled) {
-			await wait(duration);
-			return;
-		}
 
-		const browserWindow = window as BrowserWindow;
-		const AudioContextClass = browserWindow.AudioContext || browserWindow.webkitAudioContext;
-
-		// If the browser does not support audio, still keep the rhythm.
-		if (!AudioContextClass) {
-			await wait(duration);
-			return;
-		}
-
-		// Create audio environment
-		const context = new AudioContextClass();
-		// Sound generator
-		const oscillator = context.createOscillator();
-		// Volume control
-		const gain = context.createGain();
-
-		// Sound type: sine gives a softer tone
-		oscillator.type = "sine";
-		// Sound frequency
-		oscillator.frequency.value = 650;
-		// Volume
-		gain.gain.value = 0.12;
-
-		// Audio path: generator -> volume -> speakers
-		oscillator.connect(gain);
-		gain.connect(context.destination);
-
-		oscillator.start();
-		await wait(duration);
-		oscillator.stop();
-		await context.close();
-	}
-
-	// --------- Play a Morse signal with sound and optional light ---------
-	async function playMorse(
-		morse: string,
-		useLight: boolean,
-		isBusy: boolean,
-		setBusy: (setBusyParam: boolean) => void
-	) {
-		if (isBusy) {
-			return;
-		}
-
-		setBusy(true);
-
-		// for...of --> take each value one by one
-		// reads one char from the string
-		for (const symbol of morse) {
-			const duration = symbol === "." ? 160 : 420;
-
-			// turn on
-			if (useLight && visualEnabled) {
-				setBulbOn(true);
-			}
-
-			// wait
-			await playTone(duration);
-
-			// turn off
-			if (useLight) {
-				setBulbOn(false);
-			}
-
-			// wait (separator between symbols)
-			await wait(160);
-		}
-
-		setBusy(false);
-	}
-
-	// --------- Play the signal for the current question ---------
 	async function playSignal() {
 		if (!question) {
 			return;
 		}
 
-		await playMorse(question.morse, true, questionPlaying, setQuestionPlaying);
+		await playQuestionMorse(question.morse);
 	}
 
-	async function playCheatSheetMorse(morse: string) {
-		await playMorse(morse, false, cheatSheetPlaying, setCheatSheetPlaying);
-	}
-
-	// --------- Move to the next question; if finished, send results to API ---------
+	// --------- passer a la question suivante ou envoyer le resultat ---------
 	function goToNextQuestion(wasCorrect: boolean, delay = 700) {
-		// Record this answer in history
+		// garde cette reponse dans l'historique
 		const newRecord: AnswerRecord = { char: question.character, correct: wasCorrect };
 		setAnswerHistory((prev) => [...prev, newRecord]);
 
 		if (wasCorrect) {
-			// React may not have the latest value if we use correctCount directly,
-			// so we use the functional updater to get the most recent count
+			// correctCount peut etre en retard
+			// donc on utilise la valeur la plus recente
 			setCorrectCount((count) => count + 1);
 		}
 
-		// setTimeout --> run code later, here we wait 700ms
-		// if all questions are done
+		// setTimeout --> execute plus tard, ici apres 700ms
+		// si toutes les questions sont terminees
 		window.setTimeout(async () => {
 			if (questionIndex >= rule.questionCount) {
-				// Add the result of the last question
-				// setCorrectCount does not update immediately
+				// ajoute le resultat de la derniere question
+				// setCorrectCount ne change pas tout de suite
 				const finalCorrectCount = correctCount + (wasCorrect ? 1 : 0);
 				const accuracy = Math.round((finalCorrectCount / rule.questionCount) * 100);
 				const passed = finalCorrectCount >= rule.passCount;
 
-				// Build the full answer list including the last question
-				// (answerHistory state may not include it yet due to async setState)
+				// construit la liste complete avec la derniere reponse
+				// answerHistory peut ne pas encore l'avoir
 				const fullAnswers = [...answerHistory, newRecord];
 
 				try {
@@ -225,7 +137,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 		}, delay);
 	}
 
-	// --------- Check the answer (character) for decode mode ---------
+	// --------- verifier la reponse en mode decode ---------
 	function submitDecodeAnswer(value: string) {
 		if (!question) {
 			return;
@@ -245,7 +157,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 		}
 	}
 
-	// --------- Check the answer (morse) for encode mode ---------
+	// --------- verifier la reponse en mode encode ---------
 	function submitEncodeAnswer() {
 		if (!question) {
 			return;
@@ -271,23 +183,23 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 			return;
 		}
 
-		// event: KeyboardEvent ==> the type of the keyboard event object
+		// event: KeyboardEvent ==> type de l'evenement clavier
 		function handleKeyDown(event: KeyboardEvent) {
 			if (isFinished) {
 				return;
 			}
 
-			// --------- when feedback shows an error ----------
+			// --------- quand le feedback montre une erreur ----------
 			if (feedback && feedback !== t.correct && event.key === "Enter") {
 				event.preventDefault();
 				handleNextQuestion();
 				return;
 			}
 
-			// --------- encode mode (morse) ---------
+			// --------- mode encode (morse) ---------
 			if (question.mode === "encode") {
 				if (event.key === "ArrowLeft") {
-					event.preventDefault(); // prevent default browser action
+					event.preventDefault(); // bloque l'action normale du navigateur
 					setAnswer((value) => value + ".");
 				}
 
@@ -296,8 +208,8 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 					setAnswer((value) => value + "-");
 				}
 
-				// delete last character
-				// slice(start, end) here keeps everything except the last char
+				// supprime le dernier caractere
+				// slice garde tout sauf le dernier caractere
 				if (event.key === "Backspace") {
 					event.preventDefault();
 					setAnswer((value) => value.slice(0, -1));
@@ -311,18 +223,18 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 				return;
 			}
 
-			// --------- decode mode (character) ---------
-			// letters, digits: a-z A-Z 0-9, or allowed symbols: .,?!/()&:;=+_$@"-
-			// /^...$/  ==> matches exactly one character
-			// test() returns true/false to check if a string matches the rule
+			// --------- mode decode (caractere) ---------
+			// lettres, chiffres ou symboles autorises
+			// /^...$/  ==> correspond a un seul caractere
+			// test() renvoie true ou false
 			if (/^[a-zA-Z0-9]$/.test(event.key) || /^[.,?!/()&:;=+_$@"-]$/.test(event.key)) {
 				submitDecodeAnswer(event.key);
 			}
 		}
 
-		// attach keyboard listener
+		// ajoute l'ecoute clavier
 		window.addEventListener("keydown", handleKeyDown);
-		// remove listener to avoid stacking multiple listeners
+		// retire l'ecoute pour eviter les doublons
 		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [answer, expectedAnswer, feedback, isFinished, question, questionIndex, t]);
 
@@ -339,8 +251,8 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 		return <div><h1>{t.noQuestion}</h1></div>;
 	}
 
-	//========================================== rendered page ==========================================
-	// ------------------ result page (PracticeResult) ------------------
+	//========================================== page affichee ==========================================
+	// ------------------ page resultat (PracticeResult) ------------------
 	if (isFinished) {
 		return (
 			<PracticeResult
@@ -366,9 +278,9 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 
 	return (
 		<section className={styles.practiceShell} aria-labelledby="practice-title">
-			{/* ======================== header ======================== */}
+			{/* ======================== entete ======================== */}
 			<div className={styles.practiceHeader}>
-				{/* ------------ level title ------------ */}
+				{/* ------------ titre du niveau ------------ */}
 				<div className={styles.practiceTitleBlock}>
 					<Link className={styles.backToLevelsButton} href="/learning/levels">
 						‹
@@ -378,7 +290,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 						{t.level} {safeLevelId}
 					</h1>
 				</div>
-				{/* ------------ correct count and progress ------------ */}
+				{/* ------------ score et progression ------------ */}
 				<div className={styles.scoreBox}>
 					<span>{progressText}</span>
 					<strong>{correctCount} {t.correctCount}</strong>
@@ -386,7 +298,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 			</div>
 
 			<div className={styles.practiceGrid}>
-				{/* ======================== question card ======================== */}
+				{/* ======================== carte question ======================== */}
 				<PracticePrompt
 					question={question}
 					bulbOn={bulbOn}
@@ -396,7 +308,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 					onReplaySignal={playSignal}
 				/>
 
-				{/* ======================== answer card ======================== */}
+				{/* ======================== carte reponse ======================== */}
 				<PracticeAnswer
 					question={question}
 					answer={answer}

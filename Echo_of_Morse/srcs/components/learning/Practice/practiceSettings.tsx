@@ -3,7 +3,7 @@
 import styles from "@/components/learning/css/PracticeSession.module.css";
 
 // onAudioChange est une fonction. 
-// Elle reçoit true ou false. Elle sert à dire au parent si le son est activé ou non. 
+// Elle recoit true ou false. Elle sert a dire au parent si le son est active ou non. 
 // void veut dire qu’elle ne retourne rien d’important.
 type PracticeSettingsProps = {
 	audioLabel: string;
@@ -28,7 +28,7 @@ export default function PracticeSettings({
 				<input
 					type="checkbox"
 					checked={audioEnabled}
-					// Si la case est cochée, elle envoie true. Sinon, elle envoie false
+					// Si la case est cochee, elle envoie true. Sinon, elle envoie false
 					onChange={(event) => onAudioChange(event.target.checked)}
 				/>
 				{audioLabel}

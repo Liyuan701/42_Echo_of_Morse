@@ -40,11 +40,11 @@ export default function PracticeAnswer({
 	const correctAnswer = question.mode === "decode" ? question.character : question.morse;
 
 	function displayMorseAnswer(morse: string) {
-		//.split("") pour séparer chaque charactere
+		//.split("") pour separer chaque charactere
 		//.map((symbol, index) => ( ... )) pour transformer chaque charactere dans un tableau
 		return morse.split("").map((symbol, index) => (
 			<span
-				// ici key ==> aide pour react pour différencier les éléments d'une liste
+				// ici key ==> aide pour react pour differencier les elements d'une liste
 				key={`${symbol}-${index}`}
 				className={symbol === "." ? styles.morseDot : styles.morseDash}
 			/>
