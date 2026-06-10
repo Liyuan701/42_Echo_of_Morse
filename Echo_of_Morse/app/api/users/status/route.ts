@@ -8,7 +8,7 @@ import { prisma } from '@/server/prisma';
 export async function POST(request: Request) {
   const { userId, isOnline } = await request.json();
   
-  await prisma.user.update({
+  await prisma.user.updateMany({
     where: { id: userId },
     data: { 
       isOnline,
@@ -18,3 +18,16 @@ export async function POST(request: Request) {
   
   return NextResponse.json({ ok: true });
 }
+
+// import { prisma } from "@/server/prisma";
+
+// export async function POST(req: Request) {
+//   const { userId, status } = await req.json();
+
+//   await prisma.user.update({
+//     where: { id: userId },
+//     data: { status },
+//   });
+
+//   return Response.json({ success: true });
+// }

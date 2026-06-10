@@ -163,7 +163,7 @@ function emitUserCount() {
 }
 
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   const userId = socket.handshake.auth.userId; 
 
   if (!userId) {
@@ -171,6 +171,17 @@ io.on("connection", (socket) => {
     socket.disconnect();
     return;
   }
+
+  await fetch("http://web:3000/api/users/status", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userId,
+      isOnline: true,
+    }),
+  });
 
   if (!onlineUsers.has(userId)) {
     onlineUsers.set(userId, new Set());
@@ -189,15 +200,7 @@ io.on("connection", (socket) => {
     socket.emit("users-count", onlineUsers.size);
   });
 
-  socket.on("disconnect", (reason) => {
-
-    console.log(
-      "❌ DISCONNECT",
-      userId,
-      socket.id,
-      "reason:",
-      reason
-    );
+  socket.on("disconnect", async (reason) => {
 
     const sockets = onlineUsers.get(userId);
 
@@ -209,7 +212,28 @@ io.on("connection", (socket) => {
       onlineUsers.delete(userId);
       console.log("❌ USER OFFLINE:", userId);
     }
+
+
+    await fetch("http://web:3000/api/users/status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId,
+        isOnline: false,
+      }),
+    });
+
     emitUserCount();
+
+    console.log(
+      "❌ DISCONNECT",
+      userId,
+      socket.id,
+      "reason:",
+      reason
+    );
   });
 });
 
@@ -253,3 +277,9 @@ async function cleanupUsers() {
 }
 
 setInterval(cleanupUsers, 60000);
+
+
+// podman exec -it transcendence_db_dev psql -U postgres -d transcendence
+// \d "User"
+// SELECT username, "isOnline", "lastSeen"
+// FROM "User";

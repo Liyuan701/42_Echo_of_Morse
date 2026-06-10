@@ -293,8 +293,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    
     if (status !== "authenticated") return;
-
     if (!session?.user?.id) return;
 
     const socket = getSocket();

@@ -28,6 +28,8 @@ app/api/.DS_Store
 srcs/.DS_Store
 srcs/components/.DS_Store
 *.pem
+# Certificats SSL générés par make prod — ne pas committer les clés privées
+certs/
 
 # debug
 npm-debug.log*

@@ -48,6 +48,7 @@ export function getSocket() {
       path: "/socket.io/",
       transports: ["polling", "websocket"],
       autoConnect: false,
+      // auth: { userId },
     });
 
     console.log("✅ SOCKET CREATED");
