@@ -24,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
-    container_name: transcendence_web_dev
+    container_name: transcendence_web
     restart: always
     ports:
       - "3000:3000"
