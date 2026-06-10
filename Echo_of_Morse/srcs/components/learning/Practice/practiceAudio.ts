@@ -84,7 +84,7 @@ export function PracticeAudio({
 	//pour annuler l'action lorsqu'on quitte, ou l'ancienne lecture
 	const isMountedRef = useRef(true);
 
-	//----------------------------- fonction -----------------------------
+	//----------------------------- fonction pour annuler tous -----------------------------
 	//annuler tous les actions de la lecture actuelle
 	function stopCurrentPlay() {
 		playIdRef.current += 1;
@@ -99,6 +99,7 @@ export function PracticeAudio({
 		setCheatSheetPlaying(false);
 	}
 
+	//----------------------------- fonction principal pour jouer -----------------------------
 	async function playMorse(
 		morse: string,
 		useLight: boolean,
@@ -168,6 +169,7 @@ export function PracticeAudio({
 		}
 	}
 
+	//----------------------------- 2 fonction pour jouer -----------------------------
 	async function playQuestionMorse(morse: string) {
 		await playMorse(morse, true, setQuestionPlaying);
 	}
@@ -176,7 +178,7 @@ export function PracticeAudio({
 		await playMorse(morse, false, setCheatSheetPlaying);
 	}
 
-	//----------------------------- react -----------------------------
+	//----------------------------- nettoyer -----------------------------
 	// [] ==> une fois
 	// sert au nettoyage quand le composant disparait
 	useEffect(() => {

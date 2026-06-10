@@ -79,7 +79,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 	const { newCharacters, reviewCharacters } = getCharactersForLevel(safeLevelId);
 	const cheatSheetItems = [...reviewCharacters, ...newCharacters];
 
-
+	//========================================== fonction ==========================================
 	async function playSignal() {
 		if (!question) {
 			return;
@@ -90,19 +90,21 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 
 	// --------- passer a la question suivante ou envoyer le resultat ---------
 	function goToNextQuestion(wasCorrect: boolean, delay = 700) {
+
+		// -------- 1. noter les reponse dans historique -------- 
 		// garde cette reponse dans l'historique
+		//ex: { char: "A", correct: true }
 		const newRecord: AnswerRecord = { char: question.character, correct: wasCorrect };
 		setAnswerHistory((prev) => [...prev, newRecord]);
 
 		if (wasCorrect) {
-			// correctCount peut etre en retard
-			// donc on utilise la valeur la plus recente
 			setCorrectCount((count) => count + 1);
 		}
 
 		// setTimeout --> execute plus tard, ici apres 700ms
 		// si toutes les questions sont terminees
 		window.setTimeout(async () => {
+			// -------- 2. si termine -------- 
 			if (questionIndex >= rule.questionCount) {
 				// ajoute le resultat de la derniere question
 				// setCorrectCount ne change pas tout de suite
@@ -130,7 +132,7 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 				setIsFinished(true);
 				return;
 			}
-
+			// -------- 3. si n'a pas encore termine -------- 
 			setQuestionIndex((index) => index + 1);
 			setAnswer("");
 			setFeedback("");
