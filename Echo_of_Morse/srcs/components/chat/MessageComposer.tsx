@@ -7,6 +7,8 @@ import type { ChatMode } from "@/types/chat";
 import { Button } from "@/components/ui";
 import styles from "./css/MessageComposer.module.css";
 
+import { useI18n } from "@/lib/i18n";
+
 type MessageComposerProps = {
   chatMode: ChatMode;
   error: string;
@@ -14,19 +16,22 @@ type MessageComposerProps = {
   onSendMessage: (text: string) => Promise<boolean>;
 };
 
-const placeholderByMode: Record<ChatMode, string> = {
-  "LANGUAGE_TO_MORSE": "Type text to show text and Morse...",
-  "morse-to-language": "Enter Morse code to decode...",
-  "LANGUAGE_ONLY": "Type a message...",
-  "morse-only": "Type Morse code only...",
-  "text-to-morse-only": "Type text to send as Morse only...",
-};
 
 export default function MessageComposer({
   chatMode,
   error,
   onSendMessage,
 }: MessageComposerProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.chat;
+	const placeholderByMode: Record<ChatMode, string> = {
+		"LANGUAGE_TO_MORSE": t.typeTextToMorse,
+		"morse-to-language": t.enterMorseToDecode,
+		"LANGUAGE_ONLY": t.typeMessage,
+		"morse-only": t.typeMorseOnly,
+		"text-to-morse-only": t.typeTextAsMorseOnly,
+	};
+
   const [text, setText] = useState("");
 
   function submitMessage() {
@@ -76,12 +81,8 @@ export default function MessageComposer({
       </div>
 
       <Button type="submit" disabled={!text.trim()}>
-        Send
+        {t.send}
       </Button>
     </form>
   );
 }
-
-// ! i18n: move all chat UI labels, placeholders, aria-labels, empty states, mode names, prompt/confirm/alert messages, and button text into the i18n dictionary.
-// ! i18n: keep real chat messages, usernames, display names, timestamps, and Morse-transformed content unchanged.
-// ! i18n: dynamic strings such as "View ${displayName}'s profile" should use interpolation variables.

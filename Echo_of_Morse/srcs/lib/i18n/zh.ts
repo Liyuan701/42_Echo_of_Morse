@@ -237,6 +237,72 @@ const zh = {
 
 	},
 
+	//=========================================== chat =========================================== 
+	chat: {
+		//--------- friendList ---------
+		chats: "聊天",
+		close: "关闭",
+		add: "+ 添加",
+
+		added: "已添加",
+		pending: "等待中",
+		invite: "邀请",
+
+		searchMyFriends: "搜索我的好友",
+		searchUsersToAdd: "搜索要添加的用户",
+		noUsersFound: "没有找到用户。",
+		noFriendsFound: "没有找到好友。",
+
+		systemMessages: "系统消息",
+		noSystemMessages: "暂无系统消息。",
+		
+		//--------- ChatHeader ---------
+		offline: "离线",
+		online: "在线",
+		
+		viewProfile: "查看 {displayName} 的资料",
+		avatarAlt: "{displayName} 的头像",
+		openProfileHint: "点击名字或头像打开个人资料。",
+		closeChat: "关闭聊天",
+		
+		//--------- ChatModeSelector ---------
+		languageToMorse: "文字 ⭢ 摩斯",
+		morseToLanguage: "摩斯 ⭢ 文字",
+		textOnly: "仅文字",
+		morseOnly: "仅摩斯",
+		encodeOnly: "仅编码",
+		chatModeSelector: "聊天模式选择",
+		
+		//--------- MessageComposer ---------
+		typeTextToMorse: "输入文字，显示文字和摩斯码...",
+		enterMorseToDecode: "输入摩斯码进行解码...",
+		typeMessage: "输入消息...",
+		typeMorseOnly: "只输入摩斯码...",
+		typeTextAsMorseOnly: "输入文字并只发送摩斯码...",
+		send: "发送",
+		
+		//--------- FriendListItem ---------
+		unknownUser: "未知用户",
+		newRemarkName: "新备注名",
+		deleteFriendConfirm: "从好友中删除 {displayName}？",
+		gameInviteAlreadyPending: "已经有一个游戏邀请在等待中",
+		inviteFriendToPlay: "邀请这个好友一起玩",
+		friendOffline: "这个好友不在线",
+		
+		//--------- ContextMenu ---------
+		renameRemark: "修改备注",
+		shareFriend: "分享好友",
+		inviteToGame: "邀请游戏",
+		deleteFriend: "删除好友",
+		friendOfflineOrPending: "这个好友不在线，或已经有等待中的邀请。",
+		
+		//--------- SystemMessage ---------
+		systemDescription: "关于好友请求、分享联系人和聊天操作的通知。",
+
+		//--------- chat/page---------
+		pageTitle: "聊天",
+		pageDescription: "这个页面将用于实时聊天和交流功能。",
+	},
 };
 
 export default zh;

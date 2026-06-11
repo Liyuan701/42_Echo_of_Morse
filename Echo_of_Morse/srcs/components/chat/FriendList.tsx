@@ -11,6 +11,7 @@ import type { Friend, SearchableUser, SystemMessage } from "@/types/chat";
 import { Button, Input } from "@/components/ui";
 import FriendListItem from "./FriendListItem";
 import styles from "./css/FriendList.module.css";
+import { useI18n } from "@/lib/i18n";
 
 type FriendListProps = {
   friends: Friend[];
@@ -67,6 +68,10 @@ export default function FriendList({
   onShareFriend,
   onInviteFriendToGame,
 }: FriendListProps) {
+
+	const { dictionary } = useI18n();
+	const t = dictionary.chat;
+
   const latestSystemMessage = systemMessages[0] ?? null;
 
   function handleFriendSearchChange(event: ChangeEvent<HTMLInputElement>) {
@@ -81,17 +86,17 @@ export default function FriendList({
     <aside className={styles.sidebar}>
       <div className={styles.header}>
         <div className={styles.headerTop}>
-          <h2 className={styles.title}>Chats</h2>
+          <h2 className={styles.title}>{t.chats}</h2>
 
           <Button type="button" size="sm" onClick={onToggleAddFriend}>
-            {isAddFriendOpen ? "Close" : "+ Add"}
+            {isAddFriendOpen ? t.close : t.add}
           </Button>
         </div>
 
         <Input
           value={friendSearchQuery}
           onChange={handleFriendSearchChange}
-          placeholder="Search in my friends"
+          placeholder={t.searchMyFriends}
         />
 
         {isAddFriendOpen ? (
@@ -99,7 +104,7 @@ export default function FriendList({
             <Input
               value={userSearchQuery}
               onChange={handleUserSearchChange}
-              placeholder="Search users to add"
+              placeholder={t.searchUsersToAdd}
             />
 
             {userSearchQuery.trim() ? (
@@ -115,10 +120,10 @@ export default function FriendList({
                     );
 
                     const buttonLabel = isAlreadyFriend
-                      ? "Added"
-                      : isPending
-                        ? "Pending"
-                        : "Add";
+                      ? t.added 
+					  : isPending 
+					  	? t.pending 
+						: t.add
 
                     return (
                       <div key={user.id} className={styles.searchResult}>
@@ -148,7 +153,7 @@ export default function FriendList({
                     );
                   })
                 ) : (
-                  <p className={styles.emptySearch}>No users found.</p>
+                  <p className={styles.emptySearch}>{t.noUsersFound}</p>
                 )}
               </div>
             ) : null}
@@ -168,7 +173,7 @@ export default function FriendList({
 
           <div className={styles.systemContent}>
             <div className={styles.systemRow}>
-              <span className={styles.systemTitle}>System messages</span>
+              <span className={styles.systemTitle}>{t.systemMessages}</span>
 
               {unreadSystemMessageCount > 0 ? (
                 <span className={styles.unreadBadge}>
@@ -180,7 +185,7 @@ export default function FriendList({
             <p className={styles.systemPreview}>
               {latestSystemMessage
                 ? latestSystemMessage.body
-                : "No system messages yet."}
+                : t.noSystemMessages}
             </p>
           </div>
         </button>
@@ -205,14 +210,9 @@ export default function FriendList({
             );
           })
         ) : (
-          <p className={styles.empty}>No friends found.</p>
+          <p className={styles.empty}>{t.noFriendsFound}</p>
         )}
       </div>
     </aside>
   );
 }
-
-// ! i18n: move all chat UI labels, placeholders, aria-labels, empty states, mode names, prompt/confirm/alert messages, and button text into the i18n dictionary.
-// ! i18n: keep real chat messages, usernames, display names, timestamps, and Morse-transformed content unchanged.
-// ! i18n: dynamic strings such as "View ${displayName}'s profile" should use interpolation variables.
-// ! i18n: move game invitation button labels, pending state, and validation messages into the i18n dictionary.

@@ -236,6 +236,72 @@ const en = {
 		startPractice: "Start practice",
 	},
 
+	//=========================================== chat =========================================== 
+	chat: {
+		//--------- friendList ---------
+		chats: "Chats",
+		close: "Close",
+		add: "+ Add",
+
+		added: "Added",
+		pending: "Pending",
+		invite: "Invite",
+
+		searchMyFriends: "Search in my friends",
+		searchUsersToAdd: "Search users to add",
+		noUsersFound: "No users found.",
+		noFriendsFound: "No friends found.",
+
+		systemMessages: "System messages",
+		noSystemMessages: "No system messages yet.",
+		
+		//--------- ChatHeader ---------
+		offline: "Offline",
+		online: "Online",
+		
+		viewProfile: "View {displayName}'s profile",
+		avatarAlt: "{displayName}'s avatar",
+		openProfileHint: "Click the name or avatar to open this profile.",
+		closeChat: "Close chat",
+		
+		//--------- ChatModeSelector ---------
+		languageToMorse: "Language ⭢ Morse",
+		morseToLanguage: "Morse ⭢ Language",
+		textOnly: "Text only",
+		morseOnly: "Morse only",
+		encodeOnly: "Encode only",
+		chatModeSelector: "Chat mode selector",
+		
+		//--------- MessageComposer ---------
+		typeTextToMorse: "Type text to show text and Morse...",
+		enterMorseToDecode: "Enter Morse code to decode...",
+		typeMessage: "Type a message...",
+		typeMorseOnly: "Type Morse code only...",
+		typeTextAsMorseOnly: "Type text to send as Morse only...",
+		send: "Send",
+		
+		//--------- FriendListItem ---------
+		unknownUser: "Unknown user",
+		newRemarkName: "New remark name",
+		deleteFriendConfirm: "Delete {displayName} from friends?",
+		gameInviteAlreadyPending: "A game invitation is already pending",
+		inviteFriendToPlay: "Invite this friend to play",
+		friendOffline: "This friend is offline",
+		
+		//--------- ContextMenu ---------
+		renameRemark: "Rename remark",
+		shareFriend: "Share friend",
+		inviteToGame: "Invite to game",
+		deleteFriend: "Delete friend",
+		friendOfflineOrPending: "This friend is offline or already has a pending invitation.",
+		
+		//--------- SystemMessage ---------
+		systemDescription: "Notifications about friend requests, shared contacts, and local chat actions.",
+
+		//--------- chat/page---------
+		pageTitle: "Chat",
+		pageDescription: "This page will host real-time chat and communication features.",
+	},
 };
 
 export default en;
