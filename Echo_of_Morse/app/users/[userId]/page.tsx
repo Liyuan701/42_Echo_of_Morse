@@ -47,6 +47,30 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
 		);
 	}
 
+	// Count the number of accepted friendships for the user
+	const friendCount = await prisma.friendship.count({
+	where: {
+		status: "ACCEPTED",
+		OR: [
+		{ senderId: params.userId },
+		{ receiverId: params.userId },
+		],
+	},
+	});
+
+	// Calculate the user's overall accuracy based on their letter progress
+	const letterStats = await prisma.userLetterProgress.aggregate({
+	where: { userId: params.userId },
+	_sum: {
+		correctCount: true,
+		totalSeen: true,
+	},
+	});
+
+	const totalSeen = letterStats._sum.totalSeen ?? 0;
+	const totalCorrect = letterStats._sum.correctCount ?? 0;
+	const accuracy = totalSeen > 0 ? Math.round((totalCorrect / totalSeen) * 100) : 0;
+
   return (
     <main id="main-content">
       <PageShell>
@@ -57,9 +81,8 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
           isOnline={user.isOnline}
           bio={user.bio}
           learningLevel={user.learningLevel}
-		  //! besoin de données réelles pour le profil
-        //friendCount={user.friendCount} 
-		//accuracy={user.accuracy}
+          friendCount={friendCount} 
+		  accuracy={accuracy}
           createdAt={user.createdAt}
         />
       </PageShell>
