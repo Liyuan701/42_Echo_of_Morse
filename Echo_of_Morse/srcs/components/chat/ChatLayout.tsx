@@ -1,8 +1,5 @@
 // 负责整个聊天页面的左右布局。
 // 当前版本仍然是前端 prototype：
-// 好友、消息、用户搜索、好友邀请、游戏邀请都使用 mock data 和 React local state。
-// 刷新页面后，这些临时状态会消失。
-// 后续需要由后端数据库、好友邀请 API、消息 API、游戏邀请 API 或 WebSocket 替换。
 
 "use client";
 
@@ -207,7 +204,9 @@ export default function ChatLayout() {
     }
   }
 
-  function handleSendFriendRequest(user: SearchableUser): boolean {
+
+  //Friend request logic: checks for duplicates and pending requests before sending. Adds a system message for feedback.
+  async function handleSendFriendRequest(user: SearchableUser): Promise<boolean> {
     if (friends.some((f) => f.id === user.id)) {
       window.alert("This user is already in your friend list.");
       return false;
@@ -217,8 +216,27 @@ export default function ChatLayout() {
       return false;
     }
 
-    // TODO: POST /api/friend-requests { targetUserId }
-    // Create a pending request; friendship is only established after acceptance.
+    try {
+      const res = await fetch("/api/friends", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiverId: user.id }),
+      });
+
+      if (res.status === 409) {
+        window.alert("A friend request already exists with this user.");
+        return false;
+      }
+
+      if (!res.ok) {
+        window.alert("Failed to send friend request. Please try again.");
+        return false;
+      }
+    } catch {
+      window.alert("Network error. Please try again.");
+      return false;
+    }
+
     setPendingFriendRequestUserIds((prev) => [...prev, user.id]);
     addSystemMessage(
       "Friend request sent",
@@ -226,6 +244,9 @@ export default function ChatLayout() {
     );
     return true;
   }
+
+
+
 
   function handleRenameFriend(friendId: string, nextDisplayName: string) {
     const trimmed = nextDisplayName.trim();

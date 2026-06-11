@@ -34,7 +34,7 @@ type FriendListProps = {
   onChangeFriendSearchQuery: (query: string) => void;
   onChangeUserSearchQuery: (query: string) => void;
   onToggleAddFriend: () => void;
-  onSendFriendRequest: (user: SearchableUser) => boolean;
+  onSendFriendRequest: (user: SearchableUser) => Promise<boolean>;
 
   onRenameFriend: (friendId: string, nextDisplayName: string) => void;
   onDeleteFriend: (friendId: string) => void;

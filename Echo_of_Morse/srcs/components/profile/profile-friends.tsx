@@ -37,7 +37,8 @@ export default function ProfileFriends({
 		accuracy: `${accuracy ?? 0}%`,
 		learningLevel: `Level ${learningLevel ?? 1}`,
 		friendsCount: String(friendCount ?? 0),
-		joinedAt: createdAt ? createdAt.toLocaleDateString() : "-",
+    // fix the date format to be YYYY-MM-DD, not depending on the locale of the user
+		joinedAt: createdAt ? createdAt.toLocaleDateString("en-CA") : "-",
 	};
 
   return (
