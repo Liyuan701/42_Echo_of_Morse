@@ -6,6 +6,7 @@ type MatchmakingPanelProps = {
   readyPlayersCount: number;
   canStartGame: boolean;
   message: string;
+  isUpdating: boolean;
   onToggleReady: () => void;
   onStartGame: () => void;
 };
@@ -15,6 +16,7 @@ export default function MatchmakingPanel({
   readyPlayersCount,
   canStartGame,
   message,
+  isUpdating,
   onToggleReady,
   onStartGame,
 }: MatchmakingPanelProps) {
@@ -34,7 +36,12 @@ export default function MatchmakingPanel({
       </div>
 
       <div className={styles.matchmakingActions}>
-        <Button type="button" variant="secondary" onClick={onToggleReady}>
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={isUpdating}
+          onClick={onToggleReady}
+        >
           {isCurrentUserReady ? "Cancel Ready" : "Ready"}
         </Button>
 
@@ -43,6 +50,7 @@ export default function MatchmakingPanel({
           variant={canStartGame ? "primary" : "secondary"}
           className={canStartGame ? "" : styles.startButtonBlocked}
           aria-disabled={!canStartGame}
+          disabled={isUpdating}
           onClick={onStartGame}
         >
           Commencer le déchiffrement

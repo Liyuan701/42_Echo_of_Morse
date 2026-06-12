@@ -1,9 +1,9 @@
-// 负责整个聊天页面的左右布局。
-// 当前版本仍然是前端 prototype：
+//* The layout for the entire chat page
+//* Including the friend list, system messages, and the active chat window.
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   ChatMessage,
   ChatMode,
@@ -19,6 +19,31 @@ import { transformChatMessage } from "@/lib/chat-transform";
 import styles from "./css/ChatLayout.module.css";
 import { useSession } from "next-auth/react";
 import { mapChatModeToDB } from "@/lib/mappers/chat-mode";
+import { useSocket } from "@/providers/socket-provider";
+import { useRouter } from "next/navigation";
+import RadioWavePickerModal from "@/components/competition/RadioLobbyPage/RadioWavePickerModal";
+import type { RadioId } from "@/types/competition";
+
+type ApiMessage = {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  rawText: string;
+  translatedText: string | null;
+  mode: ChatMessage["mode"];
+  createdAt: string;
+};
+
+type ReceivedGameInvitation = {
+  id: string;
+  createdAt: string;
+  fromUser: {
+    username: string;
+  };
+  radio: {
+    name: string;
+  } | null;
+};
 
 export default function ChatLayout() {
   // ── Session ────────────────────────────────────────────────────────────────
@@ -26,6 +51,8 @@ export default function ChatLayout() {
   console.log("ChatLayout rendered");
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const { socket } = useSocket();
+  const router = useRouter();
 
   // ── Core state ─────────────────────────────────────────────────────────────
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -41,6 +68,9 @@ export default function ChatLayout() {
   const [pendingFriendRequestUserIds, setPendingFriendRequestUserIds] = useState<string[]>([]);
   const [pendingGameInviteFriendIds, setPendingGameInviteFriendIds] = useState<string[]>([]);
   const [composerError, setComposerError] = useState("");
+  const [inviteTargetFriendId, setInviteTargetFriendId] = useState<
+    string | null
+  >(null);
 
   // ── Load friends whenever the logged-in user is known ─────────────────────
   useEffect(() => {
@@ -94,6 +124,127 @@ export default function ChatLayout() {
 
   loadMessages();
 }, [conversationId, userId, selectedFriendId]);
+
+  useEffect(() => {
+    if (!socket || !userId) {
+      return;
+    }
+
+    function handleNewMessage(message: ApiMessage) {
+      if (message.senderId === userId) {
+        return;
+      }
+
+      setMessages((current) => {
+        if (current.some((item) => item.id === message.id)) {
+          return current;
+        }
+
+        return [
+          ...current,
+          {
+            id: message.id,
+            friendId: message.senderId,
+            sender: "friend",
+            rawText: message.rawText,
+            translatedText: message.translatedText ?? undefined,
+            mode: message.mode,
+            createdAt: new Date(message.createdAt).toLocaleTimeString(),
+          },
+        ];
+      });
+
+      setFriends((current) =>
+        current.map((friend) =>
+          friend.id === message.senderId
+            ? {
+                ...friend,
+                lastMessage: message.rawText,
+                lastMessageAt: new Date(
+                  message.createdAt
+                ).toLocaleTimeString(),
+              }
+            : friend
+        )
+      );
+    }
+
+    socket.on("chat:message:new", handleNewMessage);
+    return () => {
+      socket.off("chat:message:new", handleNewMessage);
+    };
+  }, [socket, userId]);
+
+  const loadReceivedGameInvitations = useCallback(async () => {
+    if (!userId) {
+      return;
+    }
+
+    const response = await fetch(
+      "/api/game/invitations?direction=received",
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+      return;
+    }
+
+    const invitations =
+      (await response.json()) as ReceivedGameInvitation[];
+
+    setSystemMessages((current) => {
+      const knownIds = new Set(current.map((message) => message.id));
+      const newMessages = invitations
+        .filter(
+          (invitation) =>
+            !knownIds.has(`game-invitation:${invitation.id}`)
+        )
+        .map<SystemMessage>((invitation) => ({
+          id: `game-invitation:${invitation.id}`,
+          title: "New game invitation",
+          body: `${invitation.fromUser.username} invited you to ${
+            invitation.radio?.name ?? "a radio lobby"
+          }. Open Competition to accept or decline.`,
+          createdAt: new Date(invitation.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          isRead: false,
+        }));
+
+      return newMessages.length > 0
+        ? [...newMessages, ...current]
+        : current;
+    });
+  }, [userId]);
+
+  // TODO: modify after socket delivery is stable.
+  // The current implementation relies on polling every 3 seconds to fetch.
+  // the Socket.IO "game-invitation:new" event is not reliably delivered yet.
+  // Remove this interval after socket delivery and reconnection are stable.
+  // Keep loadReceivedGameInvitations() for the initial page load and for the
+  // socket event handler below, but the repeated database polling should go.
+  useEffect(() => {
+    loadReceivedGameInvitations();
+
+    const intervalId = window.setInterval(
+      loadReceivedGameInvitations,
+      3000
+    );
+
+    return () => window.clearInterval(intervalId);
+  }, [loadReceivedGameInvitations]);
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    socket.on("game-invitation:new", loadReceivedGameInvitations);
+    return () => {
+      socket.off("game-invitation:new", loadReceivedGameInvitations);
+    };
+  }, [loadReceivedGameInvitations, socket]);
 
   const selectedFriend = useMemo(() => {
     if (!selectedFriendId) return null;
@@ -161,15 +312,20 @@ export default function ChatLayout() {
   async function handleSelectFriend(friendId: string) {
     setComposerError("");
     setCurrentView({ type: "friend", friendId });
+    setConversationId(null);
 
     const res = await fetch("/api/conversations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userAId: userId, userBId: friendId }),
+      body: JSON.stringify({ userBId: friendId }),
     });
     const data = await res.json();
-    console.log("conversation data:", data);  
-    console.log("setting conversationId:", data.id);
+
+    if (!res.ok || !data.id) {
+      setComposerError(data.error || "Failed to open the conversation.");
+      return;
+    }
+
     setConversationId(data.id);
   }
 
@@ -335,26 +491,62 @@ export default function ChatLayout() {
       return;
     }
 
-    // TODO: POST /api/game-invitations { targetFriendId, gameMode }
-    //       or socket.emit("game_invitation:create", { toUserId: friendId })
-    setPendingGameInviteFriendIds((prev) => [...prev, friendId]);
+    setInviteTargetFriendId(friendId);
+  }
 
-    const inviteMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      friendId: invited.id,
-      sender: "me",
-      rawText: `Game invitation sent to ${invited.displayName}.`,
-      translatedText: "Waiting for their response.",
-      mode: "LANGUAGE_ONLY",
-      createdAt: getCurrentTime(),
-    };
+  async function handleSelectInviteRadio(radioId: RadioId) {
+    const invited = friends.find((friend) => friend.id === inviteTargetFriendId);
 
-    setMessages((prev) => [...prev, inviteMsg]);
-    addSystemMessage(
-      "Game invitation sent",
-      `Game invitation sent to ${invited.displayName}. Waiting for their response.`
-    );
-    setCurrentView({ type: "friend", friendId: invited.id });
+    if (!invited) {
+      setInviteTargetFriendId(null);
+      return;
+    }
+
+    try {
+      const joinResponse = await fetch(`/api/competition/radio/${radioId}`, {
+        method: "POST",
+      });
+      const joinBody = (await joinResponse.json()) as { error?: string };
+
+      if (!joinResponse.ok) {
+        throw new Error(joinBody.error || "Failed to join the radio lobby.");
+      }
+
+      const invitationResponse = await fetch("/api/game/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toUserId: invited.id,
+          radioId,
+        }),
+      });
+      const invitation = (await invitationResponse.json()) as {
+        id?: string;
+        error?: string;
+      };
+
+      if (!invitationResponse.ok || !invitation.id) {
+        throw new Error(invitation.error || "Failed to send invitation.");
+      }
+
+      setPendingGameInviteFriendIds((current) => [...current, invited.id]);
+      addSystemMessage(
+        "Game invitation sent",
+        `Game invitation sent to ${invited.displayName}. Waiting for their response.`
+      );
+
+      socket?.emit("game-invitation:send", {
+        toUserId: invited.id,
+        invitationId: invitation.id,
+      });
+
+      setInviteTargetFriendId(null);
+      router.push(`/competition/radio/${radioId}`);
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Failed to send invitation."
+      );
+    }
   }
 
   // Fix: was a sync function using `await` — must be async.
@@ -373,32 +565,59 @@ export default function ChatLayout() {
 
     const dbMode = mapChatModeToDB(chatMode);
 
-    // Persist to backend
-    await fetch("/api/messages", {
+    if (!conversationId || !userId) {
+      setComposerError("The conversation is not ready yet.");
+      return false;
+    }
+
+    const response = await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         conversationId,
-        senderId: userId,
         rawText: transformed.rawText,
         translatedText: transformed.translatedText,
         mode: dbMode,
       }),
     });
 
-    // Optimistic local update
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        friendId: selectedFriend.id,
-        sender: "me",
-        rawText: transformed.rawText,
-        translatedText: transformed.translatedText,
-        mode: dbMode,
-        createdAt: getCurrentTime(),
-      },
-    ]);
+    const result = (await response.json()) as {
+      message?: ApiMessage;
+      recipientId?: string;
+      error?: string;
+    };
+
+    if (!response.ok || !result.message || !result.recipientId) {
+      setComposerError(result.error || "Failed to send the message.");
+      return false;
+    }
+
+    setMessages((prev) => {
+      if (prev.some((message) => message.id === result.message!.id)) {
+        return prev;
+      }
+
+      return [
+        ...prev,
+        {
+          id: result.message!.id,
+          friendId: selectedFriend.id,
+          sender: "me",
+          rawText: result.message!.rawText,
+          translatedText: result.message!.translatedText ?? undefined,
+          mode: result.message!.mode,
+          createdAt: new Date(
+            result.message!.createdAt
+          ).toLocaleTimeString(),
+        },
+      ];
+    });
+
+    socket?.emit("chat:message:send", {
+      senderId: userId,
+      toUserId: result.recipientId,
+      message: result.message,
+    });
 
     return true;
   }
@@ -457,6 +676,16 @@ export default function ChatLayout() {
       {currentView.type === "system" ? (
         <SystemMessageWindow messages={systemMessages} onClose={handleClosePanel} />
       ) : null}
+
+      <RadioWavePickerModal
+        isOpen={inviteTargetFriendId !== null}
+        targetDisplayName={
+          friends.find((friend) => friend.id === inviteTargetFriendId)
+            ?.displayName ?? ""
+        }
+        onClose={() => setInviteTargetFriendId(null)}
+        onSelectRadio={handleSelectInviteRadio}
+      />
     </section>
   );
 }

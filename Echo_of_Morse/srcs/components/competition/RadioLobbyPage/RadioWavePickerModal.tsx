@@ -13,11 +13,25 @@ type RadioConfig = {
   description: string;
 };
 
-// temporary UI fallback (until we wire Prisma/service layer)
 const radioConfigs: RadioConfig[] = [
-  { id: "01", name: "Radio 01", wpm: 20, description: "" },
-  { id: "02", name: "Radio 02", wpm: 25, description: "" },
-  { id: "03", name: "Radio 03", wpm: 30, description: "" },
+  {
+    id: "01",
+    name: "Radio Wave 01",
+    wpm: 5,
+    description: "A slower transmission for new Morse learners.",
+  },
+  {
+    id: "02",
+    name: "Radio Wave 02",
+    wpm: 10,
+    description: "A balanced transmission for intermediate players.",
+  },
+  {
+    id: "03",
+    name: "Radio Wave 03",
+    wpm: 15,
+    description: "A fast transmission for experienced decoders.",
+  },
 ];
 
 type RadioWavePickerModalProps = {

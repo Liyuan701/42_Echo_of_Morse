@@ -3,9 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Card, Button } from "@/components/ui";
 import styles from "./online-friend.module.css";
 import { useI18n } from "@/lib/i18n";
+import { useSocket } from "@/providers/socket-provider";
+import RadioWavePickerModal from "@/components/competition/RadioLobbyPage/RadioWavePickerModal";
+import type { RadioId } from "@/types/competition";
 
 
 type ApiFriend = {
@@ -27,19 +31,20 @@ export default function OnlineFriendsPreview() {
 	const t = dictionary.home;
 
   const { data: session, status } = useSession();
+  const { socket } = useSocket();
+  const router = useRouter();
 
   const currentUserId = (session?.user as { id?: string } | undefined)?.id;
 
   const [onlineFriends, setOnlineFriends] = useState<OnlineFriend[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
 
-  // ! game: temporary local state for home page game invitations.
-  // ! This only controls the "Pending" state on the home page.
-  // ! Later, this should be replaced by real game invitation data from the backend.
-  // ! Expected backend data: invitation id, senderId, receiverId, status, gameMode, createdAt.
   const [pendingGameInviteFriendIds, setPendingGameInviteFriendIds] = useState<
     string[]
   >([]);
+  const [inviteTargetFriendId, setInviteTargetFriendId] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     // ! auth: if the user is not logged in, this public home page must not show any private friend data.
@@ -52,14 +57,27 @@ export default function OnlineFriendsPreview() {
     async function fetchOnlineFriends() {
       try {
         setIsLoadingFriends(true);
-        const response = await fetch(`/api/friends?userId=${currentUserId}`);
+        const [friendsResponse, invitationsResponse] = await Promise.all([
+          fetch(`/api/friends?userId=${currentUserId}`),
+          fetch("/api/game/invitations?direction=sent"),
+        ]);
 
-        if (!response.ok) {
+        if (!friendsResponse.ok || !invitationsResponse.ok) {
           throw new Error("Failed to fetch friends.");
         }
-        const friends = (await response.json()) as ApiFriend[];
+
+        const friends = (await friendsResponse.json()) as ApiFriend[];
+        const invitations = (await invitationsResponse.json()) as {
+          toUser: { id: string };
+        }[];
         const onlineOnly = friends.filter((f) => f.isOnline);
+
         setOnlineFriends(onlineOnly);
+        setPendingGameInviteFriendIds([
+          ...new Set(
+            invitations.map((invitation) => invitation.toUser.id)
+          ),
+        ]);
       } catch (error) {
         console.error(error);
         setOnlineFriends([]);
@@ -71,7 +89,7 @@ export default function OnlineFriendsPreview() {
     fetchOnlineFriends();
   }, [status, currentUserId]);
 
-  function handleInviteFriendToGame(friendId: string, displayName: string) {
+  function handleInviteFriendToGame(friendId: string) {
     const alreadyPending = pendingGameInviteFriendIds.includes(friendId);
 
     if (alreadyPending) {
@@ -79,16 +97,64 @@ export default function OnlineFriendsPreview() {
       return;
     }
 
-    // ! game: TODO backend / WebSocket integration.
-    // ! This currently only creates a local pending game invitation on the home page.
-    // ! Later, this should call the same real API or WebSocket event as the chat module, for example:
-    // ! POST /api/game-invitations with targetFriendId and gameMode.
-    // ! socket.emit("game_invitation:create", { toUserId: friendId, gameMode: "morse_duel" }).
-    // ! Backend should persist the invitation, notify the receiver,
-    // ! and create / join a game room only after the receiver accepts.
-    setPendingGameInviteFriendIds((prev) => [...prev, friendId]);
+    setInviteTargetFriendId(friendId);
+  }
 
-    window.alert(t.inviteSent.replace("{displayName}", displayName));
+  async function handleSelectInviteRadio(radioId: RadioId) {
+    const invited = onlineFriends.find(
+      (friend) => friend.id === inviteTargetFriendId
+    );
+
+    if (!invited) {
+      setInviteTargetFriendId(null);
+      return;
+    }
+
+    try {
+      const joinResponse = await fetch(
+        `/api/competition/radio/${radioId}`,
+        { method: "POST" }
+      );
+      const joinBody = (await joinResponse.json()) as { error?: string };
+
+      if (!joinResponse.ok) {
+        throw new Error(joinBody.error || "Failed to join the radio lobby.");
+      }
+
+      const invitationResponse = await fetch("/api/game/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toUserId: invited.id,
+          radioId,
+        }),
+      });
+      const invitation = (await invitationResponse.json()) as {
+        id?: string;
+        error?: string;
+      };
+
+      if (!invitationResponse.ok || !invitation.id) {
+        throw new Error(invitation.error || "Failed to send invitation.");
+      }
+
+      setPendingGameInviteFriendIds((current) => [
+        ...current,
+        invited.id,
+      ]);
+
+      socket?.emit("game-invitation:send", {
+        toUserId: invited.id,
+        invitationId: invitation.id,
+      });
+
+      setInviteTargetFriendId(null);
+      router.push(`/competition/radio/${radioId}`);
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Failed to send invitation."
+      );
+    }
   }
 
   if (status === "loading") {
@@ -162,9 +228,7 @@ export default function OnlineFriendsPreview() {
                     type="button"
                     variant="secondary"
                     disabled={isGameInvitePending}
-                    onClick={() =>
-                      handleInviteFriendToGame(friend.id, displayName)
-                    }
+                    onClick={() => handleInviteFriendToGame(friend.id)}
                   >
                     {inviteButtonLabel}
                   </Button>
@@ -180,6 +244,17 @@ export default function OnlineFriendsPreview() {
       <Link href="/chat" className={styles.viewAllLink}>
         {t.viewAllFriends}
       </Link>
+
+      <RadioWavePickerModal
+        isOpen={inviteTargetFriendId !== null}
+        targetDisplayName={
+          onlineFriends.find(
+            (friend) => friend.id === inviteTargetFriendId
+          )?.username ?? ""
+        }
+        onClose={() => setInviteTargetFriendId(null)}
+        onSelectRadio={handleSelectInviteRadio}
+      />
     </Card>
   );
 }

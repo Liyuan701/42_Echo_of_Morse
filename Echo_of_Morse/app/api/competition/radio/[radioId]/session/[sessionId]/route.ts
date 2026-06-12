@@ -1,0 +1,191 @@
+//* The API route for fetching and updating a radio game session.
+//* GET: Returns the current state of the session
+//* PATCH: Updates the player's score and completion status (score and finish)
+
+
+import { NextRequest, NextResponse } from "next/server";
+import {
+  createSessionSequences,
+  getSessionDurationSeconds,
+} from "@/lib/services/competition";
+import { getSessionUserId } from "@/lib/session-user";
+import { prisma } from "@/server/prisma";
+
+type RouteContext = {
+  params: {
+    radioId: string;
+    sessionId: string;
+  };
+};
+
+
+// Helper function to find a game session.
+// Should have corresponding radioId and sessionId
+// To avoid wrong accessed route (A session of radio 1, accessed by radio 2 route)
+async function findSession(radioId: string, sessionId: string) {
+  return prisma.radioGameSession.findFirst({
+    where: {
+      id: sessionId,
+      room: { radioId },
+    },
+    include: {
+      room: {
+        select: {
+          radioId: true,
+          wpm: true,
+        },
+      },
+      players: {
+        orderBy: { joinedAt: "asc" },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+// Helper function to format the session data for API response
+function formatSession(
+  session: NonNullable<Awaited<ReturnType<typeof findSession>>>,
+  currentUserId: string
+) {
+  // Calculate lasted time.
+  const elapsedSeconds = session.startedAt
+    ? Math.floor((Date.now() - session.startedAt.getTime()) / 1000)
+    : 0;
+  const duration = Math.max(
+    getSessionDurationSeconds() - elapsedSeconds,
+    0
+  );
+
+  return {
+    id: session.id,
+    status: session.status.toLowerCase(),
+    duration,
+    sequences: createSessionSequences(session.id),
+    speedWpm: session.room.wpm,
+    players: session.players.map((player) => ({
+      id: player.userId === currentUserId ? "me" : player.userId,
+      username:
+        player.userId === currentUserId ? "You" : player.user.username,
+      score: player.score ?? 0,
+      correct: 0,
+      total: 0,
+      streak: 0,
+      completed: player.completed,
+    })),
+  };
+}
+
+
+// GET handler to fetch the current state of the game session
+export async function GET(_request: NextRequest, { params }: RouteContext) {
+  const userId = await getSessionUserId();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const gameSession = await findSession(params.radioId, params.sessionId);
+
+  if (!gameSession) {
+    return NextResponse.json({ error: "Game session not found" }, { status: 404 });
+  }
+
+  if (!gameSession.players.some((player) => player.userId === userId)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  return NextResponse.json(formatSession(gameSession, userId));
+}
+
+
+// PATCH handler to update the player's score and completion status
+export async function PATCH(request: NextRequest, { params }: RouteContext) {
+  const userId = await getSessionUserId();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = (await request.json()) as {
+    score?: number;
+    timeMs?: number;
+  };
+
+  const { score, timeMs } = body;
+
+  if (
+    typeof score !== "number" ||
+    !Number.isInteger(score) ||
+    score < 0 ||
+    typeof timeMs !== "number" ||
+    !Number.isInteger(timeMs) ||
+    timeMs < 0
+  ) {
+    return NextResponse.json(
+      { error: "score and timeMs must be non-negative integers" },
+      { status: 400 }
+    );
+  }
+
+  const gameSession = await findSession(params.radioId, params.sessionId);
+
+  if (!gameSession) {
+    return NextResponse.json({ error: "Game session not found" }, { status: 404 });
+  }
+
+  const currentPlayer = gameSession.players.find(
+    (player) => player.userId === userId
+  );
+
+  if (!currentPlayer) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  await prisma.radioSessionPlayer.update({
+    where: { id: currentPlayer.id },
+    data: {
+      score,
+      timeMs,
+      completed: true,
+    },
+  });
+
+  const remainingPlayers = await prisma.radioSessionPlayer.count({
+    where: {
+      sessionId: gameSession.id,
+      completed: false,
+    },
+  });
+
+  if (remainingPlayers === 0) {
+    await prisma.$transaction([
+      prisma.radioGameSession.update({
+        where: { id: gameSession.id },
+        data: {
+          status: "FINISHED",
+          endedAt: new Date(),
+        },
+      }),
+      prisma.radioLobbyPresence.updateMany({
+        where: {
+          roomId: gameSession.roomId,
+          userId: {
+            in: gameSession.players.map((player) => player.userId),
+          },
+        },
+        data: { status: "IDLE" },
+      }),
+    ]);
+  }
+
+  const updatedSession = await findSession(params.radioId, params.sessionId);
+  return NextResponse.json(formatSession(updatedSession!, userId));
+}

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import PageShell from "@/components/layout/page-shell";
 import GameSession from "@/components/competition/GameSessionPage/gameSession";
+import { prisma } from "@/server/prisma";
 
 type GameSessionPageProps = {
   params: {
@@ -9,17 +10,13 @@ type GameSessionPageProps = {
   };
 };
 
-// Speeds in words per minute (WPM)
-const RADIO_SPEEDS: Record<string, number> = {
-  "01": 5,
-  "02": 10,
-  "03": 15,
-};
+export default async function GameSessionPage({ params }: GameSessionPageProps) {
+  const radio = await prisma.radioRoom.findUnique({
+    where: { radioId: params.radioId },
+    select: { wpm: true },
+  });
 
-export default function GameSessionPage({ params }: GameSessionPageProps) {
-  const speedWpm = RADIO_SPEEDS[params.radioId];
-
-  if (!speedWpm) {
+  if (!radio) {
 	//une fonction fournie par Next.js ==> afficher une page 404
     notFound();
   }
@@ -30,7 +27,7 @@ export default function GameSessionPage({ params }: GameSessionPageProps) {
         <GameSession
 			radioId={params.radioId}
 			sessionId={params.sessionId}
-			speedWpm={speedWpm}
+			speedWpm={radio.wpm}
 		/>
       </PageShell>
     </main>

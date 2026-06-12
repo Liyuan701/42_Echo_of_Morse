@@ -103,6 +103,38 @@
   line-height: 1.5;
 }
 
+.invitationPanel {
+  margin-bottom: 40px;
+}
+
+.invitationList {
+  display: grid;
+  gap: 12px;
+}
+
+.invitationItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.invitationItem:last-child {
+  border-bottom: 0;
+}
+
+.invitationItem p {
+  margin: 4px 0 0;
+  color: #4b5563;
+}
+
+.invitationActions {
+  display: flex;
+  gap: 10px;
+}
+
 .radioLink {
   display: block;
   color: inherit;

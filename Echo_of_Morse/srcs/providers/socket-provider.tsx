@@ -293,26 +293,29 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    
-    if (status !== "authenticated") return;
-    if (!session?.user?.id) return;
+    const socketInstance = getSocket();
+    const userId = session?.user?.id;
 
-    const socket = getSocket();
-    if (!socket) return ;
-
-    socket.auth = {
-      userId: session.user.id,
-    };
-    
-    if (!socket.connected) {
-      socket.connect();
+    if (!socketInstance) {
+      return;
     }
 
-    setSocket(socket);
-    setIsConnected(socket.connected);
+    if (status !== "authenticated" || !userId) {
+      socketInstance.disconnect();
+      setSocket(null);
+      setIsConnected(false);
+      return;
+    }
+
+    socketInstance.disconnect();
+    socketInstance.auth = {
+      userId,
+    };
+
+    setSocket(socketInstance);
     
     const handleConnect = () => {
-      console.log("CONNECTED", socket.id);
+      console.log("CONNECTED", socketInstance.id);
       setIsConnected(true);
     };
 
@@ -321,14 +324,16 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       setIsConnected(false);
     };
 
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
+    socketInstance.on("connect", handleConnect);
+    socketInstance.on("disconnect", handleDisconnect);
+    socketInstance.connect();
 
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
+      socketInstance.off("connect", handleConnect);
+      socketInstance.off("disconnect", handleDisconnect);
+      socketInstance.disconnect();
     };
-  }, [status, session]);
+  }, [status, session?.user?.id]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

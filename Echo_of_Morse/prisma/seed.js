@@ -20,11 +20,44 @@ function rand(min, max) {
 }
 
 async function main() {
+  const radioRooms = [
+    {
+      radioId: "01",
+      name: "Radio Wave 01",
+      wpm: 5,
+      description: "A slower transmission for new Morse learners.",
+    },
+    {
+      radioId: "02",
+      name: "Radio Wave 02",
+      wpm: 10,
+      description: "A balanced transmission for intermediate players.",
+    },
+    {
+      radioId: "03",
+      name: "Radio Wave 03",
+      wpm: 15,
+      description: "A fast transmission for experienced decoders.",
+    },
+  ];
+
+  for (const room of radioRooms) {
+    await prisma.radioRoom.upsert({
+      where: { radioId: room.radioId },
+      create: room,
+      update: {
+        name: room.name,
+        wpm: room.wpm,
+        description: room.description,
+      },
+    });
+  }
+
   // only when the database is empty, to avoid accidentally wiping data.
   const existing = await prisma.user.findFirst();
   if (existing) {
-    console.log("Already seeded, skipping.");
-    process.exit(0);
+    console.log("Radio rooms ensured; user data already seeded, skipping.");
+    return;
   }
   console.log("Reset database...");
 

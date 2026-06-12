@@ -8,8 +8,11 @@ export type Player = {
 };
 
 export type GameSessionData = {
+	id: string;
+	status: "waiting" | "active" | "finished";
 	duration: number;
 	sequences: string[];
+	speedWpm: number;
 	players: Player[];
 };
 

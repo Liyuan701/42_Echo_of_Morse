@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Card } from "@/components/ui";
 import type { RadioId } from "@/types/competition";
+import { useSocket } from "@/providers/socket-provider";
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
 
 type ApiFriend = {
@@ -17,12 +18,6 @@ type ApiFriend = {
 type InviteFriendsPanelProps = {
   radioId: RadioId;
   radioName: string;
-  mockFriends: {
-  id: string;
-  username: string;
-  displayName: string;
-  avatarUrl: string | null;
-}[];
   isLobbyFull: boolean;
 };
 
@@ -36,11 +31,11 @@ type InviteFriendItem = {
 export default function InviteFriendsPanel({
   radioId,
   radioName,
-  mockFriends,
   isLobbyFull,
 }: InviteFriendsPanelProps) {
   const { data: session, status } = useSession();
   const currentUserId = (session?.user as { id?: string } | undefined)?.id;
+  const { socket } = useSocket();
 
   const [realOnlineFriends, setRealOnlineFriends] = useState<
     InviteFriendItem[]
@@ -63,13 +58,23 @@ export default function InviteFriendsPanel({
         setIsLoadingFriends(true);
         setHasTriedRealFriends(true);
 
-        const response = await fetch(`/api/friends?userId=${currentUserId}`);
+        const [friendsResponse, invitationsResponse] = await Promise.all([
+          fetch(`/api/friends?userId=${currentUserId}`),
+          fetch(
+            `/api/game/invitations?direction=sent&radioId=${encodeURIComponent(
+              radioId
+            )}`
+          ),
+        ]);
 
-        if (!response.ok) {
+        if (!friendsResponse.ok || !invitationsResponse.ok) {
           throw new Error("Failed to fetch friends.");
         }
 
-        const friends = (await response.json()) as ApiFriend[];
+        const friends = (await friendsResponse.json()) as ApiFriend[];
+        const invitations = (await invitationsResponse.json()) as {
+          toUser: { id: string };
+        }[];
 
         const onlineFriends = friends
           .filter((friend) => friend.isOnline)
@@ -81,6 +86,9 @@ export default function InviteFriendsPanel({
           }));
 
         setRealOnlineFriends(onlineFriends);
+        setPendingInviteFriendIds(
+          invitations.map((invitation) => invitation.toUser.id)
+        );
       } catch (error) {
         console.error(error);
         setRealOnlineFriends([]);
@@ -90,28 +98,13 @@ export default function InviteFriendsPanel({
     }
 
     fetchOnlineFriends();
-  }, [status, currentUserId]);
-
-  const mockFriendItems = useMemo<InviteFriendItem[]>(
-    () =>
-      mockFriends.map((friend) => ({
-        id: friend.id,
-        username: friend.username,
-        displayName: friend.displayName,
-        avatarUrl: friend.avatarUrl,
-      })),
-    [mockFriends]
-  );
+  }, [status, currentUserId, radioId]);
 
   const friendsToDisplay = useMemo(() => {
-    if (status === "authenticated") {
-      return realOnlineFriends;
-    }
+    return status === "authenticated" ? realOnlineFriends : [];
+  }, [status, realOnlineFriends]);
 
-    return mockFriendItems;
-  }, [status, realOnlineFriends, mockFriendItems]);
-
-  function handleInviteFriend(friend: InviteFriendItem) {
+  async function handleInviteFriend(friend: InviteFriendItem) {
     if (isLobbyFull) {
       return;
     }
@@ -122,33 +115,38 @@ export default function InviteFriendsPanel({
       return;
     }
 
-    setPendingInviteFriendIds((previousIds) => [...previousIds, friend.id]);
+    try {
+      const response = await fetch("/api/game/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toUserId: friend.id,
+          radioId,
+        }),
+      });
+      const body = (await response.json()) as {
+        id?: string;
+        error?: string;
+      };
 
+      if (!response.ok || !body.id) {
+        throw new Error(body.error || "Failed to send invitation.");
+      }
 
-    //! Liyuan
-    // Backend/socket note:
-    // This is only a local pending state for the frontend prototype. No API
-    // request is sent and no socket event is emitted yet, so the receiver will
-    // not actually be notified until the backend/socket integration is added.
-    //
-    // This invitation should invite a friend to the current radio lobby,
-    // not directly into a game session.
-    //
-    // Expected payload:
-    // {
-    //   targetFriendId: friend.id,
-    //   radioId,
-    //   inviteType: "radio-lobby"
-    // }
-    //
-    // Possible future API:
-    // POST /api/game-invitations
-    //
-    // Possible future socket event:
-    // socket.emit("radio:invite-friend", {
-    //   toUserId: friend.id,
-    //   radioId,
-    // });
+      setPendingInviteFriendIds((previousIds) => [
+        ...previousIds,
+        friend.id,
+      ]);
+
+      socket?.emit("game-invitation:send", {
+        toUserId: friend.id,
+        invitationId: body.id,
+      });
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Failed to send invitation."
+      );
+    }
   }
 
   return (
@@ -176,7 +174,7 @@ export default function InviteFriendsPanel({
         <p className={styles.emptyState}>
           {hasTriedRealFriends
             ? "No online friend is available right now."
-            : "No mock friend is available in this lobby."}
+            : "Sign in to invite online friends."}
         </p>
       ) : (
         <div className={styles.friendList}>
@@ -220,8 +218,7 @@ export default function InviteFriendsPanel({
       )}
 
       <p className={styles.inviteHint}>
-        Temporary logic: authenticated users try to load real online friends
-        from /api/friends. Visitors see mock friends from the radio lobby.
+        Invitations are stored in the database and lead to this radio lobby.
       </p>
     </Card>
   );

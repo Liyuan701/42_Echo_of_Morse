@@ -10,7 +10,10 @@ import GameTimer from "./gameTimer";
 import FinalRanking from "./finalRanking";
 import MorseStream, { getSequenceDuration } from "./morseStream";
 import type { GameSessionData, Player } from "./gameSessionType";
-import { getGameSessionData, mockGameSessionData } from "./gameSessionData";
+import {
+	getGameSessionData,
+	submitGameSessionResult,
+} from "./gameSessionData";
 
 type GameSessionProps = {
 	radioId: string;
@@ -28,6 +31,8 @@ export default function GameSession({
 	//Date.now() ==> obtenir le temps actel en ms
 	const sequenceStartRef = useRef(Date.now());
 	const sequenceStreakRef = useRef(false);
+	const sessionStartedAtRef = useRef(Date.now());
+	const hasSubmittedResultRef = useRef(false);
 
 	//-------------------- données de la session -------------------- 
 	const [sessionData, setSessionData] = useState<GameSessionData | null>(null);
@@ -35,6 +40,7 @@ export default function GameSession({
 	const [secondsLeft, setSecondsLeft] = useState(0);
 	const [currentText, setCurrentText] = useState("");
 	const [currentMorse, setCurrentMorse] = useState("");
+	const [loadError, setLoadError] = useState("");
 
 	//-------------------- données de la réponse -------------------- 
 	const [answer, setAnswer] = useState("");
@@ -68,25 +74,43 @@ export default function GameSession({
 		let cancelled = false;
 
 		async function loadSessionData() {
-			const data = await getGameSessionData({ radioId, sessionId });
-			const firstSequence = data.sequences[0] ?? mockGameSessionData.sequences[0];
+			try {
+				const data = await getGameSessionData({ radioId, sessionId });
+				const firstSequence = data.sequences[0];
 
-			if (cancelled) {
-				return;
+				if (!firstSequence) {
+					throw new Error("This game session has no challenge sequences.");
+				}
+
+				if (cancelled) {
+					return;
+				}
+
+				const now = Date.now();
+				sequenceIndexRef.current = 1;
+				sequenceStartRef.current = now;
+				sessionStartedAtRef.current = now;
+				sequenceStreakRef.current = false;
+				hasSubmittedResultRef.current = false;
+				setSessionData(data);
+				setPlayers(data.players);
+				setSecondsLeft(data.duration);
+				setCurrentText(firstSequence);
+				setCurrentMorse(encode(firstSequence));
+				setLoadError("");
+
+				setAnswer("");
+				setIsAnswerCorrect(false);
+				setIsAnswerLocked(false);
+			} catch (error) {
+				if (!cancelled) {
+					setLoadError(
+						error instanceof Error
+							? error.message
+							: "Failed to load game session."
+					);
+				}
 			}
-
-			sequenceIndexRef.current = 1;
-			sequenceStartRef.current = Date.now();
-			sequenceStreakRef.current = false;
-			setSessionData(data);
-			setPlayers(data.players);
-			setSecondsLeft(data.duration);
-			setCurrentText(firstSequence);
-			setCurrentMorse(encode(firstSequence));
-
-			setAnswer("");
-			setIsAnswerCorrect(false);
-			setIsAnswerLocked(false);
 		}
 
 		loadSessionData();
@@ -95,6 +119,84 @@ export default function GameSession({
 			cancelled = true;
 		};
 	}, [radioId, sessionId]);
+
+	useEffect(() => {
+		if (!sessionData || !isFinished || hasSubmittedResultRef.current) {
+			return;
+		}
+
+		const currentPlayer = players.find((player) => player.id === "me");
+
+		if (!currentPlayer) {
+			return;
+		}
+
+		hasSubmittedResultRef.current = true;
+
+		submitGameSessionResult({
+			radioId,
+			sessionId,
+			score: currentPlayer.score,
+			timeMs: Date.now() - sessionStartedAtRef.current,
+		})
+			.then((data) => {
+				const localPlayer = players.find((player) => player.id === "me");
+				setSessionData(data);
+				setPlayers(
+					data.players.map((player) =>
+						player.id === "me" && localPlayer
+							? {
+									...player,
+									correct: localPlayer.correct,
+									total: localPlayer.total,
+									streak: localPlayer.streak,
+							  }
+							: player
+					)
+				);
+			})
+			.catch((error: unknown) => {
+				hasSubmittedResultRef.current = false;
+				console.error("Failed to save game result", error);
+			});
+	}, [isFinished, players, radioId, sessionData, sessionId]);
+
+	// TODO modify after socket notifications are reliable.
+	// Temporary polling fallback. After this player finishes, the page requests
+	// the session every 2 seconds to receive other players' final scores.
+	// Replace this interval with a server-confirmed Socket.IO ranking/session
+	// update event once real-time game synchronization is available.
+	useEffect(() => {
+		if (!isFinished || sessionData?.status === "finished") {
+			return;
+		}
+
+		const intervalId = window.setInterval(() => {
+			getGameSessionData({ radioId, sessionId })
+				.then((data) => {
+					setSessionData(data);
+					setPlayers((currentPlayers) => {
+						const localPlayer = currentPlayers.find(
+							(player) => player.id === "me"
+						);
+
+						return data.players.map((player) =>
+							player.id === "me" && localPlayer
+								? {
+										...player,
+										correct: localPlayer.correct,
+										total: localPlayer.total,
+										streak: localPlayer.streak,
+								  }
+								: player
+						);
+					});
+				})
+				.catch(() => undefined);
+		}, 2000);
+
+		return () => window.clearInterval(intervalId);
+	}, [isFinished, radioId, sessionData?.status, sessionId]);
 
 	//-------------------- gestion du timer --------------------
 	useEffect(() => {
@@ -198,6 +300,14 @@ export default function GameSession({
 		setIsAnswerCorrect(false);
 	}
 
+	if (loadError) {
+		return (
+			<section className={styles.shell}>
+				<section className={styles.gameArea}>{loadError}</section>
+			</section>
+		);
+	}
+
     if (!sessionData) {
 		return (
 			<section className={styles.shell}>
@@ -250,7 +360,7 @@ export default function GameSession({
 			<MorseStream
 				morse={currentMorse}
 				showMorseText={showMorseText}
-				speedWpm={speedWpm}
+				speedWpm={sessionData.speedWpm || speedWpm}
 				disabled={isFinished}
 			/>
 
