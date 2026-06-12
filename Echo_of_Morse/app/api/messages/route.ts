@@ -1,3 +1,8 @@
+//* This is the API route for handling messages in a conversation.
+//* GET：retrieve all historical messages in a conversation.
+//* POST：send a new message in a conversation.
+
+
 import { NextResponse } from "next/server";
 import type { MessageMode } from "@prisma/client";
 import { getSessionUserId } from "@/lib/session-user";
@@ -9,16 +14,16 @@ const MESSAGE_MODES: MessageMode[] = [
   "LANGUAGE_ONLY",
 ];
 
+// GET /api/messages?conversationId=xxx
 export async function GET(request: Request) {
-  const userId = await getSessionUserId();
 
+  // 1. Get conversationId and verify user is part of the conversation
+  const userId = await getSessionUserId();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
   const { searchParams } = new URL(request.url);
   const conversationId = searchParams.get("conversationId");
-
   if (!conversationId) {
     return NextResponse.json(
       { error: "Missing conversationId" },
@@ -26,6 +31,7 @@ export async function GET(request: Request) {
     );
   }
 
+  // 2. Fetch historical messages if user is part of the conversation
   const conversation = await prisma.conversation.findFirst({
     where: {
       id: conversationId,
@@ -49,9 +55,12 @@ export async function GET(request: Request) {
   return NextResponse.json(messages);
 }
 
-export async function POST(request: Request) {
-  const senderId = await getSessionUserId();
 
+
+// POST /api/messages
+export async function POST(request: Request) {
+  // 1. Validate request body and user authorization
+  const senderId = await getSessionUserId();
   if (!senderId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -62,7 +71,7 @@ export async function POST(request: Request) {
     translatedText?: string;
     mode?: MessageMode;
   };
-
+  // 2.validate required fields and mode
   if (
     !body.conversationId ||
     !body.rawText?.trim() ||
@@ -71,7 +80,7 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json({ error: "Invalid message" }, { status: 400 });
   }
-
+  // 3. Verify Id to ensure the safety.
   const conversation = await prisma.conversation.findFirst({
     where: {
       id: body.conversationId,
@@ -90,7 +99,7 @@ export async function POST(request: Request) {
       { status: 404 }
     );
   }
-
+  // 4. Create message if all validations pass
   const message = await prisma.message.create({
     data: {
       conversationId: conversation.id,
@@ -100,7 +109,7 @@ export async function POST(request: Request) {
       mode: body.mode,
     },
   });
-
+  // 5. Find the receipientId
   const recipientId =
     conversation.userAId === senderId
       ? conversation.userBId

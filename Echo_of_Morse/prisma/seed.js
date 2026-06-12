@@ -9,7 +9,7 @@ const users = [
   { username: "yren", learningLevel: 4 },
   { username: "jdu", learningLevel: 2 },
   { username: "mlaurent", learningLevel: 5 },
-  { username: "gustav", learningLevel: 3 },
+  { username: "gustgonz", learningLevel: 3 },
   { username: "nobody", learningLevel: 1 },
   { username: "top_student", learningLevel: 12 }, // top student who has level 12.
 ];
@@ -20,6 +20,8 @@ function rand(min, max) {
 }
 
 async function main() {
+
+  // creat the three radio rooms in the porject.
   const radioRooms = [
     {
       radioId: "01",
@@ -220,7 +222,7 @@ async function main() {
   // Create friendships
   console.log("Creating FULL friendships...");
 
-  const group = ["lifan", "yren", "jdu", "mlaurent", "gustav"];
+  const group = ["lifan", "yren", "jdu", "mlaurent", "gustgonz"];
 
   for (let i = 0; i < group.length; i++) {
     for (let j = i + 1; j < group.length; j++) {

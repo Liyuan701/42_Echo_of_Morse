@@ -1,6 +1,10 @@
+//* API to get conversation between two friends.
+//* If doesn't exist, creates a new conversation and returns it.
+
 import { NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/session-user";
 import { prisma } from "@/server/prisma";
+
 
 export async function POST(request: Request) {
   const userId = await getSessionUserId();
@@ -39,9 +43,11 @@ export async function POST(request: Request) {
     );
   }
 
+  // Make an order, to be sure there will not be double conversation.
   const [userAId, userBId] =
     userId < friendId ? [userId, friendId] : [friendId, userId];
 
+  //upsert (update if exist, otherwise insert)
   const conversation = await prisma.conversation.upsert({
     where: {
       userAId_userBId: {
