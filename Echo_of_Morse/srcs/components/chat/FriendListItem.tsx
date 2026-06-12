@@ -9,6 +9,8 @@ import type { Friend } from "@/types/chat";
 import FriendContextMenu from "./FriendContextMenu";
 import styles from "./css/FriendListItem.module.css";
 
+import { useI18n } from "@/lib/i18n";
+
 type FriendListItemProps = {
   friend: Friend;
   isSelected: boolean;
@@ -30,17 +32,20 @@ export default function FriendListItem({
   onShareFriend,
   onInviteFriendToGame,
 }: FriendListItemProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.chat;
+
   const [menuPosition, setMenuPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
 
   const profileHref = `/users/${friend.id}`;
-  const displayName = friend.displayName || friend.username || "Unknown user";
+  const displayName = friend.displayName || friend.username || t.unknownUser;
   const avatarLetter =
     friend.avatarInitial || displayName.charAt(0).toUpperCase();
 
-  const inviteButtonLabel = isGameInvitePending ? "Pending" : "Invite";
+  const inviteButtonLabel = isGameInvitePending ? t.pending : t.invite;
   const isInviteDisabled = !friend.isOnline || isGameInvitePending;
 
   function handleContextMenu(event: MouseEvent<HTMLDivElement>) {
@@ -53,7 +58,7 @@ export default function FriendListItem({
   }
 
   function handleRename() {
-    const nextDisplayName = window.prompt("New remark name", friend.displayName);
+    const nextDisplayName = window.prompt(t.newRemarkName, friend.displayName);
 
     if (!nextDisplayName?.trim()) {
       return;
@@ -65,7 +70,7 @@ export default function FriendListItem({
 
   function handleDelete() {
     const confirmed = window.confirm(
-      `Delete ${friend.displayName} from friends?`
+      t.deleteFriendConfirm.replace("{displayName}", friend.displayName)
     );
 
     if (!confirmed) {
@@ -111,13 +116,13 @@ export default function FriendListItem({
           <Link
             href={profileHref}
             className={styles.avatarLink}
-            aria-label={`View ${displayName}'s profile`}
+            aria-label={t.viewProfile.replace("{displayName}", displayName)}
           >
             {friend.avatarUrl ? (
               <img
                 className={styles.avatarImage}
                 src={friend.avatarUrl}
-                alt={`${displayName}'s avatar`}
+                alt={t.avatarAlt.replace("{displayName}", displayName)}
               />
             ) : (
               <span className={styles.avatarFallback}>{avatarLetter}</span>
@@ -142,13 +147,13 @@ export default function FriendListItem({
               <div>
                 <p className={styles.previewName}>{displayName}</p>
                 <p className={styles.previewStatus}>
-                  @{friend.username} · {friend.isOnline ? "Online" : "Offline"}
+                  @{friend.username} · {friend.isOnline ? t.online : t.offline}
                 </p>
               </div>
             </div>
 
             <p className={styles.previewText}>
-              Click the avatar or name to view the full profile.
+              {t.openProfileHint}
             </p>
           </div>
         </div>
@@ -173,7 +178,7 @@ export default function FriendListItem({
               className={`${styles.status} ${
                 friend.isOnline ? styles.online : styles.offline
               }`}
-              aria-label={friend.isOnline ? "Online" : "Offline"}
+              aria-label={friend.isOnline ? t.online : t.offline}
             />
           </button>
 
@@ -185,10 +190,10 @@ export default function FriendListItem({
               onClick={handleInviteToGame}
               title={
                 isGameInvitePending
-                    ? "A game invitation is already pending"
+                    ? t.gameInviteAlreadyPending
                     : friend.isOnline
-                        ? "Invite this friend to play"
-                        : "This friend is offline"
+                        ? t.inviteFriendToPlay
+                        : t.friendOffline
               }
             >
               {inviteButtonLabel}
@@ -212,8 +217,3 @@ export default function FriendListItem({
     </>
   );
 }
-
-// ! i18n: move all chat UI labels, placeholders, aria-labels, empty states, mode names, prompt/confirm/alert messages, and button text into the i18n dictionary.
-// ! i18n: keep real chat messages, usernames, display names, timestamps, and Morse-transformed content unchanged.
-// ! i18n: dynamic strings such as "View ${displayName}'s profile" should use interpolation variables.
-// ! i18n: move game invitation labels, tooltip text, disabled state text, and system messages into the i18n dictionary.

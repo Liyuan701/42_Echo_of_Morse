@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { UserDTO } from "@/types/user";
 import styles from "./css/ChatHeader.module.css";
+import { useI18n } from "@/lib/i18n";
 
 type ChatHeaderProps = {
   friend: UserDTO;
@@ -10,10 +11,13 @@ type ChatHeaderProps = {
 };
 
 export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.chat;
+
   const profileHref = `/users/${friend.id}`;
   const displayName = friend.username;
   const avatarLetter = displayName.charAt(0).toUpperCase();
-  const statusText = friend.isOnline ? "Online" : "Offline";
+  const statusText = friend.isOnline ? t.online : t.offline;
 
   return (
     <header className={styles.header}>
@@ -22,7 +26,7 @@ export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
           <Link
             href={profileHref}
             className={styles.avatarLink}
-            aria-label={`View ${displayName}'s profile`}
+            aria-label={t.viewProfile.replace("{displayName}", displayName)}
           >
             {friend.image ? (
               <img
@@ -45,7 +49,7 @@ export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
                 <img
                   className={styles.previewAvatar}
                   src={friend.image}
-                  alt={`${displayName}'s avatar`}
+                  alt={t.avatarAlt.replace("{displayName}", displayName)}
                 />
               ) : (
                 <span className={styles.previewAvatarFallback}>
@@ -62,7 +66,7 @@ export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
             </div>
 
             <p className={styles.previewText}>
-              Click the name or avatar to open this profile.
+              {t.openProfileHint}
             </p>
           </div>
         </div>
@@ -72,14 +76,10 @@ export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
         type="button"
         className={styles.closeButton}
         onClick={onCloseChat}
-        aria-label="Close chat"
+        aria-label={t.closeChat}
       >
         ×
       </button>
     </header>
   );
 }
-
-// ! i18n: move all chat UI labels, placeholders, aria-labels, empty states, mode names, prompt/confirm/alert messages, and button text into the i18n dictionary.
-// ! i18n: keep real chat messages, usernames, display names, timestamps, and Morse-transformed content unchanged.
-// ! i18n: dynamic strings such as "View ${displayName}'s profile" should use interpolation variables.

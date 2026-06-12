@@ -28,11 +28,6 @@ export function wait(ms: number) {
 	return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-// Cette fonction change l'affichage du Morse：remplace tous les "-" par "—".
-export function toDisplayMorse(morse: string) {
-	return morse.replaceAll("-", "—");
-}
-
 //trouve tous les contenu à apprendre
 	//flat() --> transforme char** en char*
 	//filter() --> prendre les contenue selon index

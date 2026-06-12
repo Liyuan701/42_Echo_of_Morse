@@ -236,6 +236,72 @@ const fr = {
 		startPractice: "Commencer",
 	},
 
+	//=========================================== chat =========================================== 
+	chat: {
+		//--------- friendList ---------
+		chats: "Chats",
+		close: "Fermer",
+		add: "+ Ajouter",
+
+		added: "Ajoute",
+		pending: "En attente",
+		invite: "Inviter",
+
+		searchMyFriends: "Chercher dans mes amis",
+		searchUsersToAdd: "Chercher des utilisateurs a ajouter",
+		noUsersFound: "Aucun utilisateur trouve.",
+		noFriendsFound: "Aucun ami trouve.",
+
+		systemMessages: "Messages systeme",
+		noSystemMessages: "Aucun message systeme.",
+		
+		//--------- ChatHeader ---------
+		offline: "Hors ligne",
+		online: "En ligne",
+		
+		viewProfile: "Voir le profil de {displayName}",
+		avatarAlt: "Avatar de {displayName}",
+		openProfileHint: "Cliquez sur le nom ou l'avatar pour ouvrir ce profil.",
+		closeChat: "Fermer le chat",
+		
+		//--------- ChatModeSelector ---------
+		languageToMorse: "Langue ⭢ Morse",
+		morseToLanguage: "Morse ⭢ Langue",
+		textOnly: "Texte seulement",
+		morseOnly: "Morse seulement",
+		encodeOnly: "Encoder seulement",
+		chatModeSelector: "Selecteur du mode chat",
+		
+		//--------- MessageComposer ---------
+		typeTextToMorse: "Tapez du texte pour afficher le texte et le Morse...",
+		enterMorseToDecode: "Entrez du code Morse a decoder...",
+		typeMessage: "Tapez un message...",
+		typeMorseOnly: "Tapez seulement du Morse...",
+		typeTextAsMorseOnly: "Tapez du texte a envoyer en Morse seulement...",
+		send: "Envoyer",
+		
+		//--------- FriendListItem ---------
+		unknownUser: "Utilisateur inconnu",
+		newRemarkName: "Nouvelle remarque",
+		deleteFriendConfirm: "Supprimer {displayName} des amis ?",
+		gameInviteAlreadyPending: "Une invitation de jeu est deja en attente",
+		inviteFriendToPlay: "Inviter cet ami a jouer",
+		friendOffline: "Cet ami est hors ligne",
+		
+		//--------- ContextMenu ---------
+		renameRemark: "Renommer la remarque",
+		shareFriend: "Partager l'ami",
+		inviteToGame: "Inviter au jeu",
+		deleteFriend: "Supprimer l'ami",
+		friendOfflineOrPending: "Cet ami est hors ligne ou a deja une invitation en attente.",
+		
+		//--------- SystemMessage ---------
+		systemDescription: "Notifications sur les demandes d'ami, les contacts partages et les actions du chat.",
+
+		//--------- chat/page---------
+		pageTitle: "Chat",
+		pageDescription: "Cette page accueillera le chat en temps reel et les fonctions de communication.",
+	},
 
 
 };

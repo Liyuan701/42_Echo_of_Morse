@@ -1,6 +1,6 @@
-// Data sent to the API after a practice session
+//* Donnees envoyees a l'API apres une session
 export type AnswerRecord = {
-  char: string;    // the letter, e.g. "E"
+  char: string;    // le caractere, ex: "E"
   correct: boolean;
 };
 
@@ -10,7 +10,7 @@ export type PracticeResultPayload = {
   questionCount: number;
   accuracy: number;
   passed: boolean;
-  answers: AnswerRecord[]; // one record per question
+  answers: AnswerRecord[]; // une reponse par question
 };
 
 export async function submitPracticeResult(payload: PracticeResultPayload) {

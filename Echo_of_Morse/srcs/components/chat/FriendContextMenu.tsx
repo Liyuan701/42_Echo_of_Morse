@@ -2,6 +2,8 @@
 
 "use client";
 
+import { useI18n } from "@/lib/i18n";
+
 import { useEffect } from "react";
 import styles from "./css/FriendContextMenu.module.css";
 
@@ -26,6 +28,9 @@ export default function FriendContextMenu({
   onInviteToGame,
   isGameInviteDisabled,
 }: FriendContextMenuProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.chat;
+
   useEffect(() => {
     function handleClick() {
       onClose();
@@ -57,11 +62,11 @@ export default function FriendContextMenu({
       onClick={(event) => event.stopPropagation()}
     >
       <button type="button" onClick={onRename} className={styles.item}>
-        Rename remark
+        {t.renameRemark}
       </button>
 
       <button type="button" onClick={onShare} className={styles.item}>
-        Share friend
+        {t.shareFriend}
       </button>
 
       <button
@@ -71,18 +76,16 @@ export default function FriendContextMenu({
         disabled={isGameInviteDisabled}
         title={
           isGameInviteDisabled
-            ? "This friend is offline or already has a pending invitation."
-            : "Invite this friend to play."
+            ? t.friendOfflineOrPending
+            : t.inviteFriendToPlay
         }
       >
-        Invite to game
+        {t.inviteToGame}
       </button>
 
       <button type="button" onClick={onDelete} className={styles.deleteItem}>
-        Delete friend
+        {t.deleteFriend}
       </button>
     </div>
   );
 }
-
-// ! i18n: move context menu labels, title text, and game invitation disabled message into the i18n dictionary.
