@@ -379,10 +379,9 @@ AI tools were used as development support for:
 
 - explaining unfamiliar TypeScript, Prisma, Docker, Socket.IO, and database
   concepts;
-- drafting and reviewing selected API routes and database integration code;
+- drafting and reviewing selected code;
 - suggesting debugging steps and test cases for chat and game invitations;
 - improving English and French technical documentation;
-- reviewing README structure against the 42 requirements.
 
 All AI-assisted output was read, adapted, and tested by team members before
 being included. AI was not treated as a substitute for understanding,
