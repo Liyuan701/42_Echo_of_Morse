@@ -1,15 +1,13 @@
 "use client";
-
-import { SessionProvider } from "next-auth/react"; //outil pour utiliser useSession()
+//outil pour utiliser useSession()
+import { SessionProvider } from "next-auth/react"; 
 import type { ReactNode } from "react";
-import { SocketProvider } from "@/providers/socket-provider";
 
 export default function AuthSessionProvider({ children,}: { children: ReactNode;}) {
+	// SocketProvider is mounted once in app/layout.tsx to avoid duplicate connections.
 	return (
 	<SessionProvider>
-		<SocketProvider>
 			{children}
-		</SocketProvider>
 	</SessionProvider>
 	);
 }

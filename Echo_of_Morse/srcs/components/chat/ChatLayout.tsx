@@ -90,6 +90,30 @@ export default function ChatLayout() {
     loadFriends();
   }, [userId]);
 
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    // Update the loaded friends immediately when socket presence changes.
+    const handleOnlineUsers = (onlineUserIds: string[]) => {
+      const onlineUserIdSet = new Set(onlineUserIds);
+
+      setFriends((currentFriends) =>
+        currentFriends.map((friend) => ({
+          ...friend,
+          isOnline: onlineUserIdSet.has(friend.id),
+        }))
+      );
+    };
+
+    socket.on("online-users", handleOnlineUsers);
+
+    return () => {
+      socket.off("online-users", handleOnlineUsers);
+    };
+  }, [socket]);
+
   // ── Derived / memoised values ──────────────────────────────────────────────
   const selectedFriendId =
     currentView.type === "friend" ? currentView.friendId : null;

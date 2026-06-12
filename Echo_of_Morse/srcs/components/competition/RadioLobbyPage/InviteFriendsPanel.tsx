@@ -42,6 +42,7 @@ export default function InviteFriendsPanel({
   >([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [hasTriedRealFriends, setHasTriedRealFriends] = useState(false);
+  const [presenceRevision, setPresenceRevision] = useState(0);
   const [pendingInviteFriendIds, setPendingInviteFriendIds] = useState<
     string[]
   >([]);
@@ -98,7 +99,24 @@ export default function InviteFriendsPanel({
     }
 
     fetchOnlineFriends();
-  }, [status, currentUserId, radioId]);
+  }, [status, currentUserId, radioId, presenceRevision]);
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    // Re-read the API snapshot when the socket announces a presence change.
+    const handleOnlineUsers = () => {
+      setPresenceRevision((revision) => revision + 1);
+    };
+
+    socket.on("online-users", handleOnlineUsers);
+
+    return () => {
+      socket.off("online-users", handleOnlineUsers);
+    };
+  }, [socket]);
 
   const friendsToDisplay = useMemo(() => {
     return status === "authenticated" ? realOnlineFriends : [];

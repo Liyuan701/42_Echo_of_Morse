@@ -38,6 +38,7 @@ export default function OnlineFriendsPreview() {
 
   const [onlineFriends, setOnlineFriends] = useState<OnlineFriend[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
+  const [presenceRevision, setPresenceRevision] = useState(0);
 
   const [pendingGameInviteFriendIds, setPendingGameInviteFriendIds] = useState<
     string[]
@@ -87,7 +88,24 @@ export default function OnlineFriendsPreview() {
     }
 
     fetchOnlineFriends();
-  }, [status, currentUserId]);
+  }, [status, currentUserId, presenceRevision]);
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    // Re-read online friends whenever the socket presence list changes.
+    const handleOnlineUsers = () => {
+      setPresenceRevision((revision) => revision + 1);
+    };
+
+    socket.on("online-users", handleOnlineUsers);
+
+    return () => {
+      socket.off("online-users", handleOnlineUsers);
+    };
+  }, [socket]);
 
   function handleInviteFriendToGame(friendId: string) {
     const alreadyPending = pendingGameInviteFriendIds.includes(friendId);
