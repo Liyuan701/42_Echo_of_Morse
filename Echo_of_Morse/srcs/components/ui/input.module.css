@@ -20,6 +20,44 @@
   outline: none;
 }
 
+.inputWrapper {
+  position: relative;
+  display: block;
+}
+
+.inputWithToggle {
+  padding-right: 72px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.passwordToggle:hover {
+  color: #111827;
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid #111827;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.passwordToggle:disabled {
+  cursor: not-allowed;
+  color: #9ca3af;
+}
+
 .input:focus {
   border-color: #111827;
 }

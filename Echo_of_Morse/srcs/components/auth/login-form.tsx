@@ -107,6 +107,7 @@ export default function LoginForm() {
           <Input
             label="Password"
             type="password"
+            showPasswordToggle
             value={formData.password}
             onChange={(event) => updateField("password", event.target.value)}
             placeholder="Enter your password"
