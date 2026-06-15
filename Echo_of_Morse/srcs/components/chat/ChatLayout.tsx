@@ -1,9 +1,11 @@
+
 //* The layout for the entire chat page
 //* Including the friend list, system messages, and the active chat window.
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type {
   ChatMessage,
   ChatMode,
@@ -20,9 +22,13 @@ import styles from "./css/ChatLayout.module.css";
 import { useSession } from "next-auth/react";
 import { mapChatModeToDB } from "@/lib/mappers/chat-mode";
 import { useSocket } from "@/providers/socket-provider";
-import { useRouter } from "next/navigation";
+import { useNotifications } from "@/components/notifications/NotificationProvider";
 import RadioWavePickerModal from "@/components/competition/RadioLobbyPage/RadioWavePickerModal";
 import type { RadioId } from "@/types/competition";
+import {
+  GameInvitationActionError,
+  useGameInvitationActions,
+} from "@/hooks/useGameInvitationActions";
 
 type ApiMessage = {
   id: string;
@@ -34,52 +40,80 @@ type ApiMessage = {
   createdAt: string;
 };
 
-type ReceivedGameInvitation = {
-  id: string;
-  createdAt: string;
-  fromUser: {
-    username: string;
-  };
-  radio: {
-    name: string;
-  } | null;
+type InvitationActionStatus = NonNullable<SystemMessage["actionStatus"]>;
+
+type FriendWithOptionalGameStatus = Friend & {
+  gameStatus?: "IDLE" | "READY" | "PLAYING" | null;
+  lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
+  currentRadioId?: string | null;
 };
 
 export default function ChatLayout() {
-  // ── Session ────────────────────────────────────────────────────────────────
-  // Must be declared before any useEffect that depends on userId.
-  console.log("ChatLayout rendered");
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const { socket } = useSocket();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const friendIdFromQuery = searchParams.get("friendId");
+  const panelFromQuery = searchParams.get("panel");
 
-  // ── Core state ─────────────────────────────────────────────────────────────
+  const { sendGameInvitation, answerGameInvitation } =
+    useGameInvitationActions();
+
+  const {
+    pendingGameInvitations,
+    friendUnreadCounts,
+    unreadSystemMessageCount: globalUnreadSystemMessageCount,
+    refreshNotifications,
+    markFriendAsRead,
+    markSystemNotificationsAsRead,
+  } = useNotifications();
+
   const [friends, setFriends] = useState<Friend[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [currentView, setCurrentView] = useState<ChatPanelView>({ type: "none" });
+  const [currentView, setCurrentView] = useState<ChatPanelView>({
+    type: "none",
+  });
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatMode, setChatMode] = useState<ChatMode>("LANGUAGE_TO_MORSE");
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const [userSearchQuery, setUserSearchQuery] = useState("");
-  const [userSearchResults, setUserSearchResults] = useState<SearchableUser[]>([]);
+  const [userSearchResults, setUserSearchResults] = useState<SearchableUser[]>(
+    []
+  );
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
+
+  // ! liyuan, TODO backend:
+  // This is a frontend fallback only.
+  // Final version should load persisted system-message history from
+  // GET /api/system-messages.
   const [systemMessages, setSystemMessages] = useState<SystemMessage[]>([]);
-  const [pendingFriendRequestUserIds, setPendingFriendRequestUserIds] = useState<string[]>([]);
-  const [pendingGameInviteFriendIds, setPendingGameInviteFriendIds] = useState<string[]>([]);
+
+  const [invitationActionStatuses, setInvitationActionStatuses] = useState<
+    Record<string, InvitationActionStatus>
+  >({});
+
+  const [pendingFriendRequestUserIds, setPendingFriendRequestUserIds] =
+    useState<string[]>([]);
+  const [pendingGameInviteFriendIds, setPendingGameInviteFriendIds] = useState<
+    string[]
+  >([]);
   const [composerError, setComposerError] = useState("");
   const [inviteTargetFriendId, setInviteTargetFriendId] = useState<
     string | null
   >(null);
+  const suppressFriendQuerySelection = useRef(false);
 
-  // ── Load friends whenever the logged-in user is known ─────────────────────
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      return;
+    }
 
     const loadFriends = async () => {
       try {
         const res = await fetch(`/api/friends?userId=${userId}`);
         const data = await res.json();
+
         setFriends(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
@@ -87,7 +121,7 @@ export default function ChatLayout() {
       }
     };
 
-    loadFriends();
+    void loadFriends();
   }, [userId]);
 
   useEffect(() => {
@@ -95,7 +129,6 @@ export default function ChatLayout() {
       return;
     }
 
-    // Update the loaded friends immediately when socket presence changes.
     const handleOnlineUsers = (onlineUserIds: string[]) => {
       const onlineUserIdSet = new Set(onlineUserIds);
 
@@ -114,40 +147,40 @@ export default function ChatLayout() {
     };
   }, [socket]);
 
-  // ── Derived / memoised values ──────────────────────────────────────────────
   const selectedFriendId =
     currentView.type === "friend" ? currentView.friendId : null;
 
-    // ── Load messages whenever the active conversation changes ─────────────────
-  // conversationId is now declared above, so this effect is safe to reference it.
   useEffect(() => {
-  if (!conversationId || !selectedFriendId) return;
-
-  const loadMessages = async () => {
-    try {
-      const res = await fetch(`/api/messages?conversationId=${conversationId}`);
-      const data = await res.json();
-      setMessages(
-        Array.isArray(data)
-          ? data.map((m: any) => ({
-              id: m.id,
-              friendId: selectedFriendId,
-              sender: m.senderId === userId ? "me" : "friend",
-              rawText: m.rawText,
-              translatedText: m.translatedText,
-              mode: m.mode,
-              createdAt: new Date(m.createdAt).toLocaleTimeString(),
-            }))
-          : []
-      );
-    } catch (err) {
-      console.error(err);
-      setMessages([]);
+    if (!conversationId || !selectedFriendId) {
+      return;
     }
-  };
 
-  loadMessages();
-}, [conversationId, userId, selectedFriendId]);
+    const loadMessages = async () => {
+      try {
+        const res = await fetch(`/api/messages?conversationId=${conversationId}`);
+        const data = await res.json();
+
+        setMessages(
+          Array.isArray(data)
+            ? data.map((message: ApiMessage) => ({
+                id: message.id,
+                friendId: selectedFriendId,
+                sender: message.senderId === userId ? "me" : "friend",
+                rawText: message.rawText,
+                translatedText: message.translatedText ?? undefined,
+                mode: message.mode,
+                createdAt: new Date(message.createdAt).toLocaleTimeString(),
+              }))
+            : []
+        );
+      } catch (err) {
+        console.error(err);
+        setMessages([]);
+      }
+    };
+
+    void loadMessages();
+  }, [conversationId, selectedFriendId, userId]);
 
   useEffect(() => {
     if (!socket || !userId) {
@@ -184,9 +217,7 @@ export default function ChatLayout() {
             ? {
                 ...friend,
                 lastMessage: message.rawText,
-                lastMessageAt: new Date(
-                  message.createdAt
-                ).toLocaleTimeString(),
+                lastMessageAt: new Date(message.createdAt).toLocaleTimeString(),
               }
             : friend
         )
@@ -194,108 +225,114 @@ export default function ChatLayout() {
     }
 
     socket.on("chat:message:new", handleNewMessage);
+
     return () => {
       socket.off("chat:message:new", handleNewMessage);
     };
   }, [socket, userId]);
 
-  const loadReceivedGameInvitations = useCallback(async () => {
-    if (!userId) {
-      return;
-    }
-
-    const response = await fetch(
-      "/api/game/invitations?direction=received",
-      { cache: "no-store" }
-    );
-
-    if (!response.ok) {
-      return;
-    }
-
-    const invitations =
-      (await response.json()) as ReceivedGameInvitation[];
-
-    setSystemMessages((current) => {
-      const knownIds = new Set(current.map((message) => message.id));
-      const newMessages = invitations
-        .filter(
-          (invitation) =>
-            !knownIds.has(`game-invitation:${invitation.id}`)
-        )
-        .map<SystemMessage>((invitation) => ({
-          id: `game-invitation:${invitation.id}`,
-          title: "New game invitation",
-          body: `${invitation.fromUser.username} invited you to ${
-            invitation.radio?.name ?? "a radio lobby"
-          }. Open Competition to accept or decline.`,
-          createdAt: new Date(invitation.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          isRead: false,
-        }));
-
-      return newMessages.length > 0
-        ? [...newMessages, ...current]
-        : current;
-    });
-  }, [userId]);
-
-  // TODO: modify after socket delivery is stable.
-  // The current implementation relies on polling every 3 seconds to fetch.
-  // the Socket.IO "game-invitation:new" event is not reliably delivered yet.
-  // Remove this interval after socket delivery and reconnection are stable.
-  // Keep loadReceivedGameInvitations() for the initial page load and for the
-  // socket event handler below, but the repeated database polling should go.
-  useEffect(() => {
-    loadReceivedGameInvitations();
-
-    const intervalId = window.setInterval(
-      loadReceivedGameInvitations,
-      3000
-    );
-
-    return () => window.clearInterval(intervalId);
-  }, [loadReceivedGameInvitations]);
-
-  useEffect(() => {
-    if (!socket) {
-      return;
-    }
-
-    socket.on("game-invitation:new", loadReceivedGameInvitations);
-    return () => {
-      socket.off("game-invitation:new", loadReceivedGameInvitations);
-    };
-  }, [loadReceivedGameInvitations, socket]);
+  const friendsWithUnread = useMemo(
+    () =>
+      friends.map((friend) => ({
+        ...friend,
+        unreadCount: friendUnreadCounts[friend.id] ?? 0,
+      })),
+    [friends, friendUnreadCounts]
+  );
 
   const selectedFriend = useMemo(() => {
-    if (!selectedFriendId) return null;
-    return friends.find((f) => f.id === selectedFriendId) ?? null;
-  }, [friends, selectedFriendId]);
+    if (!selectedFriendId) {
+      return null;
+    }
+
+    return (
+      friendsWithUnread.find((friend) => friend.id === selectedFriendId) ?? null
+    );
+  }, [friendsWithUnread, selectedFriendId]);
 
   const selectedMessages = useMemo(() => {
-    if (!selectedFriendId) return [];
-    return messages.filter((m) => m.friendId === selectedFriendId);
+    if (!selectedFriendId) {
+      return [];
+    }
+
+    return messages.filter((message) => message.friendId === selectedFriendId);
   }, [messages, selectedFriendId]);
 
   const filteredFriends = useMemo(() => {
     const query = friendSearchQuery.trim();
-    if (!query) return friends;
-    return friends.filter(
-      (f) => f.displayName.includes(query) || f.username.includes(query)
-    );
-  }, [friends, friendSearchQuery]);
 
-  const unreadSystemMessageCount = useMemo(
-    () => systemMessages.filter((m) => !m.isRead).length,
+    if (!query) {
+      return friendsWithUnread;
+    }
+
+    return friendsWithUnread.filter(
+      (friend) =>
+        friend.displayName.includes(query) || friend.username.includes(query)
+    );
+  }, [friendsWithUnread, friendSearchQuery]);
+
+  // ! liyuan, TODO backend:
+  // Pending game invitations are temporarily converted into SystemMessage objects
+  // so the frontend can display them inside the Chat system panel.
+  // Final version should load persisted system-message history from
+  // GET /api/system-messages.
+  const gameInvitationMessages = useMemo<SystemMessage[]>(
+    () =>
+      pendingGameInvitations.map((invitation) => ({
+        id: `game-invitation:${invitation.id}`,
+        title: "New game invitation",
+        body: `${invitation.fromUser.username} invited you to ${
+          invitation.radio?.name ?? "a radio lobby"
+        }.`,
+        createdAt: new Date(invitation.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        isRead: false,
+        kind: "game-invitation",
+        invitationId: invitation.id,
+        fromUserId: invitation.fromUser.id,
+        radioId: invitation.radio?.radioId,
+        actionStatus: invitationActionStatuses[invitation.id] ?? "idle",
+      })),
+    [invitationActionStatuses, pendingGameInvitations]
+  );
+
+  const visibleSystemMessages = useMemo(
+    () => [...gameInvitationMessages, ...systemMessages],
+    [gameInvitationMessages, systemMessages]
+  );
+
+  const unreadLocalSystemMessageCount = useMemo(
+    () => systemMessages.filter((message) => !message.isRead).length,
     [systemMessages]
   );
 
-  // ── Helpers
+  // ! liyuan, TODO backend:
+  // This count is currently composed on the frontend.
+  // Final backend version should provide reliable persisted system-message unread state.
+  // Pending game invitations should remain status-based and should not be cleared
+  // by system-message read state.
+  const unreadSystemMessageCount =
+    globalUnreadSystemMessageCount +
+    pendingGameInvitations.length +
+    unreadLocalSystemMessageCount;
+
+  const incomingPendingInviteFriendIds = useMemo(
+    () =>
+      new Set(
+        pendingGameInvitations
+          .map((invitation) => invitation.fromUser.id)
+          .filter(Boolean)
+      ),
+    [pendingGameInvitations]
+  );
+
   function getCurrentTime() {
-    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   function addSystemMessage(title: string, body: string) {
@@ -306,56 +343,270 @@ export default function ChatLayout() {
       createdAt: getCurrentTime(),
       isRead: false,
     };
+
     setSystemMessages((prev) => [next, ...prev]);
   }
 
   function markSystemMessagesAsRead() {
-    setSystemMessages((prev) => prev.map((m) => ({ ...m, isRead: true })));
+    setSystemMessages((prev) =>
+      prev.map((message) => ({
+        ...message,
+        isRead: true,
+      }))
+    );
   }
 
-  function isDuplicateDisplayName(nextDisplayName: string, currentFriendId?: string) {
+  function markGameInviteFriendAsPending(friendId: string) {
+    setPendingGameInviteFriendIds((current) =>
+      current.includes(friendId) ? current : [...current, friendId]
+    );
+  }
+
+  function getFriendInviteDisabledReason(friend: Friend): string | null {
+    const friendWithStatus = friend as FriendWithOptionalGameStatus;
+
+    if (!friend.isOnline) {
+      return "This friend is offline.";
+    }
+
+    if (pendingGameInviteFriendIds.includes(friend.id)) {
+      return "A game invitation is already pending with this friend.";
+    }
+
+    if (incomingPendingInviteFriendIds.has(friend.id)) {
+      return "This friend has already invited you. Please accept or decline their invitation first.";
+    }
+
+    // ! liyuan, TODO backend:
+    // If the backend exposes friend.gameStatus or friend.lobbyStatus,
+    // use these fields to disable invitations when the friend is READY or PLAYING.
+    if (
+      friendWithStatus.gameStatus === "PLAYING" ||
+      friendWithStatus.lobbyStatus === "PLAYING"
+    ) {
+      return "This friend is currently in a game.";
+    }
+
+    if (friendWithStatus.lobbyStatus === "READY") {
+      return "This friend is already ready in a lobby.";
+    }
+
+    return null;
+  }
+
+  const inviteDisabledReasons = useMemo(() => {
+    const reasons: Record<string, string | null> = {};
+
+    for (const friend of friendsWithUnread) {
+      reasons[friend.id] = getFriendInviteDisabledReason(friend);
+    }
+
+    return reasons;
+  }, [
+    friendsWithUnread,
+    incomingPendingInviteFriendIds,
+    pendingGameInviteFriendIds,
+  ]);
+
+  async function handleAnswerGameInvitation(
+    message: SystemMessage,
+    action: "accept" | "decline"
+  ) {
+    if (!message.invitationId) {
+      return;
+    }
+
+    setInvitationActionStatuses((current) => ({
+      ...current,
+      [message.invitationId as string]: "updating",
+    }));
+
+    try {
+      const result = await answerGameInvitation({
+        invitationId: message.invitationId,
+        action,
+        fallbackRadioId: message.radioId,
+        fromUserId: message.fromUserId,
+        redirectOnAccept: true,
+      });
+
+      const actionStatus = action === "accept" ? "accepted" : "declined";
+
+      setInvitationActionStatuses((current) => ({
+        ...current,
+        [message.invitationId as string]: actionStatus,
+      }));
+
+      // ! liyuan, TODO backend:
+      // Frontend fallback only.
+      // After Accept / Decline, the final version should persist this result
+      // as a system message on the backend.
+      // Expected behavior:
+      // - PENDING invitation disappears from global notifications.
+      // - System Messages keeps a history item with accepted / declined status.
+      // - Refreshing the page should not lose this history.
+      const historyMessage: SystemMessage = {
+        id: `game-invitation-history:${message.invitationId}:${action}`,
+        title:
+          action === "accept"
+            ? "Game invitation accepted"
+            : "Game invitation declined",
+        body:
+          action === "accept"
+            ? `${message.body} You accepted this invitation.`
+            : `${message.body} You declined this invitation.`,
+        createdAt: getCurrentTime(),
+        isRead: true,
+        kind: "game-invitation",
+        invitationId: message.invitationId,
+        fromUserId: message.fromUserId,
+        radioId: result.radio?.radioId ?? message.radioId,
+        actionStatus,
+      };
+
+      setSystemMessages((current) => [historyMessage, ...current]);
+    } catch (error) {
+      setInvitationActionStatuses((current) => ({
+        ...current,
+        [message.invitationId as string]: "error",
+      }));
+
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to update the invitation."
+      );
+    }
+  }
+
+  function isDuplicateDisplayName(
+    nextDisplayName: string,
+    currentFriendId?: string
+  ) {
     const trimmed = nextDisplayName.trim();
-    return friends.some((f) => {
-      if (f.id === currentFriendId) return false;
-      return f.displayName.trim() === trimmed;
+
+    return friends.some((friend) => {
+      if (friend.id === currentFriendId) {
+        return false;
+      }
+
+      return friend.displayName.trim() === trimmed;
     });
   }
 
-  // ── Event handlers ──────────────────
-  function handleSelectSystemMessages() {
+  async function handleSelectSystemMessages() {
     setComposerError("");
-    markSystemMessagesAsRead();
+    suppressFriendQuerySelection.current = true;
+    router.replace("/chat?panel=system", { scroll: false });
     setCurrentView({ type: "system" });
+
+    try {
+      await refreshNotifications();
+    } finally {
+      markSystemMessagesAsRead();
+      markSystemNotificationsAsRead();
+    }
   }
+
+  async function handleOpenSystemMessagesWithoutMarkingRead() {
+    setComposerError("");
+    setCurrentView({ type: "system" });
+
+    try {
+      await refreshNotifications();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    if (panelFromQuery !== "system") {
+      return;
+    }
+
+    suppressFriendQuerySelection.current = false;
+    void handleOpenSystemMessagesWithoutMarkingRead();
+  }, [panelFromQuery]);
 
   function handleChangeChatMode(mode: ChatMode) {
     setChatMode(mode);
     setComposerError("");
   }
 
-  async function handleSelectFriend(friendId: string) {
-    setComposerError("");
-    setCurrentView({ type: "friend", friendId });
-    setConversationId(null);
+  const handleSelectFriend = useCallback(
+    async (friendId: string) => {
+      setComposerError("");
+      suppressFriendQuerySelection.current = false;
+      router.replace(`/chat?friendId=${encodeURIComponent(friendId)}`, {
+        scroll: false,
+      });
+      markFriendAsRead(friendId);
+      setCurrentView({
+        type: "friend",
+        friendId,
+      });
+      setConversationId(null);
 
-    const res = await fetch("/api/conversations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userBId: friendId }),
-    });
-    const data = await res.json();
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userBId: friendId,
+        }),
+      });
 
-    if (!res.ok || !data.id) {
-      setComposerError(data.error || "Failed to open the conversation.");
+      const data = await res.json();
+
+      if (!res.ok || !data.id) {
+        setComposerError(data.error || "Failed to open the conversation.");
+        return;
+      }
+
+      setConversationId(data.id);
+    },
+    [markFriendAsRead, router]
+  );
+
+  useEffect(() => {
+    if (
+      !friendIdFromQuery ||
+      panelFromQuery === "system" ||
+      suppressFriendQuerySelection.current
+    ) {
       return;
     }
 
-    setConversationId(data.id);
-  }
+    const friendExists = friends.some(
+      (friend) => friend.id === friendIdFromQuery
+    );
+
+    if (!friendExists) {
+      return;
+    }
+
+    if (
+      currentView.type === "friend" &&
+      currentView.friendId === friendIdFromQuery
+    ) {
+      return;
+    }
+
+    void handleSelectFriend(friendIdFromQuery);
+  }, [
+    currentView,
+    friendIdFromQuery,
+    friends,
+    handleSelectFriend,
+    panelFromQuery,
+  ]);
 
   function handleSearchUsers(query: string) {
     setUserSearchQuery(query);
+
     const trimmed = query.trim();
+
     if (!trimmed) {
       setUserSearchResults([]);
       return;
@@ -365,6 +616,7 @@ export default function ChatLayout() {
       try {
         const res = await fetch(`/api/users/search?query=${trimmed}`);
         const data = await res.json();
+
         setUserSearchResults(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Search failed:", err);
@@ -372,25 +624,28 @@ export default function ChatLayout() {
       }
     };
 
-    fetchUsers();
+    void fetchUsers();
   }
 
   function handleToggleAddFriend() {
     const nextIsOpen = !isAddFriendOpen;
+
     setIsAddFriendOpen(nextIsOpen);
+
     if (!nextIsOpen) {
       setUserSearchQuery("");
       setUserSearchResults([]);
     }
   }
 
-
-  //Friend request logic: checks for duplicates and pending requests before sending. Adds a system message for feedback.
-  async function handleSendFriendRequest(user: SearchableUser): Promise<boolean> {
-    if (friends.some((f) => f.id === user.id)) {
+  async function handleSendFriendRequest(
+    user: SearchableUser
+  ): Promise<boolean> {
+    if (friends.some((friend) => friend.id === user.id)) {
       window.alert("This user is already in your friend list.");
       return false;
     }
+
     if (pendingFriendRequestUserIds.includes(user.id)) {
       window.alert("Friend request already sent.");
       return false;
@@ -399,8 +654,12 @@ export default function ChatLayout() {
     try {
       const res = await fetch("/api/friends", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ receiverId: user.id }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          receiverId: user.id,
+        }),
       });
 
       if (res.status === 409) {
@@ -418,32 +677,39 @@ export default function ChatLayout() {
     }
 
     setPendingFriendRequestUserIds((prev) => [...prev, user.id]);
+
     addSystemMessage(
       "Friend request sent",
       `Friend request sent to ${user.displayName}. Waiting for acceptance.`
     );
+
     return true;
   }
 
-
-
-
   function handleRenameFriend(friendId: string, nextDisplayName: string) {
     const trimmed = nextDisplayName.trim();
+
     if (!trimmed) {
       window.alert("Friend remark name cannot be empty.");
       return;
     }
+
     if (isDuplicateDisplayName(trimmed, friendId)) {
       window.alert("This remark name already exists in your friend list.");
       return;
     }
 
-    const target = friends.find((f) => f.id === friendId);
+    const target = friends.find((friend) => friend.id === friendId);
 
-    // TODO: PATCH /api/friends/:friendshipId { remarkName }
     setFriends((prev) =>
-      prev.map((f) => (f.id === friendId ? { ...f, displayName: trimmed } : f))
+      prev.map((friend) =>
+        friend.id === friendId
+          ? {
+              ...friend,
+              displayName: trimmed,
+            }
+          : friend
+      )
     );
 
     if (target) {
@@ -455,36 +721,47 @@ export default function ChatLayout() {
   }
 
   function handleDeleteFriend(friendId: string) {
-    const target = friends.find((f) => f.id === friendId);
+    const target = friends.find((friend) => friend.id === friendId);
 
-    // TODO: DELETE /api/friends/:friendshipId
-    setFriends((prev) => prev.filter((f) => f.id !== friendId));
-    setMessages((prev) => prev.filter((m) => m.friendId !== friendId));
-    setPendingGameInviteFriendIds((prev) => prev.filter((id) => id !== friendId));
+    setFriends((prev) => prev.filter((friend) => friend.id !== friendId));
+    setMessages((prev) =>
+      prev.filter((message) => message.friendId !== friendId)
+    );
+    setPendingGameInviteFriendIds((prev) =>
+      prev.filter((id) => id !== friendId)
+    );
 
     if (selectedFriendId === friendId) {
-      setCurrentView({ type: "none" });
+      setCurrentView({
+        type: "none",
+      });
     }
 
     if (target) {
-      addSystemMessage("Friend removed", `${target.displayName} was removed locally.`);
+      addSystemMessage(
+        "Friend removed",
+        `${target.displayName} was removed locally.`
+      );
     }
   }
 
   function handleShareFriend(friendId: string) {
-    const target = friends.find((f) => f.id === friendId);
-    if (!target) return;
+    const target = friends.find((friend) => friend.id === friendId);
+
+    if (!target) {
+      return;
+    }
 
     if (!selectedFriend) {
       window.alert("Please open a chat before sharing a friend.");
       return;
     }
+
     if (selectedFriend.id === target.id) {
       window.alert("You cannot share this friend to themselves.");
       return;
     }
 
-    // TODO: Send a shared_contact message type via POST /api/messages
     const sharedMsg: ChatMessage = {
       id: crypto.randomUUID(),
       friendId: selectedFriend.id,
@@ -496,6 +773,7 @@ export default function ChatLayout() {
     };
 
     setMessages((prev) => [...prev, sharedMsg]);
+
     addSystemMessage(
       "Contact shared",
       `${target.displayName} was shared to ${selectedFriend.displayName}.`
@@ -503,15 +781,16 @@ export default function ChatLayout() {
   }
 
   function handleInviteFriendToGame(friendId: string) {
-    const invited = friends.find((f) => f.id === friendId);
-    if (!invited) return;
+    const invited = friends.find((friend) => friend.id === friendId);
 
-    if (!invited.isOnline) {
-      window.alert("This friend is offline.");
+    if (!invited) {
       return;
     }
-    if (pendingGameInviteFriendIds.includes(friendId)) {
-      window.alert("A game invitation is already pending.");
+
+    const disabledReason = getFriendInviteDisabledReason(invited);
+
+    if (disabledReason) {
+      window.alert(disabledReason);
       return;
     }
 
@@ -519,71 +798,65 @@ export default function ChatLayout() {
   }
 
   async function handleSelectInviteRadio(radioId: RadioId) {
-    const invited = friends.find((friend) => friend.id === inviteTargetFriendId);
+    const invited = friends.find(
+      (friend) => friend.id === inviteTargetFriendId
+    );
 
-    if (!invited) {
+    if (!invited || !userId) {
+      setInviteTargetFriendId(null);
+      return;
+    }
+
+    const disabledReason = getFriendInviteDisabledReason(invited);
+
+    if (disabledReason) {
+      window.alert(disabledReason);
       setInviteTargetFriendId(null);
       return;
     }
 
     try {
-      const joinResponse = await fetch(`/api/competition/radio/${radioId}`, {
-        method: "POST",
+      await sendGameInvitation({
+        toUserId: invited.id,
+        radioId,
+        joinLobbyBeforeSend: true,
+        redirectAfterSend: false,
       });
-      const joinBody = (await joinResponse.json()) as { error?: string };
 
-      if (!joinResponse.ok) {
-        throw new Error(joinBody.error || "Failed to join the radio lobby.");
-      }
+      markGameInviteFriendAsPending(invited.id);
 
-      const invitationResponse = await fetch("/api/game/invitations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          toUserId: invited.id,
-          radioId,
-        }),
-      });
-      const invitation = (await invitationResponse.json()) as {
-        id?: string;
-        error?: string;
-      };
-
-      if (!invitationResponse.ok || !invitation.id) {
-        throw new Error(invitation.error || "Failed to send invitation.");
-      }
-
-      setPendingGameInviteFriendIds((current) => [...current, invited.id]);
       addSystemMessage(
         "Game invitation sent",
         `Game invitation sent to ${invited.displayName}. Waiting for their response.`
       );
 
-      socket?.emit("game-invitation:send", {
-        toUserId: invited.id,
-        invitationId: invitation.id,
-      });
-
       setInviteTargetFriendId(null);
-      router.push(`/competition/radio/${radioId}`);
     } catch (error) {
+      if (error instanceof GameInvitationActionError && error.status === 409) {
+        markGameInviteFriendAsPending(invited.id);
+      }
+
       window.alert(
         error instanceof Error ? error.message : "Failed to send invitation."
       );
     }
   }
 
-  // Fix: was a sync function using `await` — must be async.
-  // Return type is now Promise<boolean> to match the async boundary.
   async function handleSendMessage(text: string): Promise<boolean> {
-    if (!selectedFriend) return false;
+    if (!selectedFriend) {
+      return false;
+    }
 
     const transformed = transformChatMessage(text, chatMode);
+
     if (transformed.error) {
       setComposerError(transformed.error);
       return false;
     }
-    if (!transformed.rawText) return false;
+
+    if (!transformed.rawText) {
+      return false;
+    }
 
     setComposerError("");
 
@@ -596,7 +869,9 @@ export default function ChatLayout() {
 
     const response = await fetch("/api/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         conversationId,
         rawText: transformed.rawText,
@@ -630,9 +905,7 @@ export default function ChatLayout() {
           rawText: result.message!.rawText,
           translatedText: result.message!.translatedText ?? undefined,
           mode: result.message!.mode,
-          createdAt: new Date(
-            result.message!.createdAt
-          ).toLocaleTimeString(),
+          createdAt: new Date(result.message!.createdAt).toLocaleTimeString(),
         },
       ];
     });
@@ -648,10 +921,13 @@ export default function ChatLayout() {
 
   function handleClosePanel() {
     setComposerError("");
-    setCurrentView({ type: "none" });
+    suppressFriendQuerySelection.current = false;
+    router.replace("/chat", { scroll: false });
+    setCurrentView({
+      type: "none",
+    });
   }
 
-  // ── Render 
   const hasOpenPanel = currentView.type !== "none";
 
   return (
@@ -662,9 +938,9 @@ export default function ChatLayout() {
     >
       <FriendList
         friends={filteredFriends}
-        allFriends={friends}
+        allFriends={friendsWithUnread}
         selectedFriendId={selectedFriendId ?? ""}
-        systemMessages={systemMessages}
+        systemMessages={visibleSystemMessages}
         unreadSystemMessageCount={unreadSystemMessageCount}
         isSystemPanelSelected={currentView.type === "system"}
         friendSearchQuery={friendSearchQuery}
@@ -673,6 +949,7 @@ export default function ChatLayout() {
         isAddFriendOpen={isAddFriendOpen}
         pendingFriendRequestUserIds={pendingFriendRequestUserIds}
         pendingGameInviteFriendIds={pendingGameInviteFriendIds}
+        inviteDisabledReasons={inviteDisabledReasons}
         onSelectFriend={handleSelectFriend}
         onSelectSystemMessages={handleSelectSystemMessages}
         onChangeFriendSearchQuery={setFriendSearchQuery}
@@ -698,7 +975,11 @@ export default function ChatLayout() {
       ) : null}
 
       {currentView.type === "system" ? (
-        <SystemMessageWindow messages={systemMessages} onClose={handleClosePanel} />
+        <SystemMessageWindow
+          messages={visibleSystemMessages}
+          onClose={handleClosePanel}
+          onAnswerGameInvitation={handleAnswerGameInvitation}
+        />
       ) : null}
 
       <RadioWavePickerModal
@@ -714,9 +995,7 @@ export default function ChatLayout() {
   );
 }
 
-
 // ! i18n: move all chat UI labels, placeholders, aria-labels, empty states, mode names, prompt/confirm/alert messages, and button text into the i18n dictionary.
 // ! i18n: keep real chat messages, usernames, display names, timestamps, and Morse-transformed content unchanged.
 // ! i18n: dynamic strings such as "View ${displayName}'s profile" should use interpolation variables.
 // ! i18n: move game invitation labels and messages into the i18n dictionary.
-// ! i18n: dynamic game invitation strings should use displayName as an interpolation variable.

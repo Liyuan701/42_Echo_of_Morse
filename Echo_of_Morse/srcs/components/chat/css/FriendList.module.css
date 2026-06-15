@@ -1,11 +1,20 @@
 .sidebar {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   border-right: 1px solid #e5e7eb;
   background: #f9fafb;
 }
 
 .header {
+  min-width: 0;
+  overflow: hidden;
   padding: 20px;
   border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
 }
 
 .headerTop {
@@ -34,6 +43,8 @@
 .searchResults {
   display: grid;
   gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
 }
 
 .searchResult {
@@ -92,6 +103,13 @@
 
 .list {
   display: grid;
+  align-content: start;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  background: #f9fafb;
 }
 
 .systemItem {
