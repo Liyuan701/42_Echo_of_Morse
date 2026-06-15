@@ -1,11 +1,11 @@
-*This project has been created as part of the 42 curriculum by mlaurent, jdu, lifan, yren, gustgonz.*
+*This project was created as part of the 42 curriculum by mlaurent, jdu, lifan, yren, and gustgonz.*
 
 # ft_transcendence: Echo of Morse
 
 ## Description
 
 **Echo of Morse** is a full-stack web application for learning, practising,
-and competing with Morse code. It combines individual training with social
+and competing using Morse code. It combines individual training with social
 features and real-time multiplayer games.
 
 ### Key Features
@@ -23,18 +23,18 @@ features and real-time multiplayer games.
 
 | Member | Assigned roles | Responsibilities |
 | --- | --- | --- |
-| `mlaurent` | Backend Lead, Architect | Backend architecture, Socket.IO integration, and learning review features |
-| `jdu` | Frontend Lead, Git Workflow Manager | Frontend architecture, UI implementation, user flows, frontend review, and Git workflow |
+| `mlaurent` | Backend Lead, Architect | Backend architecture, Socket.IO integration |
+| `jdu` | Frontend Lead | Frontend architecture, UI implementation, and user flows |
 | `lifan` | Product Owner, Database Lead | Backlog priorities, database schema, Prisma integration, database APIs, and documentation |
-| `yren` | Project Manager, Frontend Developer | Meetings, task coordination, frontend development, and internationalization |
+| `yren` | Project Manager, Frontend Developer | Meetings, task coordination, frontend development, authentication, and internationalization |
 | `gustgonz` | Security Lead, DevSecOps | WAF, Vault, Docker infrastructure, security testing, and Socket.IO support |
 
 ## Project Management
 
-- **Work organization:** the team first held weekly meetings, then formed
+- **Work organization:** The team first held weekly meetings, then formed
   smaller groups around frontend, backend, database, security, and real-time
   features.
-- **Task distribution:** tasks were assigned according to each member's main
+- **Task distribution:** Tasks were assigned according to each member's main
   role and adjusted during team meetings when dependencies or blockers appeared.
 - **Management tools:** Notion was used for planning and documentation. GitHub
   was used for source control, branches, reviews, and issue tracking.
@@ -47,7 +47,7 @@ features and real-time multiplayer games.
 | --- | --- | --- |
 | Frontend | Next.js 14, React 18, TypeScript | Component-based UI, routing, server rendering, and type safety |
 | Styling | CSS Modules, Tailwind CSS | Local component styles and rapid responsive layout |
-| Backend | Next.js Route Handlers, Node.js | Keeps frontend and HTTP APIs in one TypeScript application |
+| Backend | Next.js Route Handlers, Node.js | Keeps the frontend and HTTP APIs in one TypeScript application |
 | Authentication | NextAuth, credentials, Google OAuth, 42 OAuth | Supports local and external authentication providers |
 | Database | PostgreSQL 15 | Reliable relational storage with transactions and constraints |
 | ORM | Prisma | Type-safe queries, migrations, relations, and seed support |
@@ -55,10 +55,10 @@ features and real-time multiplayer games.
 | Infrastructure | Docker Compose or Podman Compose | Reproducible development and production environments |
 | Security | ModSecurity, OWASP CRS, HashiCorp Vault, HTTPS | Request filtering and centralized secret management |
 
-PostgreSQL was chosen because the application contains strongly related data:
+PostgreSQL was chosen because the application contains highly interconnected data:
 users, friendships, conversations, messages, learning progress, invitations,
 rooms, and game sessions. Foreign keys, unique constraints, and transactions
-help protect this data from inconsistent updates.
+help keep this data consistent.
 
 ## Architecture
 
@@ -162,18 +162,53 @@ User
 
 ## Modules
 
-The table below lists the module that is explicitly documented in the
-repository as a selected curriculum module.
+The subject defines Major modules as 2 points and Minor modules as 1 point.
+The first table lists modules that are already implemented or close enough to
+be defended with the current repository. The second table lists modules that
+the team intends to finish before evaluation.
 
-| Module | Type | Points | Justification | Implementation | Contributors |
-| --- | --- | ---: | --- | --- | --- |
-| WAF and HashiCorp Vault | Major | 2 | Protect the application from common web attacks and keep secrets outside the application code | ModSecurity with OWASP CRS filters production traffic; Vault initializes and injects database, authentication, and OAuth secrets | `gustgonz` |
+### Confirmed Modules
 
-**Current confirmed total: 2 points.**
+| Module | Type | Points | Status | Justification | Implementation | Contributors |
+| --- | --- | ---: | --- | --- | --- | --- |
+| Use a framework for both the frontend and backend | Major | 2 | Confirmed | Build the application with a structured full-stack framework | Next.js is used for the React frontend and for backend Route Handlers/API routes | `jdu`, `mlaurent`, `lifan`, `yren` |
+| Allow users to interact with other users | Major | 2 | Confirmed | Provide the required social features: chat, profiles, and friends | Users can view profiles, manage friends, and send private chat messages persisted in PostgreSQL | `lifan`, `jdu`, `mlaurent`, `yren` |
+| Standard user management and authentication | Major | 2 | Confirmed | Support user accounts, profile editing, avatars, friends, and online status | NextAuth handles sessions; users can register, log in, edit profile data, upload an avatar, add friends, and see online state | `mlaurent`, `jdu`, `yren`, `lifan` |
+| Implement a complete web-based game | Major | 2 | Confirmed | Add a playable multiplayer browser game with rules, scoring, and results | Radio sessions let at least two users join a Morse decoding match, play timed rounds, submit scores, and view rankings | `jdu`, `lifan`, `mlaurent` |
+| WAF and HashiCorp Vault | Major | 2 | Confirmed | Protect traffic and keep secrets outside the application code | ModSecurity with OWASP CRS filters production traffic; Vault initializes and injects database, authentication, and OAuth secrets | `gustgonz` |
+| Use an ORM for the database | Minor | 1 | Confirmed | Keep database access typed and maintainable | Prisma models, migrations, seed data, and Prisma Client are used across the backend | `lifan`, `mlaurent` |
+| Support multiple languages | Minor | 1 | Confirmed | Provide at least three interface languages | The app includes an i18n provider, language switcher, and English, French, and Chinese dictionaries | `yren`, `jdu`, `lifan` |
+| Implement remote authentication with OAuth 2.0 | Minor | 1 | Confirmed | Allow users to connect through external identity providers | NextAuth supports Google OAuth and a custom 42 OAuth provider, with account linking | `yren`, `mlaurent` |
+| Server-side rendering for improved performance and SEO | Minor | 1 | Confirmed | Render data-backed pages on the server where appropriate | Next.js App Router server components load data for learning, profile, competition, lobby, and game session pages | `jdu`, `lifan`, `mlaurent` |
 
-Before the final evaluation, the team must add any other officially selected
-Major or Minor modules to this table. Application features must not be listed
-as curriculum modules unless they were formally selected in the project plan.
+**Confirmed total: 14 points.**
+
+### Candidate Modules To Finish
+
+| Module | Type | Points | Current status | Work needed before evaluation |
+| --- | --- | ---: | --- | --- |
+| Implement real-time features using WebSockets or similar technology | Major | 2 | In progress | Socket.IO is present, but chat, invitation, lobby, and game updates still need reliable event delivery without polling fallbacks |
+| Remote players | Major | 2 | In progress | The radio game can be played by separate users, but gameplay synchronization, reconnection, latency handling, and disconnection behavior need to be reliable |
+| Multiplayer game with more than two players | Major | 2 | In progress | The radio session model supports several ready players, but it must be tested and demonstrated with 3+ simultaneous players |
+| Public API to interact with the database | Major | 2 | Partially implemented | The app has many API routes, but this module still needs API-key protection, rate limiting, public documentation, and a clean external API surface |
+| Complete notification system | Minor | 1 | In progress | Notifications exist for system messages, chat, and invitations, but all creation/update/deletion actions should trigger consistent notifications |
+| Advanced chat features | Minor | 1 | Partially implemented | Chat already has persistence, user profile access, and game invitations; blocking, typing indicators, and read receipts still need to be added |
+| Game statistics and match history | Minor | 1 | Partially implemented | Scores and session players are stored, but user-facing match history, wins/losses, rankings, and achievements need final UI/API work |
+| Game customization options | Minor | 1 | Partially implemented | Radio rooms already provide different WPM settings; this should be expanded into explicit customizable game settings with defaults |
+| Custom-made design system | Minor | 1 | Partially implemented | Shared UI components exist, but the subject requires at least 10 reusable components plus a documented palette, typography, and icon usage |
+| Advanced search | Minor | 1 | Not complete | User search exists, but the module requires filters, sorting, and pagination |
+| File upload and management system | Minor | 1 | Not complete | Avatar upload exists, but the module requires managed uploads with validation, preview, access control, progress, and deletion |
+| Support for additional browsers | Minor | 1 | Needs validation | The app should be tested and documented on at least two additional browsers such as Firefox, Safari, or Edge |
+| Progressive Web App | Minor | 1 | Not complete | Add manifest, installability, service worker behavior, and offline support |
+| Gamification system | Minor | 1 | Partially implemented | Learning levels and progress exist; add at least three explicit reward mechanics such as badges, XP, achievements, leaderboards, or daily challenges |
+| Complete accessibility compliance | Major | 2 | Needs audit | Requires WCAG 2.1 AA work: keyboard navigation, screen-reader support, focus states, semantic checks, and accessibility testing |
+
+**Potential additional total if all candidate modules are completed: 21 points.**
+
+**Potential raw total: 35 points.** The subject's bonus section says extra
+modules beyond the required 14 points may be considered up to a maximum of 5
+bonus points, so the practical evaluated total may be capped at **19 points**
+depending on how the evaluation applies that bonus limit.
 
 See [CYBERSECURITY.md](CYBERSECURITY.md) for the security module architecture,
 configuration, and test commands.
@@ -184,7 +219,6 @@ configuration, and test commands.
 
 - Designed backend architecture and service interactions.
 - Worked on Socket.IO communication and real-time event delivery.
-- Worked on the learning review functionality.
 - Helped connect backend behavior with frontend requirements.
 
 ### `jdu`
@@ -192,7 +226,6 @@ configuration, and test commands.
 - Designed the frontend structure and reusable components.
 - Implemented main pages, user flows, chat, and competition interfaces.
 - Reviewed frontend consistency and usability.
-- Helped organize the Git workflow and frontend integration.
 
 ### `lifan`
 
@@ -207,6 +240,7 @@ configuration, and test commands.
 - Implemented frontend pages and components.
 - Added and maintained English, French, and Chinese translations.
 - Helped integrate frontend features across modules.
+- Implemented authentication flows within the Node.js and Next.js application.
 
 ### `gustgonz`
 
@@ -242,7 +276,7 @@ they run inside containers.
 
 ```bash
 git clone <repository-url>
-cd Transendence/Echo_of_Morse
+cd Transcendence/Echo_of_Morse
 cp .env.example .env
 ```
 
@@ -274,8 +308,8 @@ openssl rand -base64 32
 make dev
 ```
 
-The development entrypoint generates the Prisma client, applies migrations,
-runs the seed, and starts the services.
+The development entry point generates the Prisma client, applies migrations,
+seeds the database, and starts the services.
 
 - Web application: `http://localhost:3000`
 - Socket.IO server: `http://localhost:3001`
@@ -318,7 +352,7 @@ See [MAKEGUIDE.md](MAKEGUIDE.md) for the complete command reference.
 ## Initial Test Data
 
 The development initialization runs `prisma/seed.js`. It creates test data so
-the main user, learning, chat, and competition flows can be tested immediately.
+that the main user, learning, chat, and competition flows can be tested immediately.
 These credentials are for local development only.
 
 ### Test Accounts
