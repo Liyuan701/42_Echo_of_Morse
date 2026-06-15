@@ -148,14 +148,14 @@ User
 
 | Feature | Functionality | Main contributors |
 | --- | --- | --- |
-| Authentication and profiles | Local login, Google and 42 OAuth, profile data, and online state | `mlaurent`, `jdu` |
-| Morse learning | Character lessons, progress tracking, mastery, and spaced repetition | `mlaurent`, `lifan`, `yren` |
-| Friend system | Search users and send, accept, or block friend requests | `lifan`, `jdu`, `yren` |
-| Private chat | One-to-one conversations with text and Morse transformations | `lifan`, `jdu`, `mlaurent` |
+| Authentication and profiles | Local login, Google and 42 OAuth, profile data | `yren` |
+| Morse learning | Character lessons, progress tracking, mastery, and spaced repetition | `jdu`, `lifan`, `yren` |
+| Friend system | Search users and send, accept friend requests | `jdu`, `lifan`, `yren` |
+| Private chat | One-to-one conversations with text and Morse transformations | all |
 | Internationalization | English, French, and Chinese interface content | `yren` |
-| Game invitations | Invite a friend to a selected radio lobby and accept or decline | `lifan`, `jdu`, `mlaurent` |
-| Radio lobby | Lobby presence, capacity, ready state, and matchmaking queue | `lifan`, `jdu`, `mlaurent` |
-| Multiplayer game | Shared decoding sessions, player progress, scores, and results | `jdu`, `lifan`, `mlaurent` |
+| Game invitations | Invite a friend to a selected radio lobby and accept or decline | all |
+| Radio lobby | Lobby presence, capacity, ready state, and matchmaking queue | all |
+| Multiplayer game | Shared decoding sessions, player progress, scores, and results | all |
 | Real-time events | Socket.IO events for presence, chat, invitations, and games | `mlaurent`, `gustgonz` |
 | Security | WAF filtering, HTTPS, Vault secrets, and security tests | `gustgonz` |
 | Containerized execution | Development and production Compose environments | `gustgonz`, `mlaurent` |
@@ -164,51 +164,40 @@ User
 
 The subject defines Major modules as 2 points and Minor modules as 1 point.
 The first table lists modules that are already implemented or close enough to
-be defended with the current repository. The second table lists modules that
-the team intends to finish before evaluation.
+be defended with the current repository. The second table focuses the final
+week on Socket.IO stabilization, because finishing that layer can unlock
+several Major modules at once instead of splitting the team across many small
+Minor modules.
 
 ### Confirmed Modules
 
 | Module | Type | Points | Status | Justification | Implementation | Contributors |
 | --- | --- | ---: | --- | --- | --- | --- |
-| Use a framework for both the frontend and backend | Major | 2 | Confirmed | Build the application with a structured full-stack framework | Next.js is used for the React frontend and for backend Route Handlers/API routes | `jdu`, `mlaurent`, `lifan`, `yren` |
-| Allow users to interact with other users | Major | 2 | Confirmed | Provide the required social features: chat, profiles, and friends | Users can view profiles, manage friends, and send private chat messages persisted in PostgreSQL | `lifan`, `jdu`, `mlaurent`, `yren` |
-| Standard user management and authentication | Major | 2 | Confirmed | Support user accounts, profile editing, avatars, friends, and online status | NextAuth handles sessions; users can register, log in, edit profile data, upload an avatar, add friends, and see online state | `mlaurent`, `jdu`, `yren`, `lifan` |
-| Implement a complete web-based game | Major | 2 | Confirmed | Add a playable multiplayer browser game with rules, scoring, and results | Radio sessions let at least two users join a Morse decoding match, play timed rounds, submit scores, and view rankings | `jdu`, `lifan`, `mlaurent` |
+| Use a framework for both the frontend and backend | Major | 2 | Confirmed | Build the application with a structured full-stack framework | Next.js is used for the React frontend and for backend Route Handlers/API routes | all |
+| Allow users to interact with other users | Major | 2 | Confirmed | Provide the required social features: chat, profiles, and friends | Users can view profiles, manage friends, and send private chat messages persisted in PostgreSQL | all |
+| Standard user management and authentication | Major | 2 | Confirmed | Support user accounts, profile editing, avatars, friends, and online status | NextAuth handles sessions; users can register, log in, edit profile data, upload an avatar, add friends, and see online state | `mlaurent`, `yren`, `lifan`, `gustgonz` |
+| Implement a complete web-based game | Major | 2 | Confirmed | Add a playable multiplayer browser game with rules, scoring, and results | Radio sessions let at least two users join a Morse decoding match, play timed rounds, submit scores, and view rankings | all |
 | WAF and HashiCorp Vault | Major | 2 | Confirmed | Protect traffic and keep secrets outside the application code | ModSecurity with OWASP CRS filters production traffic; Vault initializes and injects database, authentication, and OAuth secrets | `gustgonz` |
-| Use an ORM for the database | Minor | 1 | Confirmed | Keep database access typed and maintainable | Prisma models, migrations, seed data, and Prisma Client are used across the backend | `lifan`, `mlaurent` |
-| Support multiple languages | Minor | 1 | Confirmed | Provide at least three interface languages | The app includes an i18n provider, language switcher, and English, French, and Chinese dictionaries | `yren`, `jdu`, `lifan` |
-| Implement remote authentication with OAuth 2.0 | Minor | 1 | Confirmed | Allow users to connect through external identity providers | NextAuth supports Google OAuth and a custom 42 OAuth provider, with account linking | `yren`, `mlaurent` |
-| Server-side rendering for improved performance and SEO | Minor | 1 | Confirmed | Render data-backed pages on the server where appropriate | Next.js App Router server components load data for learning, profile, competition, lobby, and game session pages | `jdu`, `lifan`, `mlaurent` |
+| Use an ORM for the database | Minor | 1 | Confirmed | Keep database access typed and maintainable | Prisma models, migrations, seed data, and Prisma Client are used across the backend | `lifan` |
+| Support multiple languages | Minor | 1 | Confirmed | Provide at least three interface languages | The app includes an i18n provider, language switcher, and English, French, and Chinese dictionaries | `yren` |
+| Implement remote authentication with OAuth 2.0 | Minor | 1 | Confirmed | Allow users to connect through external identity providers | NextAuth supports Google OAuth and a custom 42 OAuth provider, with account linking | `yren` |
+| Server-side rendering for improved performance and SEO | Minor | 1 | Confirmed | Render data-backed pages on the server where appropriate | Next.js App Router server components load data for learning, profile, competition, lobby, and game session pages | all |
 
 **Confirmed total: 14 points.**
 
-### Candidate Modules To Finish
+### Final Week Socket.IO Modules To Finish
 
-| Module | Type | Points | Current status | Work needed before evaluation |
-| --- | --- | ---: | --- | --- |
-| Implement real-time features using WebSockets or similar technology | Major | 2 | In progress | Socket.IO is present, but chat, invitation, lobby, and game updates still need reliable event delivery without polling fallbacks |
-| Remote players | Major | 2 | In progress | The radio game can be played by separate users, but gameplay synchronization, reconnection, latency handling, and disconnection behavior need to be reliable |
-| Multiplayer game with more than two players | Major | 2 | In progress | The radio session model supports several ready players, but it must be tested and demonstrated with 3+ simultaneous players |
-| Public API to interact with the database | Major | 2 | Partially implemented | The app has many API routes, but this module still needs API-key protection, rate limiting, public documentation, and a clean external API surface |
-| Complete notification system | Minor | 1 | In progress | Notifications exist for system messages, chat, and invitations, but all creation/update/deletion actions should trigger consistent notifications |
-| Advanced chat features | Minor | 1 | Partially implemented | Chat already has persistence, user profile access, and game invitations; blocking, typing indicators, and read receipts still need to be added |
-| Game statistics and match history | Minor | 1 | Partially implemented | Scores and session players are stored, but user-facing match history, wins/losses, rankings, and achievements need final UI/API work |
-| Game customization options | Minor | 1 | Partially implemented | Radio rooms already provide different WPM settings; this should be expanded into explicit customizable game settings with defaults |
-| Custom-made design system | Minor | 1 | Partially implemented | Shared UI components exist, but the subject requires at least 10 reusable components plus a documented palette, typography, and icon usage |
-| Advanced search | Minor | 1 | Not complete | User search exists, but the module requires filters, sorting, and pagination |
-| File upload and management system | Minor | 1 | Not complete | Avatar upload exists, but the module requires managed uploads with validation, preview, access control, progress, and deletion |
-| Support for additional browsers | Minor | 1 | Needs validation | The app should be tested and documented on at least two additional browsers such as Firefox, Safari, or Edge |
-| Progressive Web App | Minor | 1 | Not complete | Add manifest, installability, service worker behavior, and offline support |
-| Gamification system | Minor | 1 | Partially implemented | Learning levels and progress exist; add at least three explicit reward mechanics such as badges, XP, achievements, leaderboards, or daily challenges |
-| Complete accessibility compliance | Major | 2 | Needs audit | Requires WCAG 2.1 AA work: keyboard navigation, screen-reader support, focus states, semantic checks, and accessibility testing |
+| Module | Type | Points | Current status | Why this is realistic in one week | Work needed before evaluation |
+| --- | --- | ---: | --- | --- | --- |
+| Implement real-time features using WebSockets or similar technology | Major | 2 | In progress | Socket.IO server, client provider, and event hooks already exist | Stabilize real-time delivery for chat, game invitations, lobby presence, ready state, and game updates; reduce or clearly justify polling fallbacks |
+| Remote players | Major | 2 | In progress | The radio game already supports separate users and shared session data | Make two users reliably join from different browsers, receive live state updates, play the same session, and handle disconnect/reconnect cases cleanly |
+| Multiplayer game with more than two players | Major | 2 | In progress | The radio session and ready queue models already support multiple players | Test and demonstrate 3+ simultaneous players in one radio session with synchronized start, progress, scoring, and final ranking |
 
-**Potential additional total if all candidate modules are completed: 21 points.**
+**Final-week target additional raw total: 6 points.**
 
-**Potential raw total: 35 points.** The subject's bonus section says extra
-modules beyond the required 14 points may be considered up to a maximum of 5
-bonus points, so the practical evaluated total may be capped at **19 points**
-depending on how the evaluation applies that bonus limit.
+**Target raw total: 20 points** = 14 confirmed points + 6 Socket.IO-focused
+final-week points. If the evaluation caps extra modules beyond the required 14
+points at 5 bonus points, the practical evaluated target remains **19 points**.
 
 See [CYBERSECURITY.md](CYBERSECURITY.md) for the security module architecture,
 configuration, and test commands.
