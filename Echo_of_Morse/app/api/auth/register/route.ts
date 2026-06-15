@@ -20,6 +20,11 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Name required" }, { status: 400 });
 		}
 
+		const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailPattern.test(email)) {
+			return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+		}
+
 		//le mot de passe contient moins de 8 caractères
 		if (password !== confirmPassword) {
 			return NextResponse.json({ error: "Passwords do not match" }, { status: 400 });

@@ -43,10 +43,17 @@ export default function RegisterForm() {
       return t.emailRequired;
     }
 
+	//[^\s@]+ ==> str avant @, avoir au moins 1 char, non espace et @
+	const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	//test() ==> fonction viens de la regle, pour verifier si correspond avec la regle
+	if (!emailPattern.test(formData.email.trim())) {
+		return t.emailInvalid;
+	}
+
     if (!formData.password) {
       return t.passwordRequired;
     }
-
+	
     if (formData.password.length < 8) {
       return t.passwordTooShort;
     }
@@ -54,6 +61,7 @@ export default function RegisterForm() {
     if (formData.password !== formData.confirmPassword) {
       return t.passwordsDoNotMatch;
     }
+
 
     return "";
   }
@@ -145,7 +153,7 @@ export default function RegisterForm() {
                 {t.email} <span className={styles.required}>*</span>
               </>
             }
-            type="email"
+            type="text"
             value={formData.email}
             onChange={(event) => updateField("email", event.target.value)}
             placeholder={t.emailPlaceholder}

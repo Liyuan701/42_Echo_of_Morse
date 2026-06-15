@@ -66,6 +66,8 @@ const zh = {
 
 		showPassword: "显示",
 		hidePassword: "隐藏",
+
+		emailInvalid: "邮箱格式不正确。",
 	},
 
 	layout: {
@@ -328,8 +330,8 @@ const zh = {
 		submitting: "提交中...",
 		loginButton: "登录",
 
-		loginWithGoogle: "使用 Google 登录",
-		loginWithFortyTwo: "使用 42 登录",
+		loginWithGoogle: "Google 登录",
+		loginWithFortyTwo: "42 登录",
 
 		noAccount: "还没有账号？",
 		registerHere: "点击这里注册",

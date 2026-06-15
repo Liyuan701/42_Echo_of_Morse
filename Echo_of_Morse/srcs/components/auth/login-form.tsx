@@ -75,7 +75,7 @@ export default function LoginForm() {
 	}
 	
 	//redirection après login réussi
-	setSuccess("t.success");
+	setSuccess(t.success);
 	router.push("/"); //redirection vers dashboard après login réussi
 	router.refresh();
 	//----------------- yren -----------------

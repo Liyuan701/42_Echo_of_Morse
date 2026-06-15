@@ -66,6 +66,8 @@ const en = {
 
 		showPassword: "Show",
 		hidePassword: "Hide",
+		
+		emailInvalid: "Invalid email format.",
 	},
 
 	layout: {

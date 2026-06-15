@@ -66,6 +66,8 @@ const fr = {
 
 		showPassword: "Afficher",
 		hidePassword: "Masquer",
+
+		emailInvalid: "Format d'email invalide.",
 	},
 
 	layout: {
