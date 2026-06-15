@@ -159,6 +159,8 @@ export default function RegisterForm() {
             }
             type="password"
             showPasswordToggle
+			showPasswordLabel={t.showPassword}
+			hidePasswordLabel={t.hidePassword}
             value={formData.password}
             onChange={(event) => updateField("password", event.target.value)}
             placeholder={t.passwordPlaceholder}
@@ -169,6 +171,8 @@ export default function RegisterForm() {
             label={t.confirmPassword}
             type="password"
             showPasswordToggle
+			showPasswordLabel={t.showPassword}
+			hidePasswordLabel={t.hidePassword}
             value={formData.confirmPassword}
             onChange={(event) =>
               updateField("confirmPassword", event.target.value)

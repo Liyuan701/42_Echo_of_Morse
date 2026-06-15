@@ -40,6 +40,7 @@ const zh = {
 		updateProfileError: "更新个人资料时出现错误。",
 	},
 
+	//=========================================== register =========================================== 
 	register: {
 		title: "注册",
 		description: "创建你的账号以使用平台功能。",
@@ -62,6 +63,9 @@ const zh = {
 		success: "账号创建成功，正在跳转到登录页面...",
 		genericError: "注册时出现错误，请稍后再试。",
 		usernameOrEmailInUse: "用户名或邮箱已被使用。",
+
+		showPassword: "显示",
+		hidePassword: "隐藏",
 	},
 
 	layout: {
@@ -303,6 +307,37 @@ const zh = {
 		pageTitle: "聊天",
 		pageDescription: "这个页面将用于实时聊天和交流功能。",
 	},
+
+	//=========================================== login =========================================== 
+	login: {
+		title: "登录",
+		description: "登录以继续使用你的账号。",
+
+		email: "邮箱",
+		password: "密码",
+		emailPlaceholder: "请输入邮箱",
+		passwordPlaceholder: "请输入密码",
+
+		emailRequired: "邮箱不能为空。",
+		passwordRequired: "密码不能为空。",
+
+		invalidCredentials: "邮箱或密码不正确。",
+		success: "登录成功。",
+		genericError: "登录时出现错误。",
+
+		submitting: "提交中...",
+		loginButton: "登录",
+
+		loginWithGoogle: "使用 Google 登录",
+		loginWithFortyTwo: "使用 42 登录",
+
+		noAccount: "还没有账号？",
+		registerHere: "点击这里注册",
+
+		showPassword: "显示",
+		hidePassword: "隐藏",
+	},
+
 };
 
 export default zh;

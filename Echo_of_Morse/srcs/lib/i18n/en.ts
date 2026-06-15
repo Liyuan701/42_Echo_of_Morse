@@ -40,6 +40,7 @@ const en = {
 		updateProfileError: "Something went wrong while updating profile.",
 	},
 
+	//=========================================== register =========================================== 
 	register: {
 		title: "Register",
 		description: "Create your account to access the platform.",
@@ -62,6 +63,9 @@ const en = {
 		success: "Account created successfully. Redirecting to login...",
 		genericError: "Something went wrong during registration.",
 		usernameOrEmailInUse: "Username or email already in use.",
+
+		showPassword: "Show",
+		hidePassword: "Hide",
 	},
 
 	layout: {
@@ -302,6 +306,38 @@ const en = {
 		pageTitle: "Chat",
 		pageDescription: "This page will host real-time chat and communication features.",
 	},
+
+	//=========================================== login =========================================== 
+	login: {
+		title: "Login",
+		description: "Sign in to continue to your account.",
+
+		email: "Email",
+		password: "Password",
+		emailPlaceholder: "Enter your email",
+		passwordPlaceholder: "Enter your password",
+
+		emailRequired: "Email is required.",
+		passwordRequired: "Password is required.",
+
+		invalidCredentials: "Invalid email or password.",
+		genericError: "Something went wrong during login.",
+		success: "Login successful.",
+
+		submitting: "Submitting...",
+		loginButton: "Login",
+
+		loginWithGoogle: "Login with Google",
+		loginWithFortyTwo: "Login with 42",
+
+		noAccount: "Don't have an account?",
+		registerHere: "Register here",
+
+		showPassword: "Show",
+		hidePassword: "Hide",
+	},
+
+
 };
 
 export default en;
