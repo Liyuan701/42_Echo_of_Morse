@@ -22,10 +22,25 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+
+    if (status === "unauthenticated") {
+      const socketInstance = getSocket();
+      if (socketInstance?.connected) {
+        socketInstance.disconnect();
+      }
+      setSocket(null);
+      setIsConnected(false);
+      return;
+    }
+
     const socketInstance = getSocket();
+    if (!socketInstance) {
+      return;
+    }
+
     const userId = session?.user?.id;
 
-    if (!socketInstance) {
+    if (status === "loading") {
       return;
     }
 
@@ -36,13 +51,24 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    socketInstance.disconnect();
     socketInstance.auth = {
       userId,
     };
 
+    if (!socketInstance.connected && !socketInstance.active) {
+      socketInstance.connect();
+    }
+
+    console.log(
+      "CONNECTING",
+      session.user.id,
+      socketInstance.connected,
+      socketInstance.id
+    );
+
     setSocket(socketInstance);
-    
+    setIsConnected(socketInstance.connected);
+
     const handleConnect = () => {
       console.log("CONNECTED", socketInstance.id);
       setIsConnected(true);
@@ -55,10 +81,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     socketInstance.on("connect", handleConnect);
     socketInstance.on("disconnect", handleDisconnect);
-    socketInstance.connect();
 
-    // heart beat timer  (60 seconds)
-    // Keep database presence alive while this authenticated socket is active.
     const presenceHeartbeat = window.setInterval(() => {
       if (!socketInstance.connected) {
         return;
@@ -80,7 +103,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       window.clearInterval(presenceHeartbeat);
       socketInstance.off("connect", handleConnect);
       socketInstance.off("disconnect", handleDisconnect);
-      socketInstance.disconnect();
     };
   }, [status, session?.user?.id]);
 
