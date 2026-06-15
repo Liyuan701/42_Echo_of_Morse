@@ -7,16 +7,21 @@ import { prisma } from "@/server/prisma";
 import { cookies } from "next/headers";
 
 function getOAuthLink() {
-  const cookieStore = cookies();
+	try {
+		const cookieStore = cookies();
 
-  const provider = cookieStore.get("oauth_link_provider")?.value;
-  const userId = cookieStore.get("oauth_link_user_id")?.value;
+		const provider = cookieStore.get("oauth_link_provider")?.value;
+		const userId = cookieStore.get("oauth_link_user_id")?.value;
 
-  if (!provider || !userId) {
-    return null;
-  }
+		if (!provider || !userId) {
+			return null;
+		}
 
-  return { provider, userId };
+		return { provider, userId };
+	} catch (error) {
+		console.error("Error: auth -> cookies(): ", error);
+		return null;
+	}
 }
 
 //garder tous, mais modifier que linkAcount pour connection avec 42
@@ -59,8 +64,10 @@ export const authOptions: NextAuthOptions = {
 				if (!credentials?.email || !credentials?.password) //.? ==> si cette valeur est null ou undefined
 					return null;
 
+				const email = credentials.email.trim().toLowerCase();
+
 				//cherche dans la base de donnes un user avec cet email
-				const user = await prisma.user.findUnique({ where: { email: credentials.email }, });
+				const user = await prisma.user.findUnique({ where: { email }, });
 				if (!user || !user.passwordHash)
 					return null;
 
@@ -204,19 +211,6 @@ export const authOptions: NextAuthOptions = {
 		},
 	},
 
-	//============================ key = events ============================
-	events: {
-		// Apres une liaison OAuth reussie, supprimer les cookies temporaires utilises pour identifier le mode liaison.
-		async linkAccount({ account }) {
-			const link = getOAuthLink();
-
-			if (link?.provider === account.provider) {
-				const cookieStore = cookies();
-				cookieStore.delete("oauth_link_provider");
-				cookieStore.delete("oauth_link_user_id");
-			}
-		},
-	},
 	//============================ key = pages ============================
 	// personnalise les pages utilisees par NextAuth
 	pages: {

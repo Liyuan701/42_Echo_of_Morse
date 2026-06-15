@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-//noter sur cookie pour dire qu'on veut lier avec provider
+//* noter sur cookie pour dire qu'on veut lier avec provider
+
+//provider autorise
 const ALLOWED_PROVIDERS = ["google", "42-school"];
 
 export async function POST(request: NextRequest) {
+
+	//------------------------- verifier si connecte -------------------------
+	// verifie cote serveur si l'utilisateur est connecte, puis retourne sa session
 	const session = await getServerSession(authOptions);
 	const userId = (session?.user as { id?: string } | undefined)?.id;
 
@@ -13,14 +18,18 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
+	//------------------------- verifier le type de provider -------------------------
 	//lire par frontend --> google/42
 	//{ provider } --> prendre body.provider
 	const { provider } = (await request.json()) as { provider?: string };
 
+	//------------------------- Response -------------------------
+	// ----- 1. erreur -----
 	if (!provider || !ALLOWED_PROVIDERS.includes(provider)) {
 		return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
 	}
 
+	// ----- 2. ok -----
 	const response = NextResponse.json({ ok: true });
 
 	//faire cookies

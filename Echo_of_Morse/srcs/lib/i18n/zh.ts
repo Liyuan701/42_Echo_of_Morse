@@ -40,6 +40,7 @@ const zh = {
 		updateProfileError: "更新个人资料时出现错误。",
 	},
 
+	//=========================================== register =========================================== 
 	register: {
 		title: "注册",
 		description: "创建你的账号以使用平台功能。",
@@ -62,6 +63,11 @@ const zh = {
 		success: "账号创建成功，正在跳转到登录页面...",
 		genericError: "注册时出现错误，请稍后再试。",
 		usernameOrEmailInUse: "用户名或邮箱已被使用。",
+
+		showPassword: "显示",
+		hidePassword: "隐藏",
+
+		emailInvalid: "邮箱格式不正确。",
 	},
 
 	layout: {
@@ -215,6 +221,11 @@ const zh = {
 		play: "练习",
 		reviewCompletedLevels: "复习已完成等级",
 		playDescription: "随机练习一个你已经完成的等级。",
+		//!!！ yren： review section
+		review: "复习",
+		reviewDueCharacters: "复习到期字符",
+		reviewDescription: "根据复习计划和较弱的学习记录，练习优先字符。",
+		startReview: "开始复习",
 
 		
 		//------------------ app/learning/levels/page.tsx ------------------
@@ -235,6 +246,25 @@ const zh = {
 		locked: "未解锁",
 		startPractice: "开始练习",
 
+	},
+
+	//!!! yren: review section.
+	learningReview: {
+		title: "间隔复习",
+		loading: "正在准备复习题目...",
+		unavailable: "暂时无法复习",
+		loadError: "无法加载复习内容。",
+		saveError: "无法保存复习结果。",
+		tryAgain: "重试",
+		noProgressTitle: "暂时没有可复习的字符",
+		noProgressDescription: "请先完成一些等级练习，系统才能建立你的复习计划。",
+		openLevels: "打开等级列表",
+		sessionSummary: "目前有 {dueCount} 个到期字符，本次复习包含 {reviewedCharacters} 个优先字符。",
+		reviewComplete: "复习完成",
+		reviewResultSummary: "你答对了 {correctCount} / {questionCount} 题。",
+		accuracy: "准确率",
+		reviewAgain: "再次复习",
+		backToLearning: "返回学习主页",
 	},
 
 	//=========================================== chat =========================================== 
@@ -303,7 +333,37 @@ const zh = {
 		pageTitle: "聊天",
 		pageDescription: "这个页面将用于实时聊天和交流功能。",
 	},
+
+	//=========================================== login =========================================== 
+	login: {
+		title: "登录",
+		description: "登录以继续使用你的账号。",
+
+		email: "邮箱",
+		password: "密码",
+		emailPlaceholder: "请输入邮箱",
+		passwordPlaceholder: "请输入密码",
+
+		emailRequired: "邮箱不能为空。",
+		passwordRequired: "密码不能为空。",
+
+		invalidCredentials: "邮箱或密码不正确。",
+		success: "登录成功。",
+		genericError: "登录时出现错误。",
+
+		submitting: "提交中...",
+		loginButton: "登录",
+
+		loginWithGoogle: "Google 登录",
+		loginWithFortyTwo: "42 登录",
+
+		noAccount: "还没有账号？",
+		registerHere: "点击这里注册",
+
+		showPassword: "显示",
+		hidePassword: "隐藏",
+	},
+
 };
 
 export default zh;
-

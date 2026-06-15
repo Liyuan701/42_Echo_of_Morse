@@ -40,6 +40,7 @@ const fr = {
 		updateProfileError: "Une erreur est survenue pendant la mise à jour du profil.",
 	},
 
+	//=========================================== register =========================================== 
 	register: {
 		title: "Inscription",
 		description: "Créez votre compte pour accéder à la plateforme.",
@@ -62,6 +63,11 @@ const fr = {
 		success: "Compte créé avec succès. Redirection vers la connexion...",
 		genericError: "Une erreur est survenue lors de l'inscription.",
 		usernameOrEmailInUse: "Le nom d'utilisateur ou l'email est déjà utilisé.",
+
+		showPassword: "Afficher",
+		hidePassword: "Masquer",
+
+		emailInvalid: "Format d'email invalide.",
 	},
 
 	layout: {
@@ -215,6 +221,11 @@ const fr = {
 		play: "Jouer",
 		reviewCompletedLevels: "Réviser les niveaux terminés",
 		playDescription: "Pratiquez un niveau déjà terminé au hasard.",
+		//!!! yren: review section
+		review: "Révision",
+		reviewDueCharacters: "Réviser les caractères prévus",
+		reviewDescription: "Travaillez les caractères sélectionnés selon votre calendrier de révision et vos résultats les plus faibles.",
+		startReview: "Commencer la révision",
 
 		
 		//------------------ app/learning/levels/page.tsx ------------------
@@ -234,6 +245,25 @@ const fr = {
 		review: "Révision",
 		locked: "Verrouillé",
 		startPractice: "Commencer",
+	},
+
+	//!!! yren: review section
+	learningReview: {
+		title: "Révision espacée",
+		loading: "Préparation de votre session de révision...",
+		unavailable: "Révision indisponible",
+		loadError: "Impossible de charger votre session de révision.",
+		saveError: "Impossible d'enregistrer vos résultats.",
+		tryAgain: "Réessayer",
+		noProgressTitle: "Aucun caractère à réviser",
+		noProgressDescription: "Terminez d'abord quelques exercices afin de créer votre calendrier de révision.",
+		openLevels: "Ouvrir les niveaux",
+		sessionSummary: "{dueCount} caractères sont à réviser. Cette session couvre {reviewedCharacters} caractères prioritaires.",
+		reviewComplete: "Révision terminée",
+		reviewResultSummary: "Vous avez répondu correctement à {correctCount} question(s) sur {questionCount}.",
+		accuracy: "Précision",
+		reviewAgain: "Réviser à nouveau",
+		backToLearning: "Retour à l'apprentissage",
 	},
 
 	//=========================================== chat =========================================== 
@@ -303,6 +333,35 @@ const fr = {
 		pageDescription: "Cette page accueillera le chat en temps reel et les fonctions de communication.",
 	},
 
+	//=========================================== login =========================================== 
+	login: {
+		title: "Connexion",
+		description: "Connectez-vous pour continuer vers votre compte.",
+		
+		email: "Email",
+		password: "Mot de passe",
+		emailPlaceholder: "Entrez votre email",
+		passwordPlaceholder: "Entrez votre mot de passe",
+		
+		emailRequired: "L'email est requis.",
+		passwordRequired: "Le mot de passe est requis.",
+		
+		invalidCredentials: "Email ou mot de passe incorrect.",
+		genericError: "Une erreur est survenue pendant la connexion.",
+		success: "Connexion réussie.",
+		
+		submitting: "Envoi en cours...",
+		loginButton: "Connexion",
+		
+		loginWithGoogle: "Connexion avec Google",
+		loginWithFortyTwo: "Connexion avec 42",
+		
+		noAccount: "Vous n'avez pas de compte ?",
+		registerHere: "Inscrivez-vous ici",
+
+		showPassword: "Afficher",
+		hidePassword: "Masquer",
+	},
 
 };
 

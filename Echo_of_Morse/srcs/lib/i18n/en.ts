@@ -40,6 +40,7 @@ const en = {
 		updateProfileError: "Something went wrong while updating profile.",
 	},
 
+	//=========================================== register =========================================== 
 	register: {
 		title: "Register",
 		description: "Create your account to access the platform.",
@@ -62,6 +63,11 @@ const en = {
 		success: "Account created successfully. Redirecting to login...",
 		genericError: "Something went wrong during registration.",
 		usernameOrEmailInUse: "Username or email already in use.",
+
+		showPassword: "Show",
+		hidePassword: "Hide",
+		
+		emailInvalid: "Invalid email format.",
 	},
 
 	layout: {
@@ -215,6 +221,11 @@ const en = {
 		play: "Play",
 		reviewCompletedLevels: "Review completed levels",
 		playDescription: "Practice a random level you have already completed.",
+		//!!! yren: review section
+		review: "Review",
+		reviewDueCharacters: "Review due characters",
+		reviewDescription: "Practice characters selected from your review schedule and weaker results.",
+		startReview: "Start review",
 
 		
 		//------------------ app/learning/levels/page.tsx ------------------
@@ -234,6 +245,25 @@ const en = {
 		review: "Review",
 		locked: "Locked",
 		startPractice: "Start practice",
+	},
+
+	//!!! yren: review section
+	learningReview: {
+		title: "Spaced review",
+		loading: "Preparing your review session...",
+		unavailable: "Review unavailable",
+		loadError: "Unable to load your review session.",
+		saveError: "Unable to save your review results.",
+		tryAgain: "Try again",
+		noProgressTitle: "No characters to review yet",
+		noProgressDescription: "Complete some level practice first so the review system can build your schedule.",
+		openLevels: "Open levels",
+		sessionSummary: "{dueCount} characters are due. This session covers {reviewedCharacters} priority characters.",
+		reviewComplete: "Review complete",
+		reviewResultSummary: "You answered {correctCount} of {questionCount} questions correctly.",
+		accuracy: "Accuracy",
+		reviewAgain: "Review again",
+		backToLearning: "Back to learning",
 	},
 
 	//=========================================== chat =========================================== 
@@ -302,6 +332,38 @@ const en = {
 		pageTitle: "Chat",
 		pageDescription: "This page will host real-time chat and communication features.",
 	},
+
+	//=========================================== login =========================================== 
+	login: {
+		title: "Login",
+		description: "Sign in to continue to your account.",
+
+		email: "Email",
+		password: "Password",
+		emailPlaceholder: "Enter your email",
+		passwordPlaceholder: "Enter your password",
+
+		emailRequired: "Email is required.",
+		passwordRequired: "Password is required.",
+
+		invalidCredentials: "Invalid email or password.",
+		genericError: "Something went wrong during login.",
+		success: "Login successful.",
+
+		submitting: "Submitting...",
+		loginButton: "Login",
+
+		loginWithGoogle: "Login with Google",
+		loginWithFortyTwo: "Login with 42",
+
+		noAccount: "Don't have an account?",
+		registerHere: "Register here",
+
+		showPassword: "Show",
+		hidePassword: "Hide",
+	},
+
+
 };
 
 export default en;
