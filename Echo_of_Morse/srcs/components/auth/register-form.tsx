@@ -73,35 +73,35 @@ export default function RegisterForm() {
     try {
       setIsSubmitting(true);
 	
-	//----------------- yren -----------------
-	// JSON.stringify --> convertit l'objet JS en JSON
-	const response = await fetch("/api/auth/register", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({
-			username: formData.username,
-			email: formData.email,
-			password: formData.password,
-			confirmPassword: formData.confirmPassword,
-		}),
-		});
+		//----------------- yren -----------------
+		// JSON.stringify --> convertit l'objet JS en JSON
+		const response = await fetch("/api/auth/register", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				username: formData.username.trim(),
+				email: formData.email.trim().toLowerCase(),
+				password: formData.password,
+				confirmPassword: formData.confirmPassword,
+			}),
+			});
 
-		const data = await response.json();
+			const data = await response.json();
 
-	if (!response.ok) {
-		if (data.errorCode === "USERNAME_OR_EMAIL_IN_USE") {
-			setError(t.usernameOrEmailInUse);
+		if (!response.ok) {
+			if (data.errorCode === "USERNAME_OR_EMAIL_IN_USE") {
+				setError(t.usernameOrEmailInUse);
+				return;
+			}
+
+			setError(t.genericError);
 			return;
 		}
 
-		setError(t.genericError);
-		return;
-	}
+			setSuccess(t.success);
 
-		setSuccess(t.success);
-
-		setTimeout(() => {router.push("/login");}, 1500);
-	//----------------- yren -----------------
+			setTimeout(() => {router.push("/login");}, 1500);
+		//----------------- yren -----------------
 	
       setFormData({
         username: "",
@@ -110,7 +110,7 @@ export default function RegisterForm() {
         confirmPassword: "",
       });
     } catch (submitError) {
-      console.error(submitError);
+      console.error("Error form register: ", submitError);
       setError(t.genericError);
     } finally {
       setIsSubmitting(false);

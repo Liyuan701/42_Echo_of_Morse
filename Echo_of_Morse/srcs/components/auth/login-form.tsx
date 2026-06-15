@@ -62,7 +62,7 @@ export default function LoginForm() {
 	//----------------- yren -----------------
 	//envoyer au auth API route pour vérifier les credentials
 	const result = await signIn("credentials", {
-		email: formData.email,
+		email: formData.email.trim().toLowerCase(),
 		password: formData.password,
 		redirect: false, //change pas lorsque login réussi
 	});

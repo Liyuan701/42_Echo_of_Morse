@@ -19,7 +19,7 @@ function getOAuthLink() {
 
 		return { provider, userId };
 	} catch (error) {
-		console.error("Error: auth -> cookies()", error);
+		console.error("Error: auth -> cookies(): ", error);
 		return null;
 	}
 }
@@ -64,8 +64,10 @@ export const authOptions: NextAuthOptions = {
 				if (!credentials?.email || !credentials?.password) //.? ==> si cette valeur est null ou undefined
 					return null;
 
+				const email = credentials.email.trim().toLowerCase();
+
 				//cherche dans la base de donnes un user avec cet email
-				const user = await prisma.user.findUnique({ where: { email: credentials.email }, });
+				const user = await prisma.user.findUnique({ where: { email }, });
 				if (!user || !user.passwordHash)
 					return null;
 
