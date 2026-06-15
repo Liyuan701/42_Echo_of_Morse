@@ -221,6 +221,11 @@ const fr = {
 		play: "Jouer",
 		reviewCompletedLevels: "Réviser les niveaux terminés",
 		playDescription: "Pratiquez un niveau déjà terminé au hasard.",
+		//!!! yren: review section
+		review: "Révision",
+		reviewDueCharacters: "Réviser les caractères prévus",
+		reviewDescription: "Travaillez les caractères sélectionnés selon votre calendrier de révision et vos résultats les plus faibles.",
+		startReview: "Commencer la révision",
 
 		
 		//------------------ app/learning/levels/page.tsx ------------------
@@ -240,6 +245,25 @@ const fr = {
 		review: "Révision",
 		locked: "Verrouillé",
 		startPractice: "Commencer",
+	},
+
+	//!!! yren: review section
+	learningReview: {
+		title: "Révision espacée",
+		loading: "Préparation de votre session de révision...",
+		unavailable: "Révision indisponible",
+		loadError: "Impossible de charger votre session de révision.",
+		saveError: "Impossible d'enregistrer vos résultats.",
+		tryAgain: "Réessayer",
+		noProgressTitle: "Aucun caractère à réviser",
+		noProgressDescription: "Terminez d'abord quelques exercices afin de créer votre calendrier de révision.",
+		openLevels: "Ouvrir les niveaux",
+		sessionSummary: "{dueCount} caractères sont à réviser. Cette session couvre {reviewedCharacters} caractères prioritaires.",
+		reviewComplete: "Révision terminée",
+		reviewResultSummary: "Vous avez répondu correctement à {correctCount} question(s) sur {questionCount}.",
+		accuracy: "Précision",
+		reviewAgain: "Réviser à nouveau",
+		backToLearning: "Retour à l'apprentissage",
 	},
 
 	//=========================================== chat =========================================== 

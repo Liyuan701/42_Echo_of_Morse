@@ -1,4 +1,4 @@
-const MORSE: Record<string, string> = {
+export const MORSE: Readonly<Record<string, string>> = {
   A: ".-",
   B: "-...",
   C: "-.-.",
@@ -92,4 +92,8 @@ export function decode(morse: string): string {
 
 export function isMorseInput(text: string): boolean {
   return /^[.\-/\s]+$/.test(text.trim());
+}
+
+export function getMorseForCharacter(character: string): string | null {
+  return MORSE[character.toUpperCase()] ?? null;
 }

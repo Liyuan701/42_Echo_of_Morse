@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui";
-import { RADIO_LOBBY_MAX_USERS, type RadioConfig } from "@/types/competition";
+import { RADIO_LOBBY_MAX_USERS } from "@/config/competition";
+import type { RadioConfig } from "@/types/competition";
 import styles from "@/../app/competition/competition.module.css";
 
 type RadioWaveCardProps = {

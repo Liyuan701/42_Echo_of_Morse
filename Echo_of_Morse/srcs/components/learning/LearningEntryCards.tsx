@@ -1,3 +1,7 @@
+//!!! yren
+// 按之前的模块修改。
+
+
 "use client";
 import { useI18n } from "@/lib/i18n";
 
@@ -35,16 +39,15 @@ export default function LearningEntryCards({
 
       <article className={styles.entryCard}>
         <div>
-          <p className={styles.cardLabel}>{t.play}</p>
+          <p className={styles.cardLabel}>{t.review}</p>
 
-          <h2 className={styles.entryTitle}>{t.reviewCompletedLevels}</h2>
+          <h2 className={styles.entryTitle}>{t.reviewDueCharacters}</h2>
 
-          <p className={styles.cardText}>
-            {t.playDescription}
-          </p>
+          <p className={styles.cardText}>{t.reviewDescription}</p>
         </div>
-        <Link className={styles.primaryButton} href="/learning/play">
-          {t.play}
+
+        <Link className={styles.primaryButton} href="/learning/review">
+          {t.startReview}
         </Link>
       </article>
     </section>
