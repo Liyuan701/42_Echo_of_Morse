@@ -53,7 +53,7 @@ export type SystemMessage = {
   body: string;
   createdAt: string;
   isRead: boolean;
-  kind?: "info" | "game-invitation";
+  kind?: "info" | "game-invitation" | "join-lobby";
   invitationId?: string;
   fromUserId?: string;
   radioId?: string;

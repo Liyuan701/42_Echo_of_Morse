@@ -64,19 +64,60 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     );
   }
 
-  // if have multiple invitation, change it to declined.
+  // now, decline -> change invitation status, creat two sys messages.
   if (body.action === "decline") {
-    const declined = await prisma.gameInvitation.update({
-      where: { id: invitation.id },
-      data: { status: "DECLINED" },
-      include: {
-        radioRoom: {
-          select: {
-            radioId: true,
-            name: true,
+    const declined = await prisma.$transaction(async (transaction) => {
+      const updated = await transaction.gameInvitation.update({
+        where: { id: invitation.id },
+        data: { status: "DECLINED" },
+        include: {
+          fromUser: {
+            select: { username: true },
+          },
+          toUser: {
+            select: { username: true },
+          },
+          radioRoom: {
+            select: {
+              radioId: true,
+              name: true,
+            },
           },
         },
-      },
+      });
+
+      await transaction.systemMessage.createMany({
+        data: [
+          {
+            userId: updated.toUserId,
+            title: "Game invitation declined",
+            body: `You declined ${updated.fromUser.username}'s invitation to ${
+              updated.radioRoom?.name ?? "a radio lobby"
+            }.`,
+            isRead: true,
+            kind: "game-invitation",
+            invitationId: updated.id,
+            fromUserId: updated.fromUserId,
+            radioId: updated.radioRoom?.radioId ?? null,
+            actionStatus: "declined",
+          },
+          {
+            userId: updated.fromUserId,
+            title: "Game invitation declined",
+            body: `${updated.toUser.username} declined your invitation to ${
+              updated.radioRoom?.name ?? "a radio lobby"
+            }.`,
+            isRead: false,
+            kind: "game-invitation",
+            invitationId: updated.id,
+            fromUserId: updated.toUserId,
+            radioId: updated.radioRoom?.radioId ?? null,
+            actionStatus: "declined",
+          },
+        ],
+      });
+
+      return updated;
     });
 
     return NextResponse.json({
@@ -98,6 +139,12 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       const freshInvitation = await transaction.gameInvitation.findUnique({
         where: { id: invitation.id },
         include: {
+          fromUser: {
+            select: { username: true },
+          },
+          toUser: {
+            select: { username: true },
+          },
           radioRoom: {
             include: {
               _count: {
@@ -174,27 +221,38 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       });
 
       // Accept and join the lobby.
-      await transaction.radioLobbyPresence.upsert({
-        where: {
-          userId_roomId: {
+      // The sender is not auto-joined when the invitation is sent.
+      // After the receiver accepts, this actionable message lets the sender
+      // explicitly join the lobby.
+      await transaction.radioLobbyPresence.createMany({
+        data: [
+          {
             userId,
             roomId: freshInvitation.radioRoom.id,
           },
-        },
-        create: {
-          userId,
-          roomId: freshInvitation.radioRoom.id,
-          status: "IDLE",
-        },
-        update: {
-          status: "IDLE",
-        },
+        ],
+        skipDuplicates: true,
       });
 
-      return transaction.gameInvitation.update({
+      await transaction.radioLobbyPresence.updateMany({
+        where: {
+          userId,
+          roomId: freshInvitation.radioRoom.id,
+          status: { not: "PLAYING" },
+        },
+        data: { status: "IDLE" },
+      });
+
+      const updated = await transaction.gameInvitation.update({
         where: { id: freshInvitation.id },
         data: { status: "ACCEPTED" },
         include: {
+          fromUser: {
+            select: { username: true },
+          },
+          toUser: {
+            select: { username: true },
+          },
           radioRoom: {
             select: {
               radioId: true,
@@ -203,6 +261,39 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
           },
         },
       });
+
+      await transaction.systemMessage.createMany({
+        data: [
+          {
+            userId: updated.toUserId,
+            title: "Game invitation accepted",
+            body: `You accepted ${updated.fromUser.username}'s invitation to ${
+              updated.radioRoom?.name ?? "a radio lobby"
+            }.`,
+            isRead: true,
+            kind: "game-invitation",
+            invitationId: updated.id,
+            fromUserId: updated.fromUserId,
+            radioId: updated.radioRoom?.radioId ?? null,
+            actionStatus: "accepted",
+          },
+          {
+            userId: updated.fromUserId,
+            title: "Game invitation accepted",
+            body: `${updated.toUser.username} accepted your invitation to ${
+              updated.radioRoom?.name ?? "a radio lobby"
+            }. Join the lobby when you are ready.`,
+            isRead: false,
+            kind: "join-lobby",
+            invitationId: updated.id,
+            fromUserId: updated.toUserId,
+            radioId: updated.radioRoom?.radioId ?? null,
+            actionStatus: "idle",
+          },
+        ],
+      });
+
+      return updated;
     });
 
     return NextResponse.json({

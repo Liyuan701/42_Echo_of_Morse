@@ -181,6 +181,9 @@ model Message {
 
 // Server-generated notification delivered to a single user's inbox.
 // Used for system alerts, match results, and admin messages.
+// Invitation id, radio id, and UI action status.
+// Kind (message type: game invite/join-lobby/ info)
+// Actionstatus : idle/ accepted/ declined/ error/ updating
 model SystemMessage {
   id String @id @default(cuid())
 
@@ -190,6 +193,12 @@ model SystemMessage {
   title  String
   body   String
   isRead Boolean @default(false)
+
+  kind         String?
+  invitationId String?
+  fromUserId   String?
+  radioId      String?
+  actionStatus String?
 
   createdAt DateTime @default(now())
 }

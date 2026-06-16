@@ -182,10 +182,6 @@ export function useGameInvitationActions() {
       if (action === "accept" && redirectOnAccept) {
         const radioId = body.radio?.radioId ?? fallbackRadioId;
 
-        // ! liyuan, TODO backend:
-        // Accepting an invitation should also add the invited user to the target
-        // radio lobby on the backend before this redirect.
-        // The frontend can redirect, but it cannot guarantee lobby presence.
         if (radioId) {
           router.push(`/competition/radio/${radioId}`);
         }

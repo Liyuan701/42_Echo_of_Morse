@@ -88,22 +88,24 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ error: "Radio room is full" }, { status: 409 });
   }
 
-  await prisma.$transaction([
-    // upsert = create if it does not exist, otherwise update.
-    prisma.radioLobbyPresence.upsert({
-      where: {
-        userId_roomId: {
-          userId,
-          roomId: room.id,
-        },
-      },
-      create: {
+  await prisma.radioLobbyPresence.createMany({
+    data: [
+      {
         userId,
         roomId: room.id,
       },
-      update: {},
-    }),
-  ]);
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.radioLobbyPresence.updateMany({
+    where: {
+      userId,
+      roomId: room.id,
+      status: { not: "PLAYING" },
+    },
+    data: { status: "IDLE" },
+  });
 
   // Return the complete updated lobby data to the frontend.
   const lobby = await getRadioLobby(params.radioId, userId);
