@@ -1,26 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getLevelRule } from "@/lib/learning/course";
+import { calculateSrsState, getNextReviewAt } from "@/lib/learning/srs";
 import { prisma } from "@/server/prisma";
-import { morseLevels } from "@/components/learning/data/morseLevels";
-
-// 从 passCondition 字符串 "≥ 60% (12/20)" 里提取 12 和 20
-function parsePassCondition(passCondition: string): { required: number; total: number } {
-  const match = passCondition.match(/\((\d+)\/(\d+)\)/);
-  if (!match) return { required: 0, total: 1 };
-  return { required: parseInt(match[1]), total: parseInt(match[2]) };
-}
-
-// 简单 SRS：答对 interval * easeFactor，答错重置到 1 天
-function calcNextReview(correct: boolean, interval: number, easeFactor: number) {
-  if (correct) {
-    const newInterval = Math.round(interval * easeFactor);
-    const newEaseFactor = Math.min(easeFactor + 0.1, 3.0);
-    return { interval: newInterval, easeFactor: newEaseFactor };
-  } else {
-    const newEaseFactor = Math.max(easeFactor - 0.2, 1.3);
-    return { interval: 1, easeFactor: newEaseFactor };
-  }
-}
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -28,7 +10,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { levelId, char, correct, isLastQuestion, sessionCorrect, sessionTotal } =
+  const { levelId, char, correct, isLastQuestion, sessionCorrect } =
     await req.json();
 
   const userId = session.user.id;
@@ -45,16 +27,12 @@ export async function POST(req: Request) {
   });
 
   const now = new Date();
-  const currentInterval = existing?.interval ?? 1;
-  const currentEaseFactor = existing?.easeFactor ?? 2.5;
-  const { interval, easeFactor } = calcNextReview(correct, currentInterval, currentEaseFactor);
-  const nextReviewAt = new Date(now.getTime() + interval * 24 * 60 * 60 * 1000);
-
-  // mastery: 答对 +1 (max 10)，答错 -1 (min 0)
-  const currentMastery = existing?.mastery ?? 0;
-  const newMastery = correct
-    ? Math.min(currentMastery + 1, 10)
-    : Math.max(currentMastery - 1, 0);
+  const state = calculateSrsState(correct, {
+    mastery: existing?.mastery ?? 0,
+    interval: existing?.interval ?? 1,
+    easeFactor: existing?.easeFactor ?? 2.5,
+  });
+  const nextReviewAt = getNextReviewAt(now, state.interval);
 
   // 3. Upsert UserLetterProgress
   await prisma.userLetterProgress.upsert({
@@ -63,9 +41,9 @@ export async function POST(req: Request) {
       correctCount: { increment: correct ? 1 : 0 },
       wrongCount:   { increment: correct ? 0 : 1 },
       totalSeen:    { increment: 1 },
-      mastery:      newMastery,
-      interval,
-      easeFactor,
+      mastery:      state.mastery,
+      interval:     state.interval,
+      easeFactor:   state.easeFactor,
       nextReviewAt,
       lastReviewed: now,
     },
@@ -76,8 +54,8 @@ export async function POST(req: Request) {
       wrongCount:   correct ? 0 : 1,
       totalSeen:    1,
       mastery:      correct ? 1 : 0,
-      interval,
-      easeFactor,
+      interval:     state.interval,
+      easeFactor:   state.easeFactor,
       nextReviewAt,
       lastReviewed: now,
     },
@@ -85,10 +63,9 @@ export async function POST(req: Request) {
 
   // 4. 最后一题：判断是否升级
   if (isLastQuestion) {
-    const levelConfig = morseLevels.find((l) => l.level === levelId);
-    if (levelConfig) {
-      const { required } = parsePassCondition(levelConfig.passCondition);
-      const passed = sessionCorrect >= required;
+    const levelRule = getLevelRule(levelId);
+    if (levelRule) {
+      const passed = sessionCorrect >= levelRule.passCount;
 
       if (passed) {
         const user = await prisma.user.findUnique({

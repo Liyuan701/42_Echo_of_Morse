@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui";
+import { RADIO_LOBBY_MAX_USERS } from "@/config/competition";
 import styles from "@/../app/competition/competition.module.css";
-const RADIO_LOBBY_MAX_USERS = 7;
 
 export default function CompetitionIntro() {
   return (

@@ -1,7 +1,5 @@
 export type RadioId = string;
 
-export const RADIO_LOBBY_MAX_USERS = 7;
-
 export type RadioUserStatus = "idle" | "ready" | "playing";
 
 

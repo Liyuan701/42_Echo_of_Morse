@@ -1,9 +1,7 @@
 import Link from "next/link";
+import { RADIO_LOBBY_MAX_USERS } from "@/config/competition";
 import type { RadioConfig } from "@/types/competition";
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
-
-// fallback UI constant (DB already defines default = 7)
-const RADIO_LOBBY_MAX_USERS = 7;
 
 type RadioHeaderProps = {
   radio: RadioConfig;

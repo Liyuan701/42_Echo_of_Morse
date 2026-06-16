@@ -221,6 +221,11 @@ const zh = {
 		play: "练习",
 		reviewCompletedLevels: "复习已完成等级",
 		playDescription: "随机练习一个你已经完成的等级。",
+		//!!！ yren： review section
+		review: "复习",
+		reviewDueCharacters: "复习到期字符",
+		reviewDescription: "根据复习计划和较弱的学习记录，练习优先字符。",
+		startReview: "开始复习",
 
 		
 		//------------------ app/learning/levels/page.tsx ------------------
@@ -253,6 +258,25 @@ const zh = {
 		successRate: "正确率",
 		correct: "正确",
 		wrong: "错误",
+	},
+
+	//!!! yren: review section.
+	learningReview: {
+		title: "间隔复习",
+		loading: "正在准备复习题目...",
+		unavailable: "暂时无法复习",
+		loadError: "无法加载复习内容。",
+		saveError: "无法保存复习结果。",
+		tryAgain: "重试",
+		noProgressTitle: "暂时没有可复习的字符",
+		noProgressDescription: "请先完成一些等级练习，系统才能建立你的复习计划。",
+		openLevels: "打开等级列表",
+		sessionSummary: "目前有 {dueCount} 个到期字符，本次复习包含 {reviewedCharacters} 个优先字符。",
+		reviewComplete: "复习完成",
+		reviewResultSummary: "你答对了 {correctCount} / {questionCount} 题。",
+		accuracy: "准确率",
+		reviewAgain: "再次复习",
+		backToLearning: "返回学习主页",
 	},
 
 	//=========================================== chat =========================================== 
@@ -355,4 +379,3 @@ const zh = {
 };
 
 export default zh;
-

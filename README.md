@@ -1,11 +1,11 @@
-*This project has been created as part of the 42 curriculum by mlaurent, jdu, lifan, yren, gustgonz.*
+*This project was created as part of the 42 curriculum by mlaurent, jdu, lifan, yren, and gustgonz.*
 
 # ft_transcendence: Echo of Morse
 
 ## Description
 
 **Echo of Morse** is a full-stack web application for learning, practising,
-and competing with Morse code. It combines individual training with social
+and competing using Morse code. It combines individual training with social
 features and real-time multiplayer games.
 
 ### Key Features
@@ -23,18 +23,18 @@ features and real-time multiplayer games.
 
 | Member | Assigned roles | Responsibilities |
 | --- | --- | --- |
-| `mlaurent` | Backend Lead, Architect | Backend architecture, Socket.IO integration, and learning review features |
-| `jdu` | Frontend Lead, Git Workflow Manager | Frontend architecture, UI implementation, user flows, frontend review, and Git workflow |
+| `mlaurent` | Backend Lead, Architect | Backend architecture, Socket.IO integration |
+| `jdu` | Frontend Lead | Frontend architecture, UI implementation, and user flows |
 | `lifan` | Product Owner, Database Lead | Backlog priorities, database schema, Prisma integration, database APIs, and documentation |
-| `yren` | Project Manager, Frontend Developer | Meetings, task coordination, frontend development, and internationalization |
+| `yren` | Project Manager, Frontend Developer | Meetings, task coordination, frontend development, authentication, and internationalization |
 | `gustgonz` | Security Lead, DevSecOps | WAF, Vault, Docker infrastructure, security testing, and Socket.IO support |
 
 ## Project Management
 
-- **Work organization:** the team first held weekly meetings, then formed
+- **Work organization:** The team first held weekly meetings, then formed
   smaller groups around frontend, backend, database, security, and real-time
   features.
-- **Task distribution:** tasks were assigned according to each member's main
+- **Task distribution:** Tasks were assigned according to each member's main
   role and adjusted during team meetings when dependencies or blockers appeared.
 - **Management tools:** Notion was used for planning and documentation. GitHub
   was used for source control, branches, reviews, and issue tracking.
@@ -47,7 +47,7 @@ features and real-time multiplayer games.
 | --- | --- | --- |
 | Frontend | Next.js 14, React 18, TypeScript | Component-based UI, routing, server rendering, and type safety |
 | Styling | CSS Modules, Tailwind CSS | Local component styles and rapid responsive layout |
-| Backend | Next.js Route Handlers, Node.js | Keeps frontend and HTTP APIs in one TypeScript application |
+| Backend | Next.js Route Handlers, Node.js | Keeps the frontend and HTTP APIs in one TypeScript application |
 | Authentication | NextAuth, credentials, Google OAuth, 42 OAuth | Supports local and external authentication providers |
 | Database | PostgreSQL 15 | Reliable relational storage with transactions and constraints |
 | ORM | Prisma | Type-safe queries, migrations, relations, and seed support |
@@ -55,10 +55,10 @@ features and real-time multiplayer games.
 | Infrastructure | Docker Compose or Podman Compose | Reproducible development and production environments |
 | Security | ModSecurity, OWASP CRS, HashiCorp Vault, HTTPS | Request filtering and centralized secret management |
 
-PostgreSQL was chosen because the application contains strongly related data:
+PostgreSQL was chosen because the application contains highly interconnected data:
 users, friendships, conversations, messages, learning progress, invitations,
 rooms, and game sessions. Foreign keys, unique constraints, and transactions
-help protect this data from inconsistent updates.
+help keep this data consistent.
 
 ## Architecture
 
@@ -148,32 +148,56 @@ User
 
 | Feature | Functionality | Main contributors |
 | --- | --- | --- |
-| Authentication and profiles | Local login, Google and 42 OAuth, profile data, and online state | `mlaurent`, `jdu` |
-| Morse learning | Character lessons, progress tracking, mastery, and spaced repetition | `mlaurent`, `lifan`, `yren` |
-| Friend system | Search users and send, accept, or block friend requests | `lifan`, `jdu`, `yren` |
-| Private chat | One-to-one conversations with text and Morse transformations | `lifan`, `jdu`, `mlaurent` |
+| Authentication and profiles | Local login, Google and 42 OAuth, profile data | `yren` |
+| Morse learning | Character lessons, progress tracking, mastery, and spaced repetition | `jdu`, `lifan`, `yren` |
+| Friend system | Search users and send, accept friend requests | `jdu`, `lifan`, `yren` |
+| Private chat | One-to-one conversations with text and Morse transformations | all |
 | Internationalization | English, French, and Chinese interface content | `yren` |
-| Game invitations | Invite a friend to a selected radio lobby and accept or decline | `lifan`, `jdu`, `mlaurent` |
-| Radio lobby | Lobby presence, capacity, ready state, and matchmaking queue | `lifan`, `jdu`, `mlaurent` |
-| Multiplayer game | Shared decoding sessions, player progress, scores, and results | `jdu`, `lifan`, `mlaurent` |
+| Game invitations | Invite a friend to a selected radio lobby and accept or decline | all |
+| Radio lobby | Lobby presence, capacity, ready state, and matchmaking queue | all |
+| Multiplayer game | Shared decoding sessions, player progress, scores, and results | all |
 | Real-time events | Socket.IO events for presence, chat, invitations, and games | `mlaurent`, `gustgonz` |
 | Security | WAF filtering, HTTPS, Vault secrets, and security tests | `gustgonz` |
 | Containerized execution | Development and production Compose environments | `gustgonz`, `mlaurent` |
 
 ## Modules
 
-The table below lists the module that is explicitly documented in the
-repository as a selected curriculum module.
+The subject defines Major modules as 2 points and Minor modules as 1 point.
+The first table lists modules that are already implemented or close enough to
+be defended with the current repository. The second table focuses the final
+week on Socket.IO stabilization, because finishing that layer can unlock
+several Major modules at once instead of splitting the team across many small
+Minor modules.
 
-| Module | Type | Points | Justification | Implementation | Contributors |
+### Confirmed Modules
+
+| Module | Type | Points | Status | Justification | Implementation | Contributors |
+| --- | --- | ---: | --- | --- | --- | --- |
+| Use a framework for both the frontend and backend | Major | 2 | Confirmed | Build the application with a structured full-stack framework | Next.js is used for the React frontend and for backend Route Handlers/API routes | all |
+| Allow users to interact with other users | Major | 2 | Confirmed | Provide the required social features: chat, profiles, and friends | Users can view profiles, manage friends, and send private chat messages persisted in PostgreSQL | all |
+| Standard user management and authentication | Major | 2 | Confirmed | Support user accounts, profile editing, avatars, friends, and online status | NextAuth handles sessions; users can register, log in, edit profile data, upload an avatar, add friends, and see online state | `mlaurent`, `yren`, `lifan`, `gustgonz` |
+| Implement a complete web-based game | Major | 2 | Confirmed | Add a playable multiplayer browser game with rules, scoring, and results | Radio sessions let at least two users join a Morse decoding match, play timed rounds, submit scores, and view rankings | all |
+| WAF and HashiCorp Vault | Major | 2 | Confirmed | Protect traffic and keep secrets outside the application code | ModSecurity with OWASP CRS filters production traffic; Vault initializes and injects database, authentication, and OAuth secrets | `gustgonz` |
+| Use an ORM for the database | Minor | 1 | Confirmed | Keep database access typed and maintainable | Prisma models, migrations, seed data, and Prisma Client are used across the backend | `lifan` |
+| Support multiple languages | Minor | 1 | Confirmed | Provide at least three interface languages | The app includes an i18n provider, language switcher, and English, French, and Chinese dictionaries | `yren` |
+| Implement remote authentication with OAuth 2.0 | Minor | 1 | Confirmed | Allow users to connect through external identity providers | NextAuth supports Google OAuth and a custom 42 OAuth provider, with account linking | `yren` |
+| Server-side rendering for improved performance and SEO | Minor | 1 | Confirmed | Render data-backed pages on the server where appropriate | Next.js App Router server components load data for learning, profile, competition, lobby, and game session pages | all |
+
+**Confirmed total: 14 points.**
+
+### Final Week Socket.IO Modules To Finish
+
+| Module | Type | Points | Current status | Why this is realistic in one week | Work needed before evaluation |
 | --- | --- | ---: | --- | --- | --- |
-| WAF and HashiCorp Vault | Major | 2 | Protect the application from common web attacks and keep secrets outside the application code | ModSecurity with OWASP CRS filters production traffic; Vault initializes and injects database, authentication, and OAuth secrets | `gustgonz` |
+| Implement real-time features using WebSockets or similar technology | Major | 2 | In progress | Socket.IO server, client provider, and event hooks already exist | Stabilize real-time delivery for chat, game invitations, lobby presence, ready state, and game updates; reduce or clearly justify polling fallbacks |
+| Remote players | Major | 2 | In progress | The radio game already supports separate users and shared session data | Make two users reliably join from different browsers, receive live state updates, play the same session, and handle disconnect/reconnect cases cleanly |
+| Multiplayer game with more than two players | Major | 2 | In progress | The radio session and ready queue models already support multiple players | Test and demonstrate 3+ simultaneous players in one radio session with synchronized start, progress, scoring, and final ranking |
 
-**Current confirmed total: 2 points.**
+**Final-week target additional raw total: 6 points.**
 
-Before the final evaluation, the team must add any other officially selected
-Major or Minor modules to this table. Application features must not be listed
-as curriculum modules unless they were formally selected in the project plan.
+**Target raw total: 20 points** = 14 confirmed points + 6 Socket.IO-focused
+final-week points. If the evaluation caps extra modules beyond the required 14
+points at 5 bonus points, the practical evaluated target remains **19 points**.
 
 See [CYBERSECURITY.md](CYBERSECURITY.md) for the security module architecture,
 configuration, and test commands.
@@ -184,7 +208,6 @@ configuration, and test commands.
 
 - Designed backend architecture and service interactions.
 - Worked on Socket.IO communication and real-time event delivery.
-- Worked on the learning review functionality.
 - Helped connect backend behavior with frontend requirements.
 
 ### `jdu`
@@ -192,7 +215,6 @@ configuration, and test commands.
 - Designed the frontend structure and reusable components.
 - Implemented main pages, user flows, chat, and competition interfaces.
 - Reviewed frontend consistency and usability.
-- Helped organize the Git workflow and frontend integration.
 
 ### `lifan`
 
@@ -207,6 +229,7 @@ configuration, and test commands.
 - Implemented frontend pages and components.
 - Added and maintained English, French, and Chinese translations.
 - Helped integrate frontend features across modules.
+- Implemented authentication flows within the Node.js and Next.js application.
 
 ### `gustgonz`
 
@@ -242,7 +265,7 @@ they run inside containers.
 
 ```bash
 git clone <repository-url>
-cd Transendence/Echo_of_Morse
+cd Transcendence/Echo_of_Morse
 cp .env.example .env
 ```
 
@@ -274,8 +297,8 @@ openssl rand -base64 32
 make dev
 ```
 
-The development entrypoint generates the Prisma client, applies migrations,
-runs the seed, and starts the services.
+The development entry point generates the Prisma client, applies migrations,
+seeds the database, and starts the services.
 
 - Web application: `http://localhost:3000`
 - Socket.IO server: `http://localhost:3001`
@@ -318,7 +341,7 @@ See [MAKEGUIDE.md](MAKEGUIDE.md) for the complete command reference.
 ## Initial Test Data
 
 The development initialization runs `prisma/seed.js`. It creates test data so
-the main user, learning, chat, and competition flows can be tested immediately.
+that the main user, learning, chat, and competition flows can be tested immediately.
 These credentials are for local development only.
 
 ### Test Accounts

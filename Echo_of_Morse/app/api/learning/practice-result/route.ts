@@ -1,6 +1,8 @@
 import { getServerSession } from "next-auth";
 import { NextRequest } from "next/server";
 import { authOptions } from "@/lib/auth";
+import { getLevelRule } from "@/lib/learning/course";
+import { calculateSrsState, getNextReviewAt } from "@/lib/learning/srs";
 import { prisma } from "@/server/prisma";
 
 export async function POST(req: NextRequest) {
@@ -9,10 +11,19 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { levelId, passed, answers } = await req.json();
+  const { levelId, answers } = await req.json();
   //console.log("answers received:", JSON.stringify(answers)); // debug log
   //console.log("levelId:", levelId, "passed:", passed); //debug log
   const userId = session.user.id;
+  const levelRule = getLevelRule(levelId);
+
+  if (!levelRule || !Array.isArray(answers)) {
+    return Response.json({ error: "Invalid practice result" }, { status: 400 });
+  }
+
+  const passed =
+    answers.filter((answer) => answer?.correct === true).length >=
+    levelRule.passCount;
 
   // 1. Update UserLetterProgress for each answered question
   
@@ -28,20 +39,12 @@ export async function POST(req: NextRequest) {
     });
 
     const now = new Date();
-    const currentMastery = existing?.mastery ?? 0;
-    const currentInterval = existing?.interval ?? 1;
-    const currentEaseFactor = existing?.easeFactor ?? 2.5;
-
-    const newMastery = correct
-      ? Math.min(currentMastery + 1, 10)
-      : Math.max(currentMastery - 1, 0);
-
-    const newInterval = correct ? Math.round(currentInterval * currentEaseFactor) : 1;
-    const newEaseFactor = correct
-      ? Math.min(currentEaseFactor + 0.1, 3.0)
-      : Math.max(currentEaseFactor - 0.2, 1.3);
-
-    const nextReviewAt = new Date(now.getTime() + newInterval * 24 * 60 * 60 * 1000);
+    const state = calculateSrsState(correct, {
+      mastery: existing?.mastery ?? 0,
+      interval: existing?.interval ?? 1,
+      easeFactor: existing?.easeFactor ?? 2.5,
+    });
+    const nextReviewAt = getNextReviewAt(now, state.interval);
 
     await prisma.userLetterProgress.upsert({
       where: { userId_letterId: { userId, letterId: letter.id } },
@@ -49,9 +52,9 @@ export async function POST(req: NextRequest) {
         correctCount: { increment: correct ? 1 : 0 },
         wrongCount:   { increment: correct ? 0 : 1 },
         totalSeen:    { increment: 1 },
-        mastery:      newMastery,
-        interval:     newInterval,
-        easeFactor:   newEaseFactor,
+        mastery:      state.mastery,
+        interval:     state.interval,
+        easeFactor:   state.easeFactor,
         nextReviewAt,
         lastReviewed: now,
       },
@@ -62,8 +65,8 @@ export async function POST(req: NextRequest) {
         wrongCount:   correct ? 0 : 1,
         totalSeen:    1,
         mastery:      correct ? 1 : 0,
-        interval:     newInterval,
-        easeFactor:   newEaseFactor,
+        interval:     state.interval,
+        easeFactor:   state.easeFactor,
         nextReviewAt,
         lastReviewed: now,
       },
