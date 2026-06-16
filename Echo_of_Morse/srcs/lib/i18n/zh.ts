@@ -215,16 +215,12 @@ const zh = {
 		learningOptions: "学习选项",
 		levels: "等级",
 		chooseLevel: "选择等级",
-		levelsDescription: "查看所有摩斯码等级，并继续一个已解锁的等级。",
+		levelsDescription: "查看摩斯码练习等级，并选择已解锁的等级开始练习。",
 		openLevels: "打开等级列表",
 
-		play: "练习",
-		reviewCompletedLevels: "复习已完成等级",
-		playDescription: "随机练习一个你已经完成的等级。",
-		//!!！ yren： review section
 		review: "复习",
-		reviewDueCharacters: "复习到期字符",
-		reviewDescription: "根据复习计划和较弱的学习记录，练习优先字符。",
+		reviewDueCharacters: "复习薄弱字符",
+		reviewDescription: "根据练习结果，选出准确率较低的字符进行复习。",
 		startReview: "开始复习",
 
 		
@@ -260,18 +256,20 @@ const zh = {
 		wrong: "错误",
 	},
 
-	//!!! yren: review section.
 	learningReview: {
-		title: "间隔复习",
+		title: "复习",
+		noProgressDescription: "请先完成一些等级练习，系统才能建立你的复习计划。",
+
 		loading: "正在准备复习题目...",
 		unavailable: "暂时无法复习",
 		loadError: "无法加载复习内容。",
 		saveError: "无法保存复习结果。",
-		tryAgain: "重试",
 		noProgressTitle: "暂时没有可复习的字符",
-		noProgressDescription: "请先完成一些等级练习，系统才能建立你的复习计划。",
+		
 		openLevels: "打开等级列表",
-		sessionSummary: "目前有 {dueCount} 个到期字符，本次复习包含 {reviewedCharacters} 个优先字符。",
+		sessionSummary: "目前有 {dueCount} 个待复习字符，本次优先复习 {reviewedCharacters} 个字符。",
+		
+		tryAgain: "重试",
 		reviewComplete: "复习完成",
 		reviewResultSummary: "你答对了 {correctCount} / {questionCount} 题。",
 		accuracy: "准确率",

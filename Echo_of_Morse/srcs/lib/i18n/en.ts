@@ -218,13 +218,9 @@ const en = {
 		levelsDescription: "View all Morse levels and continue with an unlocked level.",
 		openLevels: "Open levels",
 
-		play: "Play",
-		reviewCompletedLevels: "Review completed levels",
-		playDescription: "Practice a random level you have already completed.",
-		//!!! yren: review section
 		review: "Review",
-		reviewDueCharacters: "Review due characters",
-		reviewDescription: "Practice characters selected from your review schedule and weaker results.",
+		reviewDueCharacters: "Review weak characters",
+		reviewDescription: "Generate practice questions from characters with lower accuracy based on your practice results.",
 		startReview: "Start review",
 
 		
@@ -260,18 +256,20 @@ const en = {
 		wrong: "wrong",
 	},
 
-	//!!! yren: review section
 	learningReview: {
 		title: "Spaced review",
+		noProgressDescription: "Complete some level practice first so the review system can build your schedule.",
+
 		loading: "Preparing your review session...",
 		unavailable: "Review unavailable",
 		loadError: "Unable to load your review session.",
 		saveError: "Unable to save your review results.",
-		tryAgain: "Try again",
 		noProgressTitle: "No characters to review yet",
-		noProgressDescription: "Complete some level practice first so the review system can build your schedule.",
+		
 		openLevels: "Open levels",
 		sessionSummary: "{dueCount} characters are due. This session covers {reviewedCharacters} priority characters.",
+		
+		tryAgain: "Try again",
 		reviewComplete: "Review complete",
 		reviewResultSummary: "You answered {correctCount} of {questionCount} questions correctly.",
 		accuracy: "Accuracy",

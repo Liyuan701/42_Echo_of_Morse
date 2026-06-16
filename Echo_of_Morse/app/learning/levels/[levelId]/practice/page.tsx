@@ -1,4 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import PageShell from "@/components/layout/page-shell";
 import PracticeSession from "@/components/learning/Practice/practiceSession";
 import styles from "@/components/learning/css/Learning.module.css";
@@ -17,7 +19,14 @@ type PracticePageProps = {
  * - Returning a 404 page if the level is invalid
  * - Rendering the PracticeSession component
  */
-export default function PracticePage({ params }: PracticePageProps) {
+export default async function PracticePage({ params }: PracticePageProps) {
+
+	const session = await getServerSession(authOptions);
+
+	if (!session?.user?.id) {
+		redirect("/login");
+	}
+	
   // Convert levelId from string to number
   const levelId = Number(params.levelId);
 

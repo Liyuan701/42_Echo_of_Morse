@@ -1,7 +1,3 @@
-//!!! yren
-// 按之前的模块修改。
-
-
 "use client";
 import { useI18n } from "@/lib/i18n";
 

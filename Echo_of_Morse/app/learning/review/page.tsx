@@ -1,7 +1,4 @@
-//!!! yren
 // Page de révision : vérifie la session de l'utilisateur, puis affiche le module de révision.
-// Si l'utilisateur n'est pas connecté, il est redirigé vers la page de connexion ???
-// 按照之前的那个模式改就好。
 
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
