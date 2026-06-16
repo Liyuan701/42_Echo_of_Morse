@@ -242,7 +242,6 @@ const fr = {
 		newCharacters: "Nouveaux caractères",
 		questions: "Questions",
 		pass: "Réussite",
-		review: "Révision",
 		locked: "Verrouillé",
 		startPractice: "Commencer",
 	},

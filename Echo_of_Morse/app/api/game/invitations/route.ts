@@ -5,7 +5,17 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/session-user";
+import { getRadioUserState } from "@/lib/services/radio-user-state";
 import { prisma } from "@/server/prisma";
+
+function isUniqueConstraintError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "P2002"
+  );
+}
 
 // Get pending invitations sent or received by the current user.
 export async function GET(request: NextRequest) {
@@ -95,14 +105,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (body.toUserId === fromUserId) {
+  const toUserId = body.toUserId;
+
+  if (toUserId === fromUserId) {
     return NextResponse.json(
       { error: "Cannot invite yourself" },
       { status: 400 }
     );
   }
 
-  // These independent checks can run in parallel.
   const [room, friendship, targetUser] = await Promise.all([
     prisma.radioRoom.findUnique({
       where: { radioId: body.radioId },
@@ -116,14 +127,14 @@ export async function POST(request: NextRequest) {
       where: {
         status: "ACCEPTED",
         OR: [
-          { senderId: fromUserId, receiverId: body.toUserId },
-          { senderId: body.toUserId, receiverId: fromUserId },
+          { senderId: fromUserId, receiverId: toUserId },
+          { senderId: toUserId, receiverId: fromUserId },
         ],
       },
       select: { id: true },
     }),
     prisma.user.findUnique({
-      where: { id: body.toUserId },
+      where: { id: toUserId },
       select: { id: true, isOnline: true },
     }),
   ]);
@@ -150,74 +161,108 @@ export async function POST(request: NextRequest) {
   if (!targetUser.isOnline) {
     return NextResponse.json({ error: "Friend is offline" }, { status: 409 });
   }
+  // To avoid pending conflicts, request status of both sender & target
+  // Search for their pending invitation status and wether they have other invitation.
+  try {
+    const invitation = await prisma.$transaction(async (transaction) => {
+      const [senderState, targetState, existingInvitation, targetPending] =
+        await Promise.all([
+          getRadioUserState(transaction, fromUserId),
+          getRadioUserState(transaction, toUserId),
+          transaction.gameInvitation.findFirst({
+            where: {
+              status: "PENDING",
+              OR: [
+                { fromUserId, toUserId },
+                { fromUserId: toUserId, toUserId: fromUserId },
+              ],
+            },
+            select: { id: true },
+          }),
+          transaction.gameInvitation.findFirst({
+            where: {
+              status: "PENDING",
+              toUserId,
+            },
+            select: { id: true },
+          }),
+        ]);
 
-  // The sender must be inside the room, and the target must not be there yet.
-  const [senderPresence, targetPresence] = await Promise.all([
-    prisma.radioLobbyPresence.findUnique({
-      where: {
-        userId_roomId: {
-          userId: fromUserId,
-          roomId: room.id,
+      if (senderState.isPlaying) {
+        throw new Error("SENDER_PLAYING");
+      }
+
+      if (senderState.isReady) {
+        throw new Error("SENDER_READY");
+      }
+
+      if (senderState.presence && senderState.presence.roomId !== room.id) {
+        throw new Error("SENDER_IN_OTHER_ROOM");
+      }
+
+      if (targetState.isPlaying) {
+        throw new Error("TARGET_PLAYING");
+      }
+
+      if (targetState.isReady) {
+        throw new Error("TARGET_READY");
+      }
+
+      if (targetState.presence?.roomId === room.id) {
+        throw new Error("TARGET_IN_SAME_ROOM");
+      }
+
+      if (targetState.presence && targetState.presence.roomId !== room.id) {
+        throw new Error("TARGET_IN_OTHER_ROOM");
+      }
+
+      if (existingInvitation || targetPending) {
+        throw new Error("INVITATION_ALREADY_PENDING");
+      }
+
+      return transaction.gameInvitation.create({
+        data: {
+          fromUserId,
+          toUserId,
+          radioRoomId: room.id,
         },
-      },
-      select: { id: true },
-    }),
-    prisma.radioLobbyPresence.findUnique({
-      where: {
-        userId_roomId: {
-          userId: body.toUserId,
-          roomId: room.id,
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
         },
-      },
-      select: { id: true },
-    }),
-  ]);
+      });
+    });
 
-  if (!senderPresence) {
-    return NextResponse.json(
-      { error: "Join the radio room before inviting friends" },
-      { status: 409 }
-    );
+    return NextResponse.json(invitation, { status: 201 });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "INVITATION_CREATE_FAILED";
+
+    if (isUniqueConstraintError(error)) {
+      return NextResponse.json(
+        { error: "Invitation already pending" },
+        { status: 409 }
+      );
+    }
+
+    const errors: Record<string, string> = {
+      SENDER_PLAYING: "You are currently in a game",
+      SENDER_READY: "You are already ready in a lobby",
+      SENDER_IN_OTHER_ROOM:
+        "Leave your current radio room before inviting friends to another one",
+      TARGET_PLAYING: "Friend is currently in a game",
+      TARGET_READY: "Friend is already ready in a lobby",
+      TARGET_IN_SAME_ROOM: "Friend is already in this radio room",
+      TARGET_IN_OTHER_ROOM:
+        "Friend is already in another radio room and must leave before joining a new one",
+      INVITATION_ALREADY_PENDING: "Invitation already pending",
+    };
+
+    if (errors[message]) {
+      return NextResponse.json({ error: errors[message] }, { status: 409 });
+    }
+
+    throw error;
   }
-
-  if (targetPresence) {
-    return NextResponse.json(
-      { error: "Friend is already in this radio room" },
-      { status: 409 }
-    );
-  }
-
-  // Prevent duplicate pending invitations for the same users and room.
-  const existingInvitation = await prisma.gameInvitation.findFirst({
-    where: {
-      fromUserId,
-      toUserId: body.toUserId,
-      radioRoomId: room.id,
-      status: "PENDING",
-    },
-    select: { id: true },
-  });
-
-  if (existingInvitation) {
-    return NextResponse.json(
-      { error: "Invitation already pending" },
-      { status: 409 }
-    );
-  }
-
-  // The Prisma schema gives new invitations the default PENDING status.
-  const invitation = await prisma.gameInvitation.create({
-    data: {
-      fromUserId,
-      toUserId: body.toUserId,
-      radioRoomId: room.id,
-    },
-    select: {
-      id: true,
-      status: true,
-      createdAt: true,
-    },
-  });
-
-  return NextResponse.json(invitation, { status: 201 });
 }

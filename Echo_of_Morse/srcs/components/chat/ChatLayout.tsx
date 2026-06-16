@@ -819,7 +819,7 @@ export default function ChatLayout() {
       await sendGameInvitation({
         toUserId: invited.id,
         radioId,
-        joinLobbyBeforeSend: true,
+        joinLobbyBeforeSend: false,
         redirectAfterSend: false,
       });
 

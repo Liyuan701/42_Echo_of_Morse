@@ -1,4 +1,12 @@
 // Tells Prisma to generate the client used to query the database.
+
+// Migration Note：
+// Pending invitation uniqueness is enforced by PostgreSQL partial indexes in
+// migration 20260616000000_tighten_game_invitation_pending_rules:
+// - one pending invitation per unordered user pair
+// - one pending received invitation per invited user
+
+
 generator client {
   provider = "prisma-client-js"
 }
