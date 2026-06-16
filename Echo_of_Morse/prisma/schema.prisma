@@ -1,4 +1,12 @@
 // Tells Prisma to generate the client used to query the database.
+
+// Migration Note：
+// Pending invitation uniqueness is enforced by PostgreSQL partial indexes in
+// migration 20260616000000_tighten_game_invitation_pending_rules:
+// - one pending invitation per unordered user pair
+// - one pending received invitation per invited user
+
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -173,6 +181,9 @@ model Message {
 
 // Server-generated notification delivered to a single user's inbox.
 // Used for system alerts, match results, and admin messages.
+// Invitation id, radio id, and UI action status.
+// Kind (message type: game invite/join-lobby/ info)
+// Actionstatus : idle/ accepted/ declined/ error/ updating
 model SystemMessage {
   id String @id @default(cuid())
 
@@ -182,6 +193,12 @@ model SystemMessage {
   title  String
   body   String
   isRead Boolean @default(false)
+
+  kind         String?
+  invitationId String?
+  fromUserId   String?
+  radioId      String?
+  actionStatus String?
 
   createdAt DateTime @default(now())
 }

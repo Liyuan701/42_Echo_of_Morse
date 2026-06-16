@@ -12,7 +12,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "srcs/*"
+        "./srcs/*"
       ]
     },
     "strict": true,

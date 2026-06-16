@@ -17,6 +17,38 @@ export async function getFriends(userId: string) {
           username: true,
           image: true,
           isOnline: true,
+          radioLobbyPresences: {
+            orderBy: { updatedAt: "desc" },
+            take: 1,
+            select: {
+              status: true,
+              room: {
+                select: {
+                  radioId: true,
+                },
+              },
+            },
+          },
+          radioSessionPlayers: {
+            where: {
+              session: {
+                status: { in: ["WAITING", "ACTIVE"] },
+              },
+            },
+            orderBy: { joinedAt: "desc" },
+            take: 1,
+            select: {
+              session: {
+                select: {
+                  room: {
+                    select: {
+                      radioId: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
       receiver: {
@@ -25,12 +57,45 @@ export async function getFriends(userId: string) {
           username: true,
           image: true,
           isOnline: true,
+          radioLobbyPresences: {
+            orderBy: { updatedAt: "desc" },
+            take: 1,
+            select: {
+              status: true,
+              room: {
+                select: {
+                  radioId: true,
+                },
+              },
+            },
+          },
+          radioSessionPlayers: {
+            where: {
+              session: {
+                status: { in: ["WAITING", "ACTIVE"] },
+              },
+            },
+            orderBy: { joinedAt: "desc" },
+            take: 1,
+            select: {
+              session: {
+                select: {
+                  room: {
+                    select: {
+                      radioId: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
   });
 
-  const map = new Map();
+  type FriendListUser = (typeof relations)[number]["sender"];
+  const map = new Map<string, FriendListUser>();
 
   for (const f of relations) {
     const user =
