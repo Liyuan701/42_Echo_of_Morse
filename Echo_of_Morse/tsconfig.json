@@ -9,6 +9,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "preserve",
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "srcs/*"

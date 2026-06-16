@@ -30,6 +30,7 @@ export function getSocket() {
     socket = io(WS_URL, {
       path: "/socket.io/",
       transports: ["polling", "websocket"],
+      // withCredentials: true,
       autoConnect: false,
     });
     console.log("✅ SOCKET CREATED");
@@ -37,3 +38,4 @@ export function getSocket() {
 
   return socket;
 }
+

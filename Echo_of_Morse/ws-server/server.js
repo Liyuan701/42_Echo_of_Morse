@@ -36,6 +36,39 @@ const io = new Server(httpServer, {
   pingTimeout: 20000,
 });
 
+
+// const io = new Server(httpServer, {
+//   path: "/socket.io/",
+//   cors: {
+//     origin: ["https://echoesofmorse"],
+//     credentials: true,
+//   },
+//   transports: ["websocket", "polling"],
+//   pingInterval: 25000,
+//   pingTimeout: 20000,
+// });
+
+
+function ackSuccess(ack, deliveredTo = 0) {
+  if (typeof ack === "function") {
+    ack({
+      ok: true,
+      deliveredTo,
+    });
+  }
+}
+
+function ackError(ack, code, message) {
+  if (typeof ack === "function") {
+    ack({
+      ok: false,
+      code,
+      message,
+    });
+  }
+}
+
+
 const onlineUsers = new Map();
 
 function emitUserCount() {
@@ -60,6 +93,12 @@ function emitUserCount() {
 io.on("connection", async (socket) => {
   const userId = socket.handshake.auth.userId;
 
+  if (!userId) {
+    console.log("❌ NO USER ID");
+    socket.disconnect();
+    return;
+  }
+
   console.log(
     "CONNECT",
     {
@@ -69,12 +108,6 @@ io.on("connection", async (socket) => {
     }
   );
 
-  if (!userId) {
-    console.log("❌ NO USER ID");
-    socket.disconnect();
-    return;
-  }
-
   if (!onlineUsers.has(userId)) {
     onlineUsers.set(userId, new Set());
   }
@@ -82,7 +115,7 @@ io.on("connection", async (socket) => {
   onlineUsers.get(userId).add(socket.id);
 
   try {
-    await fetch("http://web:3000/api/users/status", {
+    const res = await fetch("http://web:3000/api/users/status", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -92,6 +125,9 @@ io.on("connection", async (socket) => {
         isOnline: true,
       }),
     });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
   } catch (err) {
     console.error("database update for connection failed", err);
   }
@@ -118,102 +154,300 @@ io.on("connection", async (socket) => {
 
 
 
-  socket.on("chat:message:send", (payload) => {
-    if (
-      !payload ||
-      payload.senderId !== userId ||
-      typeof payload.toUserId !== "string" ||
-      typeof payload.message?.id !== "string"
-    ) {
-      return;
-    }
+  // socket.on("chat:message:send", (payload) => {
+  //   if (
+  //     !payload ||
+  //     payload.senderId !== userId ||
+  //     typeof payload.toUserId !== "string" ||
+  //     typeof payload.message?.id !== "string"
+  //   ) {
+  //     return;
+  //   }
 
-    console.log(
-      "CHAT SEND",
-      {
-        from: userId,
-        to: payload?.toUserId,
-        socketId: socket.id,
-        messageId: payload?.message?.id,
-      }
-    );
+  //   console.log(
+  //     "CHAT SEND",
+  //     {
+  //       from: userId,
+  //       to: payload?.toUserId,
+  //       socketId: socket.id,
+  //       messageId: payload?.message?.id,
+  //     }
+  //   );
 
-    const room = `user:${payload.toUserId}`;
-    console.log(
-      "CHAT TARGET",
-      room,
-      "members:",
-      io.sockets.adapter.rooms.get(room)?.size || 0
-    );
+  //   const room = `user:${payload.toUserId}`;
+  //   const roomObj = io.sockets.adapter.rooms.get(room);
+  //   if (!roomObj || roomObj.size === 0) {
+  //     console.log("❌ ROOM EMPTY", room);
+  //   }
+  //   console.log(
+  //     "CHAT TARGET",
+  //     room,
+  //     "members:",
+  //     io.sockets.adapter.rooms.get(room)?.size || 0
+  //   );
 
-    io.to(`user:${payload.toUserId}`).emit("chat:message:new", {
-      ...payload.message,
-      senderId: userId,
+  //   io.to(room).emit("chat:message:new", {
+  //     ...payload.message,
+  //     senderId: userId,
+  //   });
+  // });
+
+
+socket.on("chat:message:send", (payload, ack) => {
+  if (
+    !payload ||
+    typeof payload.toUserId !== "string" ||
+    typeof payload.message?.id !== "string"
+  ) {
+    return ack?.({
+      ok: false,
+      code: "INVALID_PAYLOAD",
+      message: "Invalid chat message payload",
     });
+  }
+
+  const room = `user:${payload.toUserId}`;
+  const deliveredTo = io.sockets.adapter.rooms.get(room)?.size || 0;
+
+  console.log("CHAT SEND", {
+    from: userId,
+    to: payload.toUserId,
+    socketId: socket.id,
+    messageId: payload.message.id,
+    deliveredTo,
   });
 
-  socket.on("game-invitation:send", (payload) => {
-    if (
-      !payload ||
-      typeof payload.toUserId !== "string" ||
-      typeof payload.invitationId !== "string"
-    ) {
-      return;
-    }
+  if (deliveredTo === 0) {
+    console.log("❌ ROOM EMPTY", room);
+  }
 
-    console.log(
-      "INVITE SEND",
-      {
-        from: userId,
-        to: payload?.toUserId,
-        invitationId: payload?.invitationId,
-      }
+  try {
+    io.to(room).emit("chat:message:new", {
+      ...payload.message,
+      senderId: userId, 
+    });
+
+    return ack?.({
+      ok: true,
+      deliveredTo,
+      delivered: deliveredTo > 0,
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    return ack?.({
+      ok: false,
+      code: "INTERNAL_ERROR",
+      message: "Failed to emit message",
+    });
+  }
+});
+
+  // socket.on("game-invitation:send", (payload) => {
+  //   if (
+  //     !payload ||
+  //     typeof payload.toUserId !== "string" ||
+  //     typeof payload.invitationId !== "string"
+  //   ) {
+  //     return;
+  //   }
+
+  //   console.log(
+  //     "INVITE SEND",
+  //     {
+  //       from: userId,
+  //       to: payload?.toUserId,
+  //       invitationId: payload?.invitationId,
+  //     }
+  //   );
+
+  //   const room = `user:${payload.toUserId}`;
+  //   const roomObj = io.sockets.adapter.rooms.get(room);
+  //   if (!roomObj || roomObj.size === 0) {
+  //     console.log("❌ ROOM EMPTY", room);
+  //   }
+  //   console.log(
+  //     "INVITE TARGET",
+  //     room,
+  //     "members:",
+  //     io.sockets.adapter.rooms.get(room)?.size || 0
+  //   );
+
+  //   io.to(room).emit("game-invitation:new", {
+  //     invitationId: payload.invitationId,
+  //     fromUserId: userId,
+  //   });
+  // });
+
+socket.on("game-invitation:send", (payload, ack) => {
+  if (
+    !payload ||
+    typeof payload.toUserId !== "string" ||
+    typeof payload.invitationId !== "string"
+  ) {
+    return ackError(
+      ack,
+      "INVALID_PAYLOAD",
+      "Invalid invitation payload"
     );
+  }
 
-    const room = `user:${payload.toUserId}`;
-    console.log(
-      "INVITE TARGET",
-      room,
-      "members:",
-      io.sockets.adapter.rooms.get(room)?.size || 0
-    );
+  console.log("INVITE SEND", {
+    from: userId,
+    to: payload.toUserId,
+    invitationId: payload.invitationId,
+  });
 
-    io.to(`user:${payload.toUserId}`).emit("game-invitation:new", {
+  const room = `user:${payload.toUserId}`;
+
+  const deliveredTo = io.sockets.adapter.rooms.get(room)?.size || 0;
+
+  if (deliveredTo === 0) {
+    console.log("❌ ROOM EMPTY", room);
+  }
+
+  console.log(
+    "INVITE TARGET",
+    room,
+    "members:",
+    deliveredTo
+  );
+
+  try {
+    io.to(room).emit("game-invitation:new", {
       invitationId: payload.invitationId,
       fromUserId: userId,
     });
-  });
 
-  socket.on("game-invitation:answered", (payload) => {
+    ackSuccess(ack, deliveredTo);
+  } catch (err) {
+    console.error(err);
+
+    ackError(
+      ack,
+      "INTERNAL_ERROR",
+      "Failed to emit invitation update"
+    );
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+  // socket.on("game-invitation:answered", (payload) => {
+  //   if (
+  //     !payload ||
+  //     typeof payload.toUserId !== "string" ||
+  //     typeof payload.invitationId !== "string" ||
+  //     (payload.status !== "accepted" && payload.status !== "declined")
+  //   ) {
+  //     return;
+  //   }
+
+  //   const room = `user:${payload.toUserId}`;
+  //   const roomObj = io.sockets.adapter.rooms.get(room);
+  //   if (!roomObj || roomObj.size === 0) {
+  //     console.log("❌ ROOM EMPTY", room);
+  //   }
+  //   console.log(
+  //     "INVITE TARGET",
+  //     room,
+  //     "members:",
+  //     io.sockets.adapter.rooms.get(room)?.size || 0
+  //   );
+
+  //   io.to(room).emit("game-invitation:updated", {
+  //     invitationId: payload.invitationId,
+  //     status: payload.status,
+  //     answeredByUserId: userId,
+  //   });
+    
+  // });
+
+
+
+  socket.on("game-invitation:answered", (payload, ack) => {
     if (
       !payload ||
       typeof payload.toUserId !== "string" ||
       typeof payload.invitationId !== "string" ||
-      (payload.status !== "accepted" && payload.status !== "declined")
+      (payload.status !== "accepted" &&
+        payload.status !== "declined")
     ) {
-      return;
+      return ackError(
+        ack,
+        "INVALID_PAYLOAD",
+        "Invalid invitation payload"
+      );
     }
 
     const room = `user:${payload.toUserId}`;
-    console.log(
-      "INVITE TARGET",
-      room,
-      "members:",
-      io.sockets.adapter.rooms.get(room)?.size || 0
-    );
+    const deliveredTo = io.sockets.adapter.rooms.get(room)?.size || 0;
 
-    io.to(`user:${payload.toUserId}`).emit("game-invitation:updated", {
+    console.log("INVITE ANSWER", {
+      from: userId,
+      to: payload.toUserId,
       invitationId: payload.invitationId,
       status: payload.status,
-      answeredByUserId: userId,
+      deliveredTo,
     });
+
+    try {
+      io.to(room).emit("game-invitation:updated", {
+        invitationId: payload.invitationId,
+        status: payload.status,
+        answeredByUserId: userId,
+      });
+
+      ackSuccess(ack, deliveredTo);
+    } catch (err) {
+      console.error(err);
+      ackError(
+        ack,
+        "INTERNAL_ERROR",
+        "Failed to emit invitation update"
+      );
+    }
+  });
+
+
+
+  socket.on("radio:join", ({ radioId }, ack) => {
+    if (!radioId) {
+      return ackError(
+        ack,
+        "INVALID_RADIO_ID",
+        "radioId is required"
+      );
+    }
+    socket.join(`radio:${radioId}`);
+    ackSuccess(ack, 1);
+  });
+
+  socket.on("radio:leave", ({ radioId }, ack) => {
+    if (!radioId) {
+      return ack?.({ ok: false });
+    }
+    const room = `radio:${radioId}`;
+    socket.leave(room);
+    ack?.({ ok: true });
   });
 
   socket.on("disconnect", async (reason) => {
 
     const sockets = onlineUsers.get(userId);
+    
 
-    if (!sockets) {
+    if (!sockets || !sockets.has(socket.id)) {
       console.log("Missing socket set for", userId);
       return;
     }
@@ -237,7 +471,7 @@ io.on("connection", async (socket) => {
       console.log("❌ USER OFFLINE:", userId);
 
       try {
-        await fetch("http://web:3000/api/users/status", {
+        const res = await fetch("http://web:3000/api/users/status", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -247,6 +481,9 @@ io.on("connection", async (socket) => {
             isOnline: false,
           }),
         });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
       } catch (err)
       {
         console.error("database update for disconnection failed", err);
@@ -303,7 +540,7 @@ async function cleanupUsers() {
   }
 }
 
-setInterval(cleanupUsers, 60000);
+const interval = setInterval(cleanupUsers, 60000);
 
-
-
+process.on("SIGTERM", () => clearInterval(interval));
+process.on("SIGINT", () => clearInterval(interval));
