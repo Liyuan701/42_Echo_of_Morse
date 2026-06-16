@@ -18,6 +18,13 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
   const status = getLevelStatus(level.level, progress);
   const isLocked = status === "locked";
 
+  const statusLabel = {
+		completed: t.completed,
+		current: t.current,
+		unlocked: t.unlocked,
+		locked: t.locked,
+	}[status];
+
   return (
     <article
       className={`${styles.levelCard} ${isLocked ? styles.levelCardLocked : ""}`}
@@ -34,7 +41,7 @@ export default function LevelCard({ level, progress }: LevelCardProps) {
               isLocked ? styles.statusBadgeLocked : ""
             }`}
           >
-            {status}
+            {statusLabel}
           </span>
         </div>
 

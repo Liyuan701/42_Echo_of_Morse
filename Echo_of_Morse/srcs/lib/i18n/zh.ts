@@ -241,6 +241,18 @@ const zh = {
 		locked: "未解锁",
 		startPractice: "开始练习",
 
+		completed: "已完成",
+		current: "当前",
+		unlocked: "已解锁",
+
+		//------------------ srcs/components/learning/LetterProgressPreview.tsx------------------
+		letterProgressLabel: "字符进度",
+		letterProgressTitle: "每个字符的正确率",
+		letterProgressDescription: "每根柱子表示一个字符的正确率。较弱的字符会排在前面。",
+		letterProgressScrollHint: "横向滚动以查看所有字符。",
+		successRate: "正确率",
+		correct: "正确",
+		wrong: "错误",
 	},
 
 	//=========================================== chat =========================================== 

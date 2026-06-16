@@ -240,6 +240,19 @@ const en = {
 		review: "Review",
 		locked: "Locked",
 		startPractice: "Start practice",
+
+		completed: "Completed",
+		current: "Current",
+		unlocked: "Unlocked",
+
+		//------------------ srcs/components/learning/LetterProgressPreview.tsx------------------
+		letterProgressLabel: "Character progress",
+		letterProgressTitle: "Success rate by character",
+		letterProgressDescription: "Each bar shows the success rate of one character. Weaker characters appear first.",
+		letterProgressScrollHint: "Scroll horizontally to see all characters.",
+		successRate: "success rate",
+		correct: "correct",
+		wrong: "wrong",
 	},
 
 	//=========================================== chat =========================================== 

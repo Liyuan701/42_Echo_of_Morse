@@ -5,6 +5,8 @@
 import styles from "@/components/learning/css/Learning.module.css";
 import type { LetterProgress } from "@/types/learning";
 
+import { useI18n } from "@/lib/i18n";
+
 // Calcule le taux de réussite en pourcentage
 function getAccuracy(correctCount: number, totalSeen: number): number {
   if (totalSeen === 0) return 0;
@@ -30,18 +32,17 @@ type LetterProgressPreviewProps = {
 };
 
 export default function LetterProgressPreview({ letterProgress }: LetterProgressPreviewProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.learning;
   const visibleLetters = getVisibleLetters(letterProgress);
 
   return (
     <section className={styles.letterChartCard}>
       <div className={styles.letterChartHeader}>
         <div>
-          <p className={styles.cardLabel}>Progression par caractère</p>
-          <h2 className={styles.entryTitle}>Taux de réussite par caractère</h2>
-          <p className={styles.cardText}>
-            Chaque barre représente le taux de réussite d'un caractère. Les
-            caractères les plus faibles apparaissent en premier.
-          </p>
+          <p className={styles.cardLabel}>{t.letterProgressLabel}</p>
+          <h2 className={styles.entryTitle}>{t.letterProgressTitle}</h2>
+          <p className={styles.cardText}> {t.letterProgressDescription}</p>
         </div>
       </div>
 
@@ -66,8 +67,8 @@ export default function LetterProgressPreview({ letterProgress }: LetterProgress
                     <div
                       className={styles.verticalChartBar}
                       style={{ height: `${accuracy}%` }}
-                      aria-label={`${letter.character}: ${accuracy}% success rate`}
-                      title={`${letter.character} ${letter.morse}: ${accuracy}% · ${letter.correctCount}/${letter.totalSeen} correct · ${letter.wrongCount} wrong`}
+                      aria-label={`${letter.character}: ${accuracy}% ${t.successRate}`}
+                      title={`${letter.character} ${letter.morse}: ${accuracy}% · ${letter.correctCount}/${letter.totalSeen} ${t.correct} · ${letter.wrongCount} ${t.wrong}`}
                     />
                   </div>
                   <div className={styles.verticalChartLabel}>
@@ -82,10 +83,8 @@ export default function LetterProgressPreview({ letterProgress }: LetterProgress
       </div>
 
       <p className={styles.chartScrollHint}>
-        Faites défiler horizontalement pour voir tous les caractères.
+        {t.letterProgressScrollHint}
       </p>
     </section>
   );
 }
-
-//! Yongyue: i18n

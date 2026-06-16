@@ -240,6 +240,19 @@ const fr = {
 		review: "Révision",
 		locked: "Verrouillé",
 		startPractice: "Commencer",
+
+		completed: "Termine",
+		current: "Actuel",
+		unlocked: "Debloque",
+
+		//------------------ srcs/components/learning/LetterProgressPreview.tsx------------------
+		letterProgressLabel: "Progression par caractere",
+		letterProgressTitle: "Taux de reussite par caractere",
+		letterProgressDescription: "Chaque barre represente le taux de reussite d'un caractere. Les caracteres les plus faibles apparaissent en premier.",
+		letterProgressScrollHint: "Faites defiler horizontalement pour voir tous les caracteres.",
+		successRate: "taux de reussite",
+		correct: "correct",
+		wrong: "faux",
 	},
 
 	//=========================================== chat =========================================== 
