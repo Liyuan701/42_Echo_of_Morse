@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/session-user";
 import { getRadioLobby } from "@/lib/services/competition";
+import { getRadioUserState } from "@/lib/services/radio-user-state";
 import { prisma } from "@/server/prisma";
 
 type RouteContext = {
@@ -55,6 +56,23 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ error: "Radio room not found" }, { status: 404 });
   }
 
+  // Better anti-multi lobby strategy: announce than directly move.
+  const currentState = await getRadioUserState(prisma, userId);
+
+  if (currentState.isPlaying) {
+    return NextResponse.json(
+      { error: "A player in a game cannot join another radio room" },
+      { status: 409 }
+    );
+  }
+
+  if (currentState.presence && currentState.presence.roomId !== room.id) {
+    return NextResponse.json(
+      { error: "Leave your current radio room before joining another one" },
+      { status: 409 }
+    );
+  }
+
   // One user can only have one presence row in the same radio room.
   const existingPresence = await prisma.radioLobbyPresence.findUnique({
     where: {
@@ -70,35 +88,24 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ error: "Radio room is full" }, { status: 409 });
   }
 
-  await prisma.$transaction([
-    prisma.radioReadyQueue.deleteMany({
-      where: {
-        userId,
-        roomId: { not: room.id },
-      },
-    }),
-    prisma.radioLobbyPresence.deleteMany({
-      where: {
-        userId,
-        roomId: { not: room.id },
-        status: { not: "PLAYING" },
-      },
-    }),
-    // upsert = create if it does not exist, otherwise update.
-    prisma.radioLobbyPresence.upsert({
-      where: {
-        userId_roomId: {
-          userId,
-          roomId: room.id,
-        },
-      },
-      create: {
+  await prisma.radioLobbyPresence.createMany({
+    data: [
+      {
         userId,
         roomId: room.id,
       },
-      update: {},
-    }),
-  ]);
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.radioLobbyPresence.updateMany({
+    where: {
+      userId,
+      roomId: room.id,
+      status: { not: "PLAYING" },
+    },
+    data: { status: "IDLE" },
+  });
 
   // Return the complete updated lobby data to the frontend.
   const lobby = await getRadioLobby(params.radioId, userId);

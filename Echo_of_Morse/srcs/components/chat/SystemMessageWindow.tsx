@@ -160,12 +160,14 @@ type SystemMessageWindowProps = {
     message: SystemMessage,
     action: GameInvitationAction
   ) => Promise<void>;
+  onJoinRadioLobby?: (message: SystemMessage) => Promise<void>;
 };
 
 export default function SystemMessageWindow({
   messages,
   onClose,
   onAnswerGameInvitation,
+  onJoinRadioLobby,
 }: SystemMessageWindowProps) {
   async function handleAnswerInvitation(
     message: SystemMessage,
@@ -176,6 +178,14 @@ export default function SystemMessageWindow({
     }
 
     await onAnswerGameInvitation(message, action);
+  }
+
+  async function handleJoinRadioLobby(message: SystemMessage) {
+    if (!onJoinRadioLobby) {
+      return;
+    }
+
+    await onJoinRadioLobby(message);
   }
 
   return (
@@ -200,6 +210,7 @@ export default function SystemMessageWindow({
           <ul className={styles.list}>
             {messages.map((message) => {
               const isGameInvitation = message.kind === "game-invitation";
+              const isJoinLobby = message.kind === "join-lobby";
               const isUpdating = message.actionStatus === "updating";
               const isAnswered =
                 message.actionStatus === "accepted" ||
@@ -275,6 +286,37 @@ export default function SystemMessageWindow({
                               }
                             >
                               Decline
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {isJoinLobby ? (
+                      <div className={styles.invitationArea}>
+                        {message.actionStatus === "error" ? (
+                          <span className={styles.errorBadge}>
+                            Action failed
+                          </span>
+                        ) : null}
+
+                        {isUpdating ? (
+                          <span className={styles.pendingBadge}>
+                            Joining...
+                          </span>
+                        ) : null}
+
+                        {!isUpdating ? (
+                          <div className={styles.actions}>
+                            {/* //! TODO jdu: Extend this action area with a Leave/switch lobby option when needed. */}
+                            <button
+                              type="button"
+                              className={styles.acceptButton}
+                              onClick={() =>
+                                void handleJoinRadioLobby(message)
+                              }
+                            >
+                              Join lobby
                             </button>
                           </div>
                         ) : null}

@@ -397,7 +397,7 @@ type NotificationContextType = {
   totalGlobalUnreadCount: number;
   refreshNotifications: () => Promise<void>;
   markFriendAsRead: (friendId: string) => void;
-  markSystemNotificationsAsRead: () => void;
+  markSystemNotificationsAsRead: () => Promise<void>;
   removeGameInvitation: (invitationId: string) => void;
 };
 
@@ -588,11 +588,13 @@ export function NotificationProvider({
     socket.on("chat:message:new", handleNotificationEvent);
     socket.on("game-invitation:new", handleNotificationEvent);
     socket.on("game-invitation:updated", handleNotificationEvent);
+    socket.on("game-invitation:answered", handleNotificationEvent);
 
     return () => {
       socket.off("chat:message:new", handleNotificationEvent);
       socket.off("game-invitation:new", handleNotificationEvent);
       socket.off("game-invitation:updated", handleNotificationEvent);
+      socket.off("game-invitation:answered", handleNotificationEvent);
     };
   }, [refreshNotifications, socket]);
 
@@ -657,13 +659,22 @@ export function NotificationProvider({
     [friendReadStorageKey]
   );
 
-  const markSystemNotificationsAsRead = useCallback(() => {
-    // ! liyuan, TODO backend:
-    // Replace this frontend-only fallback with a persisted read action,
-    // for example PATCH /api/system-messages/read-all.
-    // Otherwise the unread system count may come back after the next polling refresh.
+  const markSystemNotificationsAsRead = useCallback(async () => {
     setUnreadSystemMessagesFromServer(0);
-  }, []);
+
+    if (status !== "authenticated") {
+      return;
+    }
+
+    const response = await fetch("/api/system-messages/read-all", {
+      method: "PATCH",
+    });
+
+    if (!response.ok) {
+      await refreshNotifications();
+      return;
+    }
+  }, [refreshNotifications, status]);
 
   const removeGameInvitation = useCallback((invitationId: string) => {
     setPendingGameInvitations((current) =>

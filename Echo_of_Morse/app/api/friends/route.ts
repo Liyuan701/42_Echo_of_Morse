@@ -36,15 +36,35 @@ export async function GET(request: NextRequest) {
  
   const friends = await getFriends(userId);
  
-  const formatted = friends.map((user) => ({
-    id: user.id,
-    username: user.username,
-    displayName: user.username,
-    avatarUrl: user.image,
-    isOnline: user.isOnline,
-    lastMessage: "",
-    lastMessageAt: "",
-  }));
+  // give frontend game session info of my friend.
+  const formatted = friends.map((user) => {
+    const activeSession = user.radioSessionPlayers[0] ?? null;
+    const lobbyPresence = user.radioLobbyPresences[0] ?? null;
+    const isPlaying =
+      Boolean(activeSession) || lobbyPresence?.status === "PLAYING";
+    const isReady = lobbyPresence?.status === "READY";
+
+    return {
+      id: user.id,
+      username: user.username,
+      displayName: user.username,
+      avatarUrl: user.image,
+      image: user.image,
+      isOnline: user.isOnline,
+      lastMessage: "",
+      lastMessageAt: "",
+      gameStatus: isPlaying ? "PLAYING" : "IDLE",
+      lobbyStatus: isPlaying
+        ? "PLAYING"
+        : isReady
+          ? "READY"
+          : lobbyPresence?.status ?? null,
+      currentRadioId:
+        activeSession?.session.room.radioId ??
+        lobbyPresence?.room.radioId ??
+        null,
+    };
+  });
  
   return NextResponse.json(formatted);
 }

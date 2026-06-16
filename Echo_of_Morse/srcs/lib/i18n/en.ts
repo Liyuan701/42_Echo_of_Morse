@@ -238,7 +238,6 @@ const en = {
 		newCharacters: "New characters",
 		questions: "Questions",
 		pass: "Pass",
-		review: "Review",
 		locked: "Locked",
 		startPractice: "Start practice",
 

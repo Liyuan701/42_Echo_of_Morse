@@ -1,6 +1,7 @@
 
 //* The layout for the entire chat page
 //* Including the friend list, system messages, and the active chat window.
+//* New add: GET /api/system-messages, get sys messages from the DB.
 
 "use client";
 
@@ -40,6 +41,19 @@ type ApiMessage = {
   createdAt: string;
 };
 
+type ApiSystemMessage = {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  isRead: boolean;
+  kind?: SystemMessage["kind"] | null;
+  invitationId?: string | null;
+  fromUserId?: string | null;
+  radioId?: string | null;
+  actionStatus?: SystemMessage["actionStatus"] | null;
+};
+
 type InvitationActionStatus = NonNullable<SystemMessage["actionStatus"]>;
 
 type FriendWithOptionalGameStatus = Friend & {
@@ -47,6 +61,13 @@ type FriendWithOptionalGameStatus = Friend & {
   lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
   currentRadioId?: string | null;
 };
+
+function formatSystemMessageTime(createdAt: string) {
+  return new Date(createdAt).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function ChatLayout() {
   const { data: session } = useSession();
@@ -83,10 +104,6 @@ export default function ChatLayout() {
   );
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
 
-  // ! liyuan, TODO backend:
-  // This is a frontend fallback only.
-  // Final version should load persisted system-message history from
-  // GET /api/system-messages.
   const [systemMessages, setSystemMessages] = useState<SystemMessage[]>([]);
 
   const [invitationActionStatuses, setInvitationActionStatuses] = useState<
@@ -106,6 +123,7 @@ export default function ChatLayout() {
 
   useEffect(() => {
     if (!userId) {
+      setSystemMessages([]);
       return;
     }
 
@@ -123,6 +141,64 @@ export default function ChatLayout() {
 
     void loadFriends();
   }, [userId]);
+
+  const loadSystemMessages = useCallback(async () => {
+    if (!userId) {
+      setSystemMessages([]);
+      return;
+    }
+
+    const response = await fetch("/api/system-messages", {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      setSystemMessages([]);
+      return;
+    }
+
+    const data = (await response.json()) as ApiSystemMessage[];
+
+    setSystemMessages(
+      data.map((message) => ({
+        id: message.id,
+        title: message.title,
+        body: message.body,
+        createdAt: formatSystemMessageTime(message.createdAt),
+        isRead: message.isRead,
+        kind: message.kind ?? undefined,
+        invitationId: message.invitationId ?? undefined,
+        fromUserId: message.fromUserId ?? undefined,
+        radioId: message.radioId ?? undefined,
+        actionStatus: message.actionStatus ?? undefined,
+      }))
+    );
+  }, [userId]);
+
+
+  // Load persisted system-message history from the backend.
+  // Pending invitations are still merged separately because they are active actions.
+  useEffect(() => {
+    void loadSystemMessages();
+  }, [loadSystemMessages]);
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    const handleInvitationAnswered = () => {
+      void loadSystemMessages();
+    };
+
+    socket.on("game-invitation:answered", handleInvitationAnswered);
+    socket.on("game-invitation:updated", handleInvitationAnswered);
+
+    return () => {
+      socket.off("game-invitation:answered", handleInvitationAnswered);
+      socket.off("game-invitation:updated", handleInvitationAnswered);
+    };
+  }, [loadSystemMessages, socket]);
 
   useEffect(() => {
     if (!socket) {
@@ -271,11 +347,8 @@ export default function ChatLayout() {
     );
   }, [friendsWithUnread, friendSearchQuery]);
 
-  // ! liyuan, TODO backend:
-  // Pending game invitations are temporarily converted into SystemMessage objects
-  // so the frontend can display them inside the Chat system panel.
-  // Final version should load persisted system-message history from
-  // GET /api/system-messages.
+  // Pending invitations stay action-oriented and are displayed above persisted
+  // system-message history until they are accepted or declined.
   const gameInvitationMessages = useMemo<SystemMessage[]>(
     () =>
       pendingGameInvitations.map((invitation) => ({
@@ -303,20 +376,8 @@ export default function ChatLayout() {
     [gameInvitationMessages, systemMessages]
   );
 
-  const unreadLocalSystemMessageCount = useMemo(
-    () => systemMessages.filter((message) => !message.isRead).length,
-    [systemMessages]
-  );
-
-  // ! liyuan, TODO backend:
-  // This count is currently composed on the frontend.
-  // Final backend version should provide reliable persisted system-message unread state.
-  // Pending game invitations should remain status-based and should not be cleared
-  // by system-message read state.
   const unreadSystemMessageCount =
-    globalUnreadSystemMessageCount +
-    pendingGameInvitations.length +
-    unreadLocalSystemMessageCount;
+    globalUnreadSystemMessageCount + pendingGameInvitations.length;
 
   const incomingPendingInviteFriendIds = useMemo(
     () =>
@@ -377,9 +438,6 @@ export default function ChatLayout() {
       return "This friend has already invited you. Please accept or decline their invitation first.";
     }
 
-    // ! liyuan, TODO backend:
-    // If the backend exposes friend.gameStatus or friend.lobbyStatus,
-    // use these fields to disable invitations when the friend is READY or PLAYING.
     if (
       friendWithStatus.gameStatus === "PLAYING" ||
       friendWithStatus.lobbyStatus === "PLAYING"
@@ -422,7 +480,7 @@ export default function ChatLayout() {
     }));
 
     try {
-      const result = await answerGameInvitation({
+      await answerGameInvitation({
         invitationId: message.invitationId,
         action,
         fallbackRadioId: message.radioId,
@@ -437,34 +495,7 @@ export default function ChatLayout() {
         [message.invitationId as string]: actionStatus,
       }));
 
-      // ! liyuan, TODO backend:
-      // Frontend fallback only.
-      // After Accept / Decline, the final version should persist this result
-      // as a system message on the backend.
-      // Expected behavior:
-      // - PENDING invitation disappears from global notifications.
-      // - System Messages keeps a history item with accepted / declined status.
-      // - Refreshing the page should not lose this history.
-      const historyMessage: SystemMessage = {
-        id: `game-invitation-history:${message.invitationId}:${action}`,
-        title:
-          action === "accept"
-            ? "Game invitation accepted"
-            : "Game invitation declined",
-        body:
-          action === "accept"
-            ? `${message.body} You accepted this invitation.`
-            : `${message.body} You declined this invitation.`,
-        createdAt: getCurrentTime(),
-        isRead: true,
-        kind: "game-invitation",
-        invitationId: message.invitationId,
-        fromUserId: message.fromUserId,
-        radioId: result.radio?.radioId ?? message.radioId,
-        actionStatus,
-      };
-
-      setSystemMessages((current) => [historyMessage, ...current]);
+      await loadSystemMessages();
     } catch (error) {
       setInvitationActionStatuses((current) => ({
         ...current,
@@ -477,6 +508,59 @@ export default function ChatLayout() {
           : "Failed to update the invitation."
       );
     }
+  }
+
+
+  // Join-lobby messages are created when a receiver accepts an invitation.
+  // The sender joins only after clicking this action.
+  async function handleJoinRadioLobbyFromSystemMessage(message: SystemMessage) {
+    if (!message.radioId) {
+      window.alert("This system message does not include a radio lobby.");
+      return;
+    }
+
+    setSystemMessages((current) =>
+      current.map((item) =>
+        item.id === message.id
+          ? {
+              ...item,
+              actionStatus: "updating",
+            }
+          : item
+      )
+    );
+
+    const response = await fetch(`/api/competition/radio/${message.radioId}`, {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
+
+      //! A 在01, 邀请B 去02， B 接受了，然后现在A 收到系统信息
+      //! TODO jdu: If the backend says the user is already in another lobby,
+      //! show a clear Leave current lobby / switch lobby flow instead of only alerting.
+      //! You can use:
+      //! DELETE /api/competition/radio/[currentRadioId]
+      //! POST /api/competition/radio/[targetRadioId]
+      setSystemMessages((current) =>
+        current.map((item) =>
+          item.id === message.id
+            ? {
+                ...item,
+                actionStatus: "error",
+              }
+            : item
+        )
+      );
+
+      window.alert(body.error || "Failed to join the radio lobby.");
+      return;
+    }
+
+    router.push(`/competition/radio/${message.radioId}`);
   }
 
   function isDuplicateDisplayName(
@@ -494,6 +578,8 @@ export default function ChatLayout() {
     });
   }
 
+  // Opening the system panel marks persisted system messages as read
+  // on both the local UI and the backend unread counter.
   async function handleSelectSystemMessages() {
     setComposerError("");
     suppressFriendQuerySelection.current = true;
@@ -501,10 +587,11 @@ export default function ChatLayout() {
     setCurrentView({ type: "system" });
 
     try {
-      await refreshNotifications();
+      await Promise.all([refreshNotifications(), loadSystemMessages()]);
     } finally {
       markSystemMessagesAsRead();
-      markSystemNotificationsAsRead();
+      await markSystemNotificationsAsRead();
+      await refreshNotifications();
     }
   }
 
@@ -513,7 +600,7 @@ export default function ChatLayout() {
     setCurrentView({ type: "system" });
 
     try {
-      await refreshNotifications();
+      await Promise.all([refreshNotifications(), loadSystemMessages()]);
     } catch (error) {
       console.error(error);
     }
@@ -819,7 +906,7 @@ export default function ChatLayout() {
       await sendGameInvitation({
         toUserId: invited.id,
         radioId,
-        joinLobbyBeforeSend: true,
+        joinLobbyBeforeSend: false,
         redirectAfterSend: false,
       });
 
@@ -979,6 +1066,7 @@ export default function ChatLayout() {
           messages={visibleSystemMessages}
           onClose={handleClosePanel}
           onAnswerGameInvitation={handleAnswerGameInvitation}
+          onJoinRadioLobby={handleJoinRadioLobbyFromSystemMessage}
         />
       ) : null}
 
