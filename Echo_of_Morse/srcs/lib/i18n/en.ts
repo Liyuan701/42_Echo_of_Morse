@@ -373,6 +373,209 @@ const en = {
 		hidePassword: "Hide",
 	},
 
+	//=========================================== privacyPolicy =========================================== 
+	privacyPolicy: {
+		title: "Privacy Policy",
+		effectiveDate: "Effective Date: [10/07/2026]",
+		sections: [
+			{
+				title: "1. Introduction",
+				paragraphs: [
+					"Welcome to Echoes of Morse, a platform for learning Morse code, joining competitions, and communicating with other users. This Privacy Policy explains how Morse Team collects, uses, stores, and protects your personal data when you use our platform.",
+					"By using Echoes of Morse, you agree to the practices described in this policy.",
+				],
+				items: [],
+			},
+			{
+				title: "2. Data Controller",
+				paragraphs: ["Morse Team — morseteam@42.fr"],
+				items: [],
+			},
+			{
+				title: "3. Data We Collect",
+				paragraphs: [
+					"Account information: when you create an account, we collect your username and email address. Your password is stored in hashed form. We do not store plain text passwords.",
+					"Third-party account information: when you link Google or 42, we may receive your username, email address, and profile picture.",
+					"Private messages: messages sent through private chat are stored in our database while your account is active.",
+				],
+				items: [
+					"Learning progress and practice results",
+					"Competition history and scores",
+					"Leaderboard rankings",
+					"IP address, browser type, and operating system",
+					"Session and connection timestamps",
+				],
+			},
+			{
+				title: "4. How We Use Your Data",
+				paragraphs: [
+					"We use your data to provide authentication, learning progress tracking, competitions, leaderboards, friends, chat features, and platform security.",
+					"We do not send marketing emails. We do not use your data for advertising purposes.",
+				],
+				items: [],
+			},
+			{
+				title: "5. Third-Party Services",
+				paragraphs: [
+					"We use Google OAuth and 42 OAuth for third-party account linking or login. These providers may collect data according to their own privacy policies.",
+					"We do not sell your personal data to third parties.",
+				],
+				items: [],
+			},
+			{
+				title: "6. Private Chat and Content Moderation",
+				paragraphs: [
+					"Private messages are retained while your account is active. In the event of a reported violation, platform administrators may access related chat content for moderation purposes.",
+					"Please do not share sensitive personal information in chat.",
+				],
+				items: [],
+			},
+			{
+				title: "7. Data Retention",
+				paragraphs: [
+					"We retain your data for as long as your account is active. Upon account deletion, your profile and messages are deleted.",
+					"Competition data may be retained in anonymized form for statistical purposes.",
+				],
+				items: [],
+			},
+			{
+				title: "8. Your Rights",
+				paragraphs: [
+					"As an EU user, you have the right to access, correct, delete, restrict, or export your personal data. To exercise these rights, contact us at morseteam@42.fr.",
+					"We will respond within 30 days. You may also lodge a complaint with your national data protection authority.",
+				],
+				items: [],
+			},
+			{
+				title: "9. Data Security",
+				paragraphs: [
+					"We use hashed password storage, third-party authentication, and access controls to protect your data.",
+					"No system is completely secure. We recommend using strong passwords and protecting your third-party accounts.",
+				],
+				items: [],
+			},
+			{
+				title: "10. Children's Privacy",
+				paragraphs: [
+					"Echoes of Morse is not directed at children under 13. If you believe a child has provided us with personal data, please contact us and we will delete it promptly.",
+				],
+				items: [],
+			},
+			{
+				title: "11. Changes to This Policy",
+				paragraphs: [
+					"We may update this policy from time to time. Continued use of the platform after changes constitutes acceptance of the updated policy.",
+				],
+				items: [],
+			},
+			{
+				title: "12. Contact",
+				paragraphs: ["Morse Team — morseteam@42.fr"],
+				items: [],
+			},
+		],
+	},
+
+	//=========================================== termsOfService =========================================== 
+	termsOfService: {
+		title: "Terms of Service",
+		effectiveDate: "Effective Date: [10/07/2026]",
+		sections: [
+			{
+				title: "1. Introduction",
+				paragraphs: [
+					"Welcome to Echoes of Morse. These Terms of Service govern your use of our platform, including Morse code learning tools, competitions, leaderboards, friends, and messaging features.",
+					"By accessing or using Echoes of Morse, you agree to these Terms. If you do not agree, please do not use the platform.",
+				],
+				items: [],
+			},
+			{
+				title: "2. Eligibility",
+				paragraphs: [
+					"You must be at least 13 years old to use this platform. By using Echoes of Morse, you confirm that you meet this requirement.",
+				],
+				items: [],
+			},
+			{
+				title: "3. User Accounts",
+				paragraphs: [
+					"Access to platform features requires an account or a linked third-party login.",
+					"You are responsible for maintaining the security of your account and for all activities carried out under your account.",
+				],
+				items: [],
+			},
+			{
+				title: "4. Acceptable Use",
+				paragraphs: ["You agree not to:"],
+				items: [
+					"Use the platform for illegal purposes",
+					"Attempt to hack, disrupt, or overload the service",
+					"Cheat in competitions or manipulate rankings",
+					"Send abusive, offensive, or harmful messages",
+					"Impersonate another user or organization",
+				],
+			},
+			{
+				title: "5. Competitions and Rankings",
+				paragraphs: [
+					"Echoes of Morse provides competitions and leaderboards for educational and entertainment purposes.",
+					"We reserve the right to remove scores, suspend accounts, or reset rankings in cases of cheating, abuse, or technical issues.",
+				],
+				items: [],
+			},
+			{
+				title: "6. Private Messaging",
+				paragraphs: [
+					"Users may communicate through private chat features. You are solely responsible for the content you send.",
+					"We reserve the right to moderate or remove content that violates these Terms or applicable laws.",
+				],
+				items: [],
+			},
+			{
+				title: "7. Intellectual Property",
+				paragraphs: [
+					"All platform content, design, logos, and learning materials are the property of Morse Team unless otherwise stated.",
+					"You may not copy, redistribute, or commercially exploit platform content without permission.",
+				],
+				items: [],
+			},
+			{
+				title: "8. Service Availability",
+				paragraphs: [
+					"We strive to maintain continuous access to the platform, but we do not guarantee uninterrupted service.",
+					"The platform may be modified, suspended, or discontinued at any time without prior notice.",
+				],
+				items: [],
+			},
+			{
+				title: "9. Limitation of Liability",
+				paragraphs: [
+					"Echoes of Morse is provided as is without warranties of any kind.",
+					"Morse Team shall not be liable for data loss, service interruptions, or damages arising from the use of the platform.",
+				],
+				items: [],
+			},
+			{
+				title: "10. Termination",
+				paragraphs: [
+					"We reserve the right to suspend or terminate accounts that violate these Terms or threaten platform security.",
+				],
+				items: [],
+			},
+			{
+				title: "11. Changes to These Terms",
+				paragraphs: [
+					"We may update these Terms from time to time. Continued use of the platform after changes constitutes acceptance of the updated Terms.",
+				],
+				items: [],
+			},
+			{
+				title: "12. Contact",
+				paragraphs: ["Morse Team — morseteam@42.fr"],
+				items: [],
+			},
+		],
+	},
 
 };
 

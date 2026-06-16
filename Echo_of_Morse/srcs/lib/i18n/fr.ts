@@ -373,6 +373,210 @@ const fr = {
 		hidePassword: "Masquer",
 	},
 
-};
+	//=========================================== privacyPolicy =========================================== 
+	privacyPolicy: {
+		title: "Politique de confidentialite",
+		effectiveDate: "Date d'entree en vigueur : [10/07/2026]",
+		sections: [
+			{
+				title: "1. Introduction",
+				paragraphs: [
+					"Bienvenue sur Echoes of Morse, une plateforme pour apprendre le code Morse, participer a des competitions et communiquer avec d'autres utilisateurs. Cette politique de confidentialite explique comment Morse Team collecte, utilise, conserve et protege vos donnees personnelles lorsque vous utilisez la plateforme.",
+					"En utilisant Echoes of Morse, vous acceptez les pratiques decrites dans cette politique.",
+				],
+				items: [],
+			},
+			{
+				title: "2. Responsable du traitement",
+				paragraphs: ["Morse Team — morseteam@42.fr"],
+				items: [],
+			},
+			{
+				title: "3. Donnees que nous collectons",
+				paragraphs: [
+					"Informations de compte : lorsque vous creez un compte, nous collectons votre nom d'utilisateur et votre adresse email. Votre mot de passe est stocke sous forme hachee. Nous ne stockons pas les mots de passe en clair.",
+					"Informations de compte tiers : lorsque vous liez Google ou 42, nous pouvons recevoir votre nom d'utilisateur, votre adresse email et votre photo de profil.",
+					"Messages prives : les messages envoyes via le chat prive sont stockes dans notre base de donnees tant que votre compte est actif.",
+				],
+				items: [
+					"Progression d'apprentissage et resultats d'exercices",
+					"Historique des competitions et scores",
+					"Classements",
+					"Adresse IP, type de navigateur et systeme d'exploitation",
+					"Horodatages de session et de connexion",
+				],
+			},
+			{
+				title: "4. Comment nous utilisons vos donnees",
+				paragraphs: [
+					"Nous utilisons vos donnees pour fournir l'authentification, le suivi de progression, les competitions, les classements, les amis, le chat et la securite de la plateforme.",
+					"Nous n'envoyons pas d'emails marketing. Nous n'utilisons pas vos donnees a des fins publicitaires.",
+				],
+				items: [],
+			},
+			{
+				title: "5. Services tiers",
+				paragraphs: [
+					"Nous utilisons Google OAuth et 42 OAuth pour lier un compte tiers ou se connecter. Ces fournisseurs peuvent collecter des donnees selon leurs propres politiques de confidentialite.",
+					"Nous ne vendons pas vos donnees personnelles a des tiers.",
+				],
+				items: [],
+			},
+			{
+				title: "6. Chat prive et moderation",
+				paragraphs: [
+					"Les messages prives sont conserves tant que votre compte est actif. En cas de signalement, les administrateurs de la plateforme peuvent acceder aux messages concernes a des fins de moderation.",
+					"Veuillez ne pas partager d'informations personnelles sensibles dans le chat.",
+				],
+				items: [],
+			},
+			{
+				title: "7. Conservation des donnees",
+				paragraphs: [
+					"Nous conservons vos donnees tant que votre compte est actif. Lors de la suppression du compte, votre profil et vos messages sont supprimes.",
+					"Les donnees de competition peuvent etre conservees sous forme anonymisee a des fins statistiques.",
+				],
+				items: [],
+			},
+			{
+				title: "8. Vos droits",
+				paragraphs: [
+					"En tant qu'utilisateur dans l'Union europeenne, vous avez le droit d'acceder a vos donnees, de les corriger, de les supprimer, d'en limiter le traitement ou de les exporter. Pour exercer ces droits, contactez-nous a morseteam@42.fr.",
+					"Nous repondrons sous 30 jours. Vous pouvez aussi deposer une plainte aupres de votre autorite nationale de protection des donnees.",
+				],
+				items: [],
+			},
+			{
+				title: "9. Securite des donnees",
+				paragraphs: [
+					"Nous utilisons le stockage hache des mots de passe, l'authentification tierce et des controles d'acces pour proteger vos donnees.",
+					"Aucun systeme n'est totalement securise. Nous recommandons d'utiliser des mots de passe forts et de proteger vos comptes tiers.",
+				],
+				items: [],
+			},
+			{
+				title: "10. Confidentialite des enfants",
+				paragraphs: [
+					"Echoes of Morse ne s'adresse pas aux enfants de moins de 13 ans. Si vous pensez qu'un enfant nous a fourni des donnees personnelles, contactez-nous et nous les supprimerons rapidement.",
+				],
+				items: [],
+			},
+			{
+				title: "11. Modifications de cette politique",
+				paragraphs: [
+					"Nous pouvons mettre a jour cette politique de temps en temps. Continuer a utiliser la plateforme apres des modifications vaut acceptation de la politique mise a jour.",
+				],
+				items: [],
+			},
+			{
+				title: "12. Contact",
+				paragraphs: ["Morse Team — morseteam@42.fr"],
+				items: [],
+			},
+		],
+	},
+
+	//=========================================== termsOfService =========================================== 
+
+	termsOfService: {
+		title: "Conditions d'utilisation",
+		effectiveDate: "Date d'entree en vigueur : [10/07/2026]",
+		sections: [
+			{
+				title: "1. Introduction",
+				paragraphs: [
+					"Bienvenue sur Echoes of Morse. Ces conditions d'utilisation encadrent votre utilisation de la plateforme, y compris les outils d'apprentissage du code Morse, les competitions, les classements, les amis et la messagerie.",
+					"En accedant a Echoes of Morse ou en l'utilisant, vous acceptez ces conditions. Si vous n'etes pas d'accord, veuillez ne pas utiliser la plateforme.",
+				],
+				items: [],
+			},
+			{
+				title: "2. Eligibilite",
+				paragraphs: [
+					"Vous devez avoir au moins 13 ans pour utiliser cette plateforme. En utilisant Echoes of Morse, vous confirmez respecter cette condition.",
+				],
+				items: [],
+			},
+			{
+				title: "3. Comptes utilisateur",
+				paragraphs: [
+					"L'acces aux fonctionnalites de la plateforme necessite un compte ou une connexion tierce liee.",
+					"Vous etes responsable de la securite de votre compte et de toutes les activites effectuees avec celui-ci.",
+				],
+				items: [],
+			},
+			{
+				title: "4. Utilisation acceptable",
+				paragraphs: ["Vous vous engagez a ne pas :"],
+				items: [
+					"Utiliser la plateforme a des fins illegales",
+					"Tenter de pirater, perturber ou surcharger le service",
+					"Tricher dans les competitions ou manipuler les classements",
+					"Envoyer des messages abusifs, offensants ou dangereux",
+					"Usurper l'identite d'un autre utilisateur ou d'une organisation",
+				],
+			},
+			{
+				title: "5. Competitions et classements",
+				paragraphs: [
+					"Echoes of Morse propose des competitions et des classements a des fins educatives et de divertissement.",
+					"Nous nous reservons le droit de supprimer des scores, suspendre des comptes ou reinitialiser des classements en cas de triche, d'abus ou de probleme technique.",
+				],
+				items: [],
+			},
+			{
+				title: "6. Messagerie privee",
+				paragraphs: [
+					"Les utilisateurs peuvent communiquer via les fonctions de chat prive. Vous etes seul responsable du contenu que vous envoyez.",
+					"Nous nous reservons le droit de moderer ou supprimer le contenu qui enfreint ces conditions ou les lois applicables.",
+				],
+				items: [],
+			},
+			{
+				title: "7. Propriete intellectuelle",
+				paragraphs: [
+					"Sauf indication contraire, le contenu, le design, les logos et les supports d'apprentissage de la plateforme appartiennent a Morse Team.",
+					"Vous ne pouvez pas copier, redistribuer ou exploiter commercialement le contenu de la plateforme sans autorisation.",
+				],
+				items: [],
+			},
+			{
+				title: "8. Disponibilite du service",
+				paragraphs: [
+					"Nous faisons de notre mieux pour maintenir l'acces a la plateforme, mais nous ne garantissons pas un service ininterrompu.",
+					"La plateforme peut etre modifiee, suspendue ou arretee a tout moment sans preavis.",
+				],
+				items: [],
+			},
+			{
+				title: "9. Limitation de responsabilite",
+				paragraphs: [
+					"Echoes of Morse est fourni tel quel, sans garantie d'aucune sorte.",
+					"Morse Team ne peut pas etre tenu responsable des pertes de donnees, interruptions de service ou dommages lies a l'utilisation de la plateforme.",
+				],
+				items: [],
+			},
+			{
+				title: "10. Resiliation",
+				paragraphs: [
+					"Nous nous reservons le droit de suspendre ou de fermer les comptes qui enfreignent ces conditions ou menacent la securite de la plateforme.",
+				],
+				items: [],
+			},
+			{
+				title: "11. Modifications de ces conditions",
+				paragraphs: [
+					"Nous pouvons mettre a jour ces conditions de temps en temps. Continuer a utiliser la plateforme apres des modifications vaut acceptation des conditions mises a jour.",
+				],
+				items: [],
+			},
+			{
+				title: "12. Contact",
+				paragraphs: ["Morse Team — morseteam@42.fr"],
+				items: [],
+			},
+		],
+	},
+	};
 
 export default fr;
