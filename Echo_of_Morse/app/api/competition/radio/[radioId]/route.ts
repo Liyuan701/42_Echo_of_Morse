@@ -11,6 +11,7 @@ import { getSessionUserId } from "@/lib/session-user";
 import { getRadioLobby } from "@/lib/services/competition";
 import { getRadioUserState } from "@/lib/services/radio-user-state";
 import { prisma } from "@/server/prisma";
+import { notifyWs } from "@/lib/notifyWs";
 
 type RouteContext = {
   params: {
@@ -109,6 +110,7 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
 
   // Return the complete updated lobby data to the frontend.
   const lobby = await getRadioLobby(params.radioId, userId);
+  await notifyWs("radio.users.updated", { radioId: params.radioId, data: lobby });
   return NextResponse.json(lobby, { status: 201 });
 }
 
@@ -203,6 +205,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     ]);
   }
   const lobby = await getRadioLobby(params.radioId, userId);
+  await notifyWs("radio.ready.updated", { radioId: params.radioId, data: lobby });
   return NextResponse.json(lobby);
 }
 
@@ -241,5 +244,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     }),
   ]);
 
+  const lobby = await getRadioLobby(params.radioId, userId);
+  await notifyWs("radio.users.updated", { radioId: params.radioId, data: lobby });
   return NextResponse.json({ ok: true });
 }

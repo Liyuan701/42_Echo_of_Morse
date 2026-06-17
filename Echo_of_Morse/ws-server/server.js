@@ -70,6 +70,7 @@ function ackError(ack, code, message) {
 
 
 const onlineUsers = new Map();
+const socketRadioRooms = new Map(); // socketId → Set<radioId>
 
 function emitUserCount() {
   io.emit("users-count", onlineUsers.size);
@@ -421,28 +422,34 @@ socket.on("game-invitation:send", (payload, ack) => {
 
 
 
-  socket.on("radio:join", ({ radioId }, ack) => {
-    if (!radioId) {
-      return ackError(
-        ack,
-        "INVALID_RADIO_ID",
-        "radioId is required"
-      );
+  socket.on("radio:join", (payload, ack) => {
+    const radioId = payload?.radioId;
+    if (!radioId || typeof radioId !== "string") {
+      if (typeof ack === "function") ack({ ok: false, code: "INVALID_PAYLOAD" });
+      return;
     }
     socket.join(`radio:${radioId}`);
-    ackSuccess(ack, 1);
+    if (!socketRadioRooms.has(socket.id)) socketRadioRooms.set(socket.id, new Set());
+    socketRadioRooms.get(socket.id).add(radioId);
+    if (typeof ack === "function") ack({ ok: true });
   });
 
-  socket.on("radio:leave", ({ radioId }, ack) => {
-    if (!radioId) {
-      return ack?.({ ok: false });
+  socket.on("radio:leave", (payload, ack) => {
+    const radioId = payload?.radioId;
+    if (!radioId || typeof radioId !== "string") {
+      if (typeof ack === "function") ack({ ok: false, code: "INVALID_PAYLOAD" });
+      return;
     }
-    const room = `radio:${radioId}`;
-    socket.leave(room);
-    ack?.({ ok: true });
+    socket.leave(`radio:${radioId}`);
+    socketRadioRooms.get(socket.id)?.delete(radioId);
+    if (typeof ack === "function") ack({ ok: true });
   });
 
   socket.on("disconnect", async (reason) => {
+    for (const radioId of socketRadioRooms.get(socket.id) ?? []) {
+      socket.leave(`radio:${radioId}`);
+    }
+    socketRadioRooms.delete(socket.id);
 
     const sockets = onlineUsers.get(userId);
     
@@ -502,6 +509,35 @@ socket.on("game-invitation:send", (payload, ack) => {
   });
 });
 
+
+app.use(express.json());
+
+app.get("/health", (_req, res) => {
+  res.json({ ok: true });
+});
+
+app.post("/internal/notify", (req, res) => {
+  const { type, radioId, toUserId, data } = req.body ?? {};
+  if (!type) return res.status(400).json({ error: "type requis" });
+
+  switch (type) {
+    case "radio.users.updated":
+      io.to(`radio:${radioId}`).emit("radio:user-list-updated", data); break;
+    case "radio.ready.updated":
+      io.to(`radio:${radioId}`).emit("radio:ready-list-updated", data); break;
+    case "radio.game.created":
+      io.to(`radio:${radioId}`).emit("radio:game-created", data); break;
+    case "message.created":
+      io.to(`user:${toUserId}`).emit("chat:message:new", data); break;
+    case "game-invitation.created":
+      io.to(`user:${toUserId}`).emit("game-invitation:new", data); break;
+    case "game-invitation.updated":
+      io.to(`user:${toUserId}`).emit("game-invitation:updated", data); break;
+    default:
+      return res.status(400).json({ error: "Type inconnu" });
+  }
+  return res.json({ ok: true });
+});
 
 httpServer.listen(3001, () => {
   console.log("WS SERVER RUNNING ON 3001");

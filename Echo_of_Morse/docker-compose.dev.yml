@@ -30,6 +30,7 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      WS_INTERNAL_URL: http://ws:3001
     volumes:
       - .:/app                # Bind mount - code changes reflect immediately
       - /app/node_modules   # Keep container's node_modules

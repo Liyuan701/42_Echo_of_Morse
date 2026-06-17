@@ -81,6 +81,7 @@ services:
     #   - "3000:3000"   # utile en développement — à commenter en production
     environment:
       VAULT_ADDR: http://vault:8200       # adresse de Vault pour lire les secrets
+      WS_INTERNAL_URL: http://ws:3001
     volumes:
       - ./vault/data:/vault/data          # accès au root-token.txt généré par vault-unseal
     depends_on:
