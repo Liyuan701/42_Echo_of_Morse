@@ -9,6 +9,10 @@ import {
 } from "@/lib/services/competition";
 import styles from "./competition.module.css";
 
+// Render this page at request time because it reads live Prisma data.
+// Static prerendering during Docker build cannot access the database.
+export const dynamic = "force-dynamic";
+
 export default async function CompetitionPage() {
   const [radios, overview] = await Promise.all([
     getRadioConfigs(),

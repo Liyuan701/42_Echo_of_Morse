@@ -3,6 +3,10 @@ import PageShell from "@/components/layout/page-shell";
 import GameSession from "@/components/competition/GameSessionPage/gameSession";
 import { prisma } from "@/server/prisma";
 
+// Render this page at request time because it reads live Prisma data.
+// Static prerendering during Docker build cannot access the database.
+export const dynamic = "force-dynamic";
+
 type GameSessionPageProps = {
   params: {
     radioId: string;
