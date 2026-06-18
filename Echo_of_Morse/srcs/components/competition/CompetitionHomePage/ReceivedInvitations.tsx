@@ -174,10 +174,15 @@ import { useSession } from "next-auth/react";
 import { Button, Card } from "@/components/ui";
 import { useSocket } from "@/providers/socket-provider";
 import styles from "@/../app/competition/competition.module.css";
-import { useGameInvitationActions } from "@/hooks/useGameInvitationActions";
+import {
+  GameInvitationActionError,
+  useGameInvitationActions,
+} from "@/hooks/useGameInvitationActions";
 
 type GameInvitation = {
   id: string;
+  status?: string;
+  expiresAt?: string;
   fromUser: {
     id: string;
     username: string;
@@ -271,6 +276,16 @@ export default function ReceivedInvitations() {
         current.filter((item) => item.id !== invitation.id)
       );
     } catch (error) {
+      // Expired invitations should disappear from the competition page immediately.
+      if (
+        error instanceof GameInvitationActionError &&
+        error.status === 410
+      ) {
+        setInvitations((current) =>
+          current.filter((item) => item.id !== invitation.id)
+        );
+      }
+
       window.alert(
         error instanceof Error
           ? error.message
@@ -297,7 +312,7 @@ export default function ReceivedInvitations() {
             <div>
               <strong>{invitation.fromUser.username}</strong>
               <p>
-                {t.invitedYouTo.replace("{radioName}", invitation.radio?.name ?? t.unknownRadioLobby )}
+				{t.invitedYouTo.replace("{radioName}", invitation.radio?.name ?? t.unknownRadioLobby)}
               </p>
             </div>
 

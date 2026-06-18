@@ -183,7 +183,7 @@ model Message {
 // Used for system alerts, match results, and admin messages.
 // Invitation id, radio id, and UI action status.
 // Kind (message type: game invite/join-lobby/ info)
-// Actionstatus : idle/ accepted/ declined/ error/ updating
+// Actionstatus : idle/ accepted/ declined/ expired/ error/ updating
 model SystemMessage {
   id String @id @default(cuid())
 
@@ -446,6 +446,7 @@ enum GameInviteStatus {
   PENDING
   ACCEPTED
   DECLINED
+  EXPIRED
 }
 
 // Mirrors the frontend type RadioUserStatus = "idle" | "ready" | "playing".

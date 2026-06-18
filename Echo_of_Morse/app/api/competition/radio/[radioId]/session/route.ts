@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/session-user";
 import { prisma } from "@/server/prisma";
+import { notifyWs } from "@/lib/notifyWs";
 
 type RouteContext = {
   params: {
@@ -88,6 +89,7 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
     return created;
   });
 
+  await notifyWs("radio.game.created", { radioId: params.radioId, data: { sessionId: gameSession.id, playerIds } });
   return NextResponse.json(
     {
       radioId: params.radioId,

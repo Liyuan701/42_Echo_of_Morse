@@ -57,7 +57,13 @@ export type SystemMessage = {
   invitationId?: string;
   fromUserId?: string;
   radioId?: string;
-  actionStatus?: "idle" | "updating" | "accepted" | "declined" | "error";
+  actionStatus?:
+    | "idle"
+    | "updating"
+    | "accepted"
+    | "declined"
+    | "expired"
+    | "error";
 };
 
 export type ChatPanelView =

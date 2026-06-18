@@ -1,4 +1,6 @@
 "use client";
+
+import { Suspense } from "react";
 import PageShell from "@/components/layout/page-shell";
 import { Card } from "@/components/ui";
 import styles from "./chat.module.css";
@@ -19,7 +21,9 @@ export default function ChatPage() {
             {t.pageDescription}
           </p>
 
-          <ChatLayout />
+          <Suspense fallback={null}>
+            <ChatLayout />
+          </Suspense>
         </Card>
       </PageShell>
     </main>

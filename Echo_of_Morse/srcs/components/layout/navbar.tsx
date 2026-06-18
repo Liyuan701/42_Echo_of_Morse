@@ -431,7 +431,8 @@ export default function Navbar() {
                             <strong>{invitation.fromUser.username}</strong>
                             <span>
                               invited you to{" "}
-                              {invitation.radio?.name ?? "a radio lobby"}.
+                              {invitation.radio?.name ?? "a radio lobby"}. You
+                              have 1 minute to accept.
                             </span>
                           </span>
 

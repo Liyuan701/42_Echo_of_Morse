@@ -163,6 +163,19 @@ export function useGameInvitationActions() {
       const body = await readJsonSafely<AnswerGameInvitationResult>(response);
 
       if (!response.ok) {
+        // HTTP 410 means the pending invitation timed out.
+        // Remove it locally and notify the sender-side UI to refresh.
+        if (response.status === 410 || body.status === "expired") {
+          removeGameInvitation(invitationId);
+          await refreshNotifications();
+
+          socket?.emit("game-invitation:answered", {
+            toUserId: fromUserId,
+            invitationId,
+            status: "expired",
+          });
+        }
+
         throw new GameInvitationActionError(
           body.error || "Failed to answer invitation.",
           response.status,

@@ -3,6 +3,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/session-user";
+import {
+  expirePendingGameInvitationById,
+  getGameInvitationExpiresAt,
+  isGameInvitationExpired,
+} from "@/lib/services/game-invitations";
 import { getRadioUserState } from "@/lib/services/radio-user-state";
 import { prisma } from "@/server/prisma";
 
@@ -37,6 +42,12 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   const invitation = await prisma.gameInvitation.findUnique({
     where: { id: params.id },
     include: {
+      fromUser: {
+        select: { username: true },
+      },
+      toUser: {
+        select: { username: true },
+      },
       radioRoom: {
         include: {
           _count: {
@@ -58,9 +69,32 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
   // An invitation can only be answered once.
   if (invitation.status !== "PENDING") {
+    const isExpired = invitation.status === "EXPIRED";
+
     return NextResponse.json(
-      { error: "Invitation has already been answered" },
-      { status: 409 }
+      {
+        error:
+          isExpired
+            ? "Invitation has expired."
+            : "Invitation has already been answered",
+        status: invitation.status.toLowerCase(),
+      },
+      { status: isExpired ? 410 : 409 }
+    );
+  }
+  // If the row is still pending but its deadline has passed, expire it before answering.
+  if (isGameInvitationExpired(invitation.createdAt)) {
+    await prisma.$transaction(async (transaction) => {
+      await expirePendingGameInvitationById(transaction, invitation);
+    });
+
+    return NextResponse.json(
+      {
+        error: "Invitation has expired.",
+        status: "expired",
+        expiresAt: getGameInvitationExpiresAt(invitation.createdAt),
+      },
+      { status: 410 }
     );
   }
 
@@ -161,6 +195,11 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
       if (freshInvitation.status !== "PENDING") {
         throw new Error("INVITATION_ALREADY_ANSWERED");
+      }
+      // Re-check inside the transaction so two fast clicks cannot accept an expired invite.
+      if (isGameInvitationExpired(freshInvitation.createdAt)) {
+        await expirePendingGameInvitationById(transaction, freshInvitation);
+        throw new Error("INVITATION_EXPIRED");
       }
 
       if (!freshInvitation.radioRoom) {
@@ -313,6 +352,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       INVITATION_ALREADY_ANSWERED: {
         error: "Invitation has already been answered",
         status: 409,
+      },
+      INVITATION_EXPIRED: {
+        error: "Invitation has expired.",
+        status: 410,
       },
       ROOM_NOT_FOUND: {
         error: "The invited radio room no longer exists",

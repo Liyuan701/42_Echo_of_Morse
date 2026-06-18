@@ -5,6 +5,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/prisma";
 
+// Render this page at request time because it reads live Prisma data.
+// Static prerendering during Docker build cannot access the database.
+// dynamic is a default constent by Next.js can be read by APP Router.
+export const dynamic = "force-dynamic";
+
 type UserProfilePageProps = {
 	params: {
 		userId: string;

@@ -3,6 +3,10 @@ import PageShell from "@/components/layout/page-shell";
 import RadioLobbyClient from "@/components/competition/RadioLobbyPage/RadioLobbyClient";
 import { prisma } from "@/server/prisma";
 
+// Render this page at request time because it reads live Prisma data.
+// Static prerendering during Docker build cannot access the database.
+export const dynamic = "force-dynamic";
+
 type RadioLobbyPageProps = {
   params: {
     radioId: string;
