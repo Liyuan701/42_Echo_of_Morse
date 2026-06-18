@@ -214,7 +214,8 @@ export default function SystemMessageWindow({
               const isUpdating = message.actionStatus === "updating";
               const isAnswered =
                 message.actionStatus === "accepted" ||
-                message.actionStatus === "declined";
+                message.actionStatus === "declined" ||
+                message.actionStatus === "expired";
 
               return (
                 <li
@@ -245,6 +246,12 @@ export default function SystemMessageWindow({
                         {message.actionStatus === "declined" ? (
                           <span className={styles.declinedBadge}>
                             Declined
+                          </span>
+                        ) : null}
+
+                        {message.actionStatus === "expired" ? (
+                          <span className={styles.declinedBadge}>
+                            Expired
                           </span>
                         ) : null}
 

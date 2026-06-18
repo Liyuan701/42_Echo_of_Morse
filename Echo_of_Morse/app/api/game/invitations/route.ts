@@ -5,6 +5,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/session-user";
+import {
+  expirePendingGameInvitationsForUser,
+  getGameInvitationExpiresAt,
+} from "@/lib/services/game-invitations";
 import { getRadioUserState } from "@/lib/services/radio-user-state";
 import { prisma } from "@/server/prisma";
 
@@ -37,39 +41,44 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const invitations = await prisma.gameInvitation.findMany({
-    where: {
-      status: "PENDING",
-      // Filter by sender or receiver according to the requested direction.
-      ...(direction === "sent"
-        ? { fromUserId: userId }
-        : { toUserId: userId }),
-      // radioId is an optional filter.
-      ...(radioId ? { radioRoom: { radioId } } : {}),
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      fromUser: {
-        select: {
-          id: true,
-          username: true,
-          image: true,
+  const invitations = await prisma.$transaction(async (transaction) => {
+    // Clear timed-out invitations first so the response only contains active actions.
+    await expirePendingGameInvitationsForUser(transaction, userId);
+
+    return transaction.gameInvitation.findMany({
+      where: {
+        status: "PENDING",
+        // Filter by sender or receiver according to the requested direction.
+        ...(direction === "sent"
+          ? { fromUserId: userId }
+          : { toUserId: userId }),
+        // radioId is an optional filter.
+        ...(radioId ? { radioRoom: { radioId } } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        fromUser: {
+          select: {
+            id: true,
+            username: true,
+            image: true,
+          },
+        },
+        toUser: {
+          select: {
+            id: true,
+            username: true,
+            image: true,
+          },
+        },
+        radioRoom: {
+          select: {
+            radioId: true,
+            name: true,
+          },
         },
       },
-      toUser: {
-        select: {
-          id: true,
-          username: true,
-          image: true,
-        },
-      },
-      radioRoom: {
-        select: {
-          radioId: true,
-          name: true,
-        },
-      },
-    },
+    });
   });
 
   return NextResponse.json(
@@ -77,6 +86,7 @@ export async function GET(request: NextRequest) {
       id: invitation.id,
       status: invitation.status.toLowerCase(),
       createdAt: invitation.createdAt,
+      expiresAt: getGameInvitationExpiresAt(invitation.createdAt),
       fromUser: invitation.fromUser,
       toUser: invitation.toUser,
       radio: invitation.radioRoom,
@@ -165,6 +175,12 @@ export async function POST(request: NextRequest) {
   // Search for their pending invitation status and wether they have other invitation.
   try {
     const invitation = await prisma.$transaction(async (transaction) => {
+      // Expire old pending invitations before checking uniqueness rules.
+      await Promise.all([
+        expirePendingGameInvitationsForUser(transaction, fromUserId),
+        expirePendingGameInvitationsForUser(transaction, toUserId),
+      ]);
+
       const [senderState, targetState, existingInvitation, targetPending] =
         await Promise.all([
           getRadioUserState(transaction, fromUserId),
@@ -234,7 +250,13 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    return NextResponse.json(invitation, { status: 201 });
+    return NextResponse.json(
+      {
+        ...invitation,
+        expiresAt: getGameInvitationExpiresAt(invitation.createdAt),
+      },
+      { status: 201 }
+    );
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "INVITATION_CREATE_FAILED";

@@ -5,6 +5,10 @@
 
 import { NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/session-user";
+import {
+  expirePendingGameInvitationsForUser,
+  getGameInvitationExpiresAt,
+} from "@/lib/services/game-invitations";
 import { prisma } from "@/server/prisma";
 
 const MAX_RECENT_MESSAGES = 80;
@@ -17,70 +21,76 @@ export async function GET() {
   }
 
   const [unreadSystemMessages, pendingGameInvitations, recentMessages] =
-    await Promise.all([
-      prisma.systemMessage.count({
-        where: {
-          userId,
-          isRead: false,
-        },
-      }),
+    await prisma.$transaction(async (transaction) => {
+      // Notification polling is 
+      // also the fallback that turns timed-out invites into expired records.
+      await expirePendingGameInvitationsForUser(transaction, userId);
 
-      prisma.gameInvitation.findMany({
-        where: {
-          toUserId: userId,
-          status: "PENDING",
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        include: {
-          fromUser: {
-            select: {
-              id: true,
-              username: true,
-              image: true,
-            },
+      return Promise.all([
+        transaction.systemMessage.count({
+          where: {
+            userId,
+            isRead: false,
           },
-          toUser: {
-            select: {
-              id: true,
-              username: true,
-              image: true,
-            },
-          },
-          radioRoom: {
-            select: {
-              radioId: true,
-              name: true,
-            },
-          },
-        },
-      }),
+        }),
 
-      prisma.message.findMany({
-        where: {
-          senderId: {
-            not: userId,
+        transaction.gameInvitation.findMany({
+          where: {
+            toUserId: userId,
+            status: "PENDING",
           },
-          conversation: {
-            OR: [{ userAId: userId }, { userBId: userId }],
+          orderBy: {
+            createdAt: "desc",
           },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        take: MAX_RECENT_MESSAGES,
-        include: {
-          sender: {
-            select: {
-              id: true,
-              username: true,
-              image: true,
+          include: {
+            fromUser: {
+              select: {
+                id: true,
+                username: true,
+                image: true,
+              },
+            },
+            toUser: {
+              select: {
+                id: true,
+                username: true,
+                image: true,
+              },
+            },
+            radioRoom: {
+              select: {
+                radioId: true,
+                name: true,
+              },
             },
           },
-        },
-      }),
-    ]);
+        }),
+
+        transaction.message.findMany({
+          where: {
+            senderId: {
+              not: userId,
+            },
+            conversation: {
+              OR: [{ userAId: userId }, { userBId: userId }],
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: MAX_RECENT_MESSAGES,
+          include: {
+            sender: {
+              select: {
+                id: true,
+                username: true,
+                image: true,
+              },
+            },
+          },
+        }),
+      ]);
+    });
 
   return NextResponse.json({
     unreadSystemMessages,
@@ -89,6 +99,7 @@ export async function GET() {
       id: invitation.id,
       status: invitation.status.toLowerCase(),
       createdAt: invitation.createdAt,
+      expiresAt: getGameInvitationExpiresAt(invitation.createdAt),
       fromUser: invitation.fromUser,
       toUser: invitation.toUser,
       radio: invitation.radioRoom,

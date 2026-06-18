@@ -12,8 +12,9 @@ export type NotificationFriendMessage = {
 
 export type NotificationGameInvitation = {
   id: string;
-  status: "pending" | "accepted" | "declined";
+  status: "pending" | "accepted" | "declined" | "expired";
   createdAt: string;
+  expiresAt?: string;
   fromUser: {
     id: string;
     username: string;

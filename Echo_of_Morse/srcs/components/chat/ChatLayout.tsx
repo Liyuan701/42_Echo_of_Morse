@@ -356,7 +356,7 @@ export default function ChatLayout() {
         title: "New game invitation",
         body: `${invitation.fromUser.username} invited you to ${
           invitation.radio?.name ?? "a radio lobby"
-        }.`,
+        }. You have 1 minute to accept before it expires.`,
         createdAt: new Date(invitation.createdAt).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
