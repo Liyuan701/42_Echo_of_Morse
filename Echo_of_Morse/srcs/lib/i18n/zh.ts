@@ -625,7 +625,7 @@ const zh = {
 
 		gameInvitations: "游戏邀请",
 
-		invitedYouTo: "邀请你加入 {radioName}。",
+		invitedYouTo: "邀请你加入 {radioName}。你有 1 分钟接受邀请，之后邀请会过期。",
 		unknownRadioLobby: "一个无线电大厅",
 
 		accept: "接受",

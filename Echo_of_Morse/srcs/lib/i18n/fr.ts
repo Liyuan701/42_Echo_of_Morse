@@ -624,7 +624,7 @@ const fr = {
 
 		gameInvitations: "Invitations de jeu",
 
-		invitedYouTo: "vous invite à rejoindre {radioName}.",
+		invitedYouTo: "vous invite à rejoindre {radioName}. Vous avez 1 minute pour accepter avant l'expiration de l'invitation.",
 		unknownRadioLobby: "un lobby radio",
 
 		accept: "Accepter",
