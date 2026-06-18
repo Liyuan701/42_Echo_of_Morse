@@ -616,6 +616,10 @@ const zh = {
 		lobbyFullAria: "{radioName}，{wpm} WPM，大厅已满",
 		enterRadioAria: "进入 {radioName}，{wpm} WPM，{capacity}",
 
+		radioWave01Description: "适合摩斯码初学者的较慢传输速度。",
+		radioWave02Description: "适合中级玩家的平衡传输速度。",
+		radioWave03Description: "适合熟练解码者的高速传输速度。",
+
 		//--------- ReceivedInvitations.tsx ---------
 		failedToAnswerInvitation: "处理邀请失败。",
 

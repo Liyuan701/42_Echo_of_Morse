@@ -72,18 +72,18 @@ const fr = {
 
 	layout: {
 		//------------------ navbar ------------------
-		brand: "Echos de Morse",
+		brand: "Échos de Morse",
 		dashboard: "Tableau de bord",
 		profile: "Profil",
 		login: "Connexion",
-		logout: "Deconnexion",
+		logout: "Déconnexion",
 		user: "Utilisateur",
 
 		//------------------ footer ------------------
-		footerDescription: "Apprenez, communiquez et relevez des defis avec le code Morse.",
-		privacyPolicy: "Politique de confidentialite",
+		footerDescription: "Apprenez, communiquez et relevez des défis avec le code Morse.",
+		privacyPolicy: "Politique de confidentialité",
 		termsOfService: "Conditions d'utilisation",
-		copyright: "© 2026 Echos de Morse",
+		copyright: "© 2026 Échos de Morse",
 		mainNavigation: "Navigation principale",
 		footerNavigation: "Navigation du pied de page",
 
@@ -97,13 +97,13 @@ const fr = {
 		openModule: "Ouvrir le module →",
 
 		learningTitle: "Apprentissage",
-		learningDescription: "Entrainez-vous au code Morse et ameliorez votre decodage.",
+		learningDescription: "Entraînez-vous au code Morse et améliorez votre décodage.",
 
 		chatTitle: "Chat",
-		chatDescription: "Discutez avec les autres utilisateurs en temps reel.",
+		chatDescription: "Discutez avec les autres utilisateurs en temps réel.",
 
-		competitionTitle: "Competition",
-		competitionDescription: "Participez a des defis et comparez vos resultats.",
+		competitionTitle: "Compétition",
+		competitionDescription: "Participez à des défis et comparez vos résultats.",
 	},
 
 	home: {
@@ -140,16 +140,16 @@ const fr = {
 		level: "Niveau",
 
 		//------------------ exo ------------------
-		decodeSignal: "Decoder le signal",
+		decodeSignal: "Décoder le signal",
 		playing: "Lecture...",
 		replaySignal: "Rejouer le signal",
-		encodeCharacter: "Encoder le caractere",
+		encodeCharacter: "Encoder le caractère",
 
 		//------------------ en haut à doite ------------------
 		correctCount: "correctes",
 
 		//------------------ réponse ------------------
-		yourAnswer: "Votre reponse",
+		yourAnswer: "Votre réponse",
 		leftDot: ".",
 		rightDash: "-",
 		delete: "Supprimer",
@@ -166,25 +166,25 @@ const fr = {
 
 		//------------------ en bas ------------------
 		audio: "Son",
-		light: "Lumiere",
+		light: "Lumière",
 
 		//------------------ cheatSheet ------------------
 		cheatSheetTitle: "Carte de référence Morse",
 		playSound: "Écouter",
 
 		//------------------ resultat ------------------
-		complete: "termine",
+		complete: "terminé",
 
-		levelPassed: "Niveau reussi",
-		tryAgain: "Reessayer",
+		levelPassed: "Niveau réussi",
+		tryAgain: "Réessayer",
 
 		resultSummary: "Vous avez répondu correctement à {correctCount} question(s) sur {questionCount}.",
 		passConditionText: "Condition de réussite : {passCount} / {questionCount}.",
 
 		accuracy: "Précision",
 		status: "Statut",
-		unlockedNext: "Niveau suivant debloque",
-		needsReview: "Revision necessaire",
+		unlockedNext: "Niveau suivant débloqué",
+		needsReview: "Révision nécessaire",
 
 		practiceAgain: "Recommencer",
 		backToLevels: "Retour aux niveaux",
@@ -218,12 +218,11 @@ const fr = {
 		levelsDescription: "Voir tous les niveaux Morse et continuer avec un niveau débloqué.",
 		openLevels: "Ouvrir les niveaux",
 
-		review: "Revision",
-		reviewDueCharacters: "Reviser les caracteres faibles",
-		reviewDescription: "Genere des exercices avec les caracteres les moins reussis selon vos resultats d'entrainement.",
-		startReview: "Commencer la revision",
+		review: "Révision",
+		reviewDueCharacters: "Réviser les caractères faibles",
+		reviewDescription: "Génère des exercices avec les caractères les moins réussis selon vos résultats d'entraînement.",
+		startReview: "Commencer la révision",
 
-		
 		//------------------ app/learning/levels/page.tsx ------------------
 		levelsPageDescription: "Le parcours couvre les lettres, les chiffres et la ponctuation. Chaque niveau utilise une pratique mixte : parfois vous décodez des signaux Morse, parfois vous encodez des caractères au clavier.",
 		breadcrumbLearning: "Apprentissage",
@@ -241,16 +240,16 @@ const fr = {
 		locked: "Verrouillé",
 		startPractice: "Commencer",
 
-		completed: "Termine",
+		completed: "Terminé",
 		current: "Actuel",
-		unlocked: "Debloque",
+		unlocked: "Débloqué",
 
 		//------------------ srcs/components/learning/LetterProgressPreview.tsx------------------
-		letterProgressLabel: "Progression par caractere",
-		letterProgressTitle: "Taux de reussite par caractere",
-		letterProgressDescription: "Chaque barre represente le taux de reussite d'un caractere. Les caracteres les plus faibles apparaissent en premier.",
-		letterProgressScrollHint: "Faites defiler horizontalement pour voir tous les caracteres.",
-		successRate: "taux de reussite",
+		letterProgressLabel: "Progression par caractère",
+		letterProgressTitle: "Taux de réussite par caractère",
+		letterProgressDescription: "Chaque barre représente le taux de réussite d'un caractère. Les caractères les plus faibles apparaissent en premier.",
+		letterProgressScrollHint: "Faites défiler horizontalement pour voir tous les caractères.",
+		successRate: "taux de réussite",
 		correct: "correct",
 		wrong: "faux",
 	},
@@ -283,22 +282,21 @@ const fr = {
 		close: "Fermer",
 		add: "+ Ajouter",
 
-		added: "Ajoute",
+		added: "Ajouté",
 		pending: "En attente",
 		invite: "Inviter",
 
 		searchMyFriends: "Chercher dans mes amis",
-		searchUsersToAdd: "Chercher des utilisateurs a ajouter",
-		noUsersFound: "Aucun utilisateur trouve.",
-		noFriendsFound: "Aucun ami trouve.",
+		searchUsersToAdd: "Chercher des utilisateurs à ajouter",
+		noUsersFound: "Aucun utilisateur trouvé.",
+		noFriendsFound: "Aucun ami trouvé.",
 
-		systemMessages: "Messages systeme",
-		noSystemMessages: "Aucun message systeme.",
+		systemMessages: "Messages système",
+		noSystemMessages: "Aucun message système.",
 		
 		//--------- ChatHeader ---------
 		offline: "Hors ligne",
 		online: "En ligne",
-		
 		viewProfile: "Voir le profil de {displayName}",
 		avatarAlt: "Avatar de {displayName}",
 		openProfileHint: "Cliquez sur le nom ou l'avatar pour ouvrir ce profil.",
@@ -310,22 +308,22 @@ const fr = {
 		textOnly: "Texte seulement",
 		morseOnly: "Morse seulement",
 		encodeOnly: "Encoder seulement",
-		chatModeSelector: "Selecteur du mode chat",
+		chatModeSelector: "Sélecteur du mode chat",
 		
 		//--------- MessageComposer ---------
 		typeTextToMorse: "Tapez du texte pour afficher le texte et le Morse...",
-		enterMorseToDecode: "Entrez du code Morse a decoder...",
+		enterMorseToDecode: "Entrez du code Morse à décoder...",
 		typeMessage: "Tapez un message...",
 		typeMorseOnly: "Tapez seulement du Morse...",
-		typeTextAsMorseOnly: "Tapez du texte a envoyer en Morse seulement...",
+		typeTextAsMorseOnly: "Tapez du texte à envoyer en Morse seulement...",
 		send: "Envoyer",
 		
 		//--------- FriendListItem ---------
 		unknownUser: "Utilisateur inconnu",
 		newRemarkName: "Nouvelle remarque",
 		deleteFriendConfirm: "Supprimer {displayName} des amis ?",
-		gameInviteAlreadyPending: "Une invitation de jeu est deja en attente",
-		inviteFriendToPlay: "Inviter cet ami a jouer",
+		gameInviteAlreadyPending: "Une invitation de jeu est déjà en attente",
+		inviteFriendToPlay: "Inviter cet ami à jouer",
 		friendOffline: "Cet ami est hors ligne",
 		
 		//--------- ContextMenu ---------
@@ -333,14 +331,14 @@ const fr = {
 		shareFriend: "Partager l'ami",
 		inviteToGame: "Inviter au jeu",
 		deleteFriend: "Supprimer l'ami",
-		friendOfflineOrPending: "Cet ami est hors ligne ou a deja une invitation en attente.",
+		friendOfflineOrPending: "Cet ami est hors ligne ou a déjà une invitation en attente.",
 		
 		//--------- SystemMessage ---------
-		systemDescription: "Notifications sur les demandes d'ami, les contacts partages et les actions du chat.",
+		systemDescription: "Notifications sur les demandes d'ami, les contacts partagés et les actions du chat.",
 
 		//--------- chat/page---------
 		pageTitle: "Chat",
-		pageDescription: "Cette page accueillera le chat en temps reel et les fonctions de communication.",
+		pageDescription: "Cette page accueillera le chat en temps réel et les fonctions de communication.",
 	},
 
 	//=========================================== login =========================================== 
@@ -375,14 +373,14 @@ const fr = {
 
 	//=========================================== privacyPolicy =========================================== 
 	privacyPolicy: {
-		title: "Politique de confidentialite",
-		effectiveDate: "Date d'entree en vigueur : [10/07/2026]",
+		title: "Politique de confidentialité",
+		effectiveDate: "Date d'entrée en vigueur : [10/07/2026]",
 		sections: [
 			{
 				title: "1. Introduction",
 				paragraphs: [
-					"Bienvenue sur Echoes of Morse, une plateforme pour apprendre le code Morse, participer a des competitions et communiquer avec d'autres utilisateurs. Cette politique de confidentialite explique comment Morse Team collecte, utilise, conserve et protege vos donnees personnelles lorsque vous utilisez la plateforme.",
-					"En utilisant Echoes of Morse, vous acceptez les pratiques decrites dans cette politique.",
+					"Bienvenue sur Echoes of Morse, une plateforme pour apprendre le code Morse, participer à des compétitions et communiquer avec d'autres utilisateurs. Cette politique de confidentialité explique comment Morse Team collecte, utilise, conserve et protège vos données personnelles lorsque vous utilisez la plateforme.",
+					"En utilisant Echoes of Morse, vous acceptez les pratiques décrites dans cette politique.",
 				],
 				items: [],
 			},
@@ -392,79 +390,79 @@ const fr = {
 				items: [],
 			},
 			{
-				title: "3. Donnees que nous collectons",
+				title: "3. Données que nous collectons",
 				paragraphs: [
-					"Informations de compte : lorsque vous creez un compte, nous collectons votre nom d'utilisateur et votre adresse email. Votre mot de passe est stocke sous forme hachee. Nous ne stockons pas les mots de passe en clair.",
+					"Informations de compte : lorsque vous créez un compte, nous collectons votre nom d'utilisateur et votre adresse email. Votre mot de passe est stocké sous forme hachée. Nous ne stockons pas les mots de passe en clair.",
 					"Informations de compte tiers : lorsque vous liez Google ou 42, nous pouvons recevoir votre nom d'utilisateur, votre adresse email et votre photo de profil.",
-					"Messages prives : les messages envoyes via le chat prive sont stockes dans notre base de donnees tant que votre compte est actif.",
+					"Messages privés : les messages envoyés via le chat privé sont stockés dans notre base de données tant que votre compte est actif.",
 				],
 				items: [
-					"Progression d'apprentissage et resultats d'exercices",
-					"Historique des competitions et scores",
+					"Progression d'apprentissage et résultats d'exercices",
+					"Historique des compétitions et scores",
 					"Classements",
-					"Adresse IP, type de navigateur et systeme d'exploitation",
+					"Adresse IP, type de navigateur et système d'exploitation",
 					"Horodatages de session et de connexion",
 				],
 			},
 			{
-				title: "4. Comment nous utilisons vos donnees",
+				title: "4. Comment nous utilisons vos données",
 				paragraphs: [
-					"Nous utilisons vos donnees pour fournir l'authentification, le suivi de progression, les competitions, les classements, les amis, le chat et la securite de la plateforme.",
-					"Nous n'envoyons pas d'emails marketing. Nous n'utilisons pas vos donnees a des fins publicitaires.",
+					"Nous utilisons vos données pour fournir l'authentification, le suivi de progression, les compétitions, les classements, les amis, le chat et la sécurité de la plateforme.",
+					"Nous n'envoyons pas d'emails marketing. Nous n'utilisons pas vos données à des fins publicitaires.",
 				],
 				items: [],
 			},
 			{
 				title: "5. Services tiers",
 				paragraphs: [
-					"Nous utilisons Google OAuth et 42 OAuth pour lier un compte tiers ou se connecter. Ces fournisseurs peuvent collecter des donnees selon leurs propres politiques de confidentialite.",
-					"Nous ne vendons pas vos donnees personnelles a des tiers.",
+					"Nous utilisons Google OAuth et 42 OAuth pour lier un compte tiers ou se connecter. Ces fournisseurs peuvent collecter des données selon leurs propres politiques de confidentialité.",
+					"Nous ne vendons pas vos données personnelles à des tiers.",
 				],
 				items: [],
 			},
 			{
-				title: "6. Chat prive et moderation",
+				title: "6. Chat privé et modération",
 				paragraphs: [
-					"Les messages prives sont conserves tant que votre compte est actif. En cas de signalement, les administrateurs de la plateforme peuvent acceder aux messages concernes a des fins de moderation.",
+					"Les messages privés sont conservés tant que votre compte est actif. En cas de signalement, les administrateurs de la plateforme peuvent accéder aux messages concernés à des fins de modération.",
 					"Veuillez ne pas partager d'informations personnelles sensibles dans le chat.",
 				],
 				items: [],
 			},
 			{
-				title: "7. Conservation des donnees",
+				title: "7. Conservation des données",
 				paragraphs: [
-					"Nous conservons vos donnees tant que votre compte est actif. Lors de la suppression du compte, votre profil et vos messages sont supprimes.",
-					"Les donnees de competition peuvent etre conservees sous forme anonymisee a des fins statistiques.",
+					"Nous conservons vos données tant que votre compte est actif. Lors de la suppression du compte, votre profil et vos messages sont supprimés.",
+					"Les données de compétition peuvent être conservées sous forme anonymisée à des fins statistiques.",
 				],
 				items: [],
 			},
 			{
 				title: "8. Vos droits",
 				paragraphs: [
-					"En tant qu'utilisateur dans l'Union europeenne, vous avez le droit d'acceder a vos donnees, de les corriger, de les supprimer, d'en limiter le traitement ou de les exporter. Pour exercer ces droits, contactez-nous a morseteam@42.fr.",
-					"Nous repondrons sous 30 jours. Vous pouvez aussi deposer une plainte aupres de votre autorite nationale de protection des donnees.",
+					"En tant qu'utilisateur dans l'Union européenne, vous avez le droit d'accéder à vos données, de les corriger, de les supprimer, d'en limiter le traitement ou de les exporter. Pour exercer ces droits, contactez-nous à morseteam@42.fr.",
+					"Nous répondrons sous 30 jours. Vous pouvez aussi déposer une plainte auprès de votre autorité nationale de protection des données.",
 				],
 				items: [],
 			},
 			{
-				title: "9. Securite des donnees",
+				title: "9. Sécurité des données",
 				paragraphs: [
-					"Nous utilisons le stockage hache des mots de passe, l'authentification tierce et des controles d'acces pour proteger vos donnees.",
-					"Aucun systeme n'est totalement securise. Nous recommandons d'utiliser des mots de passe forts et de proteger vos comptes tiers.",
+					"Nous utilisons le stockage haché des mots de passe, l'authentification tierce et des contrôles d'accès pour protéger vos données.",
+					"Aucun système n'est totalement sécurisé. Nous recommandons d'utiliser des mots de passe forts et de protéger vos comptes tiers.",
 				],
 				items: [],
 			},
 			{
-				title: "10. Confidentialite des enfants",
+				title: "10. Confidentialité des enfants",
 				paragraphs: [
-					"Echoes of Morse ne s'adresse pas aux enfants de moins de 13 ans. Si vous pensez qu'un enfant nous a fourni des donnees personnelles, contactez-nous et nous les supprimerons rapidement.",
+					"Echoes of Morse ne s'adresse pas aux enfants de moins de 13 ans. Si vous pensez qu'un enfant nous a fourni des données personnelles, contactez-nous et nous les supprimerons rapidement.",
 				],
 				items: [],
 			},
 			{
 				title: "11. Modifications de cette politique",
 				paragraphs: [
-					"Nous pouvons mettre a jour cette politique de temps en temps. Continuer a utiliser la plateforme apres des modifications vaut acceptation de la politique mise a jour.",
+					"Nous pouvons mettre à jour cette politique de temps en temps. Continuer à utiliser la plateforme après des modifications vaut acceptation de la politique mise à jour.",
 				],
 				items: [],
 			},
@@ -476,21 +474,22 @@ const fr = {
 		],
 	},
 
+
 	//=========================================== termsOfService =========================================== 
 	termsOfService: {
 		title: "Conditions d'utilisation",
-		effectiveDate: "Date d'entree en vigueur : [10/07/2026]",
+		effectiveDate: "Date d'entrée en vigueur : [10/07/2026]",
 		sections: [
 			{
 				title: "1. Introduction",
 				paragraphs: [
-					"Bienvenue sur Echoes of Morse. Ces conditions d'utilisation encadrent votre utilisation de la plateforme, y compris les outils d'apprentissage du code Morse, les competitions, les classements, les amis et la messagerie.",
-					"En accedant a Echoes of Morse ou en l'utilisant, vous acceptez ces conditions. Si vous n'etes pas d'accord, veuillez ne pas utiliser la plateforme.",
+					"Bienvenue sur Echoes of Morse. Ces conditions d'utilisation encadrent votre utilisation de la plateforme, y compris les outils d'apprentissage du code Morse, les compétitions, les classements, les amis et la messagerie.",
+					"En accédant à Echoes of Morse ou en l'utilisant, vous acceptez ces conditions. Si vous n'êtes pas d'accord, veuillez ne pas utiliser la plateforme.",
 				],
 				items: [],
 			},
 			{
-				title: "2. Eligibilite",
+				title: "2. Éligibilité",
 				paragraphs: [
 					"Vous devez avoir au moins 13 ans pour utiliser cette plateforme. En utilisant Echoes of Morse, vous confirmez respecter cette condition.",
 				],
@@ -499,73 +498,73 @@ const fr = {
 			{
 				title: "3. Comptes utilisateur",
 				paragraphs: [
-					"L'acces aux fonctionnalites de la plateforme necessite un compte ou une connexion tierce liee.",
-					"Vous etes responsable de la securite de votre compte et de toutes les activites effectuees avec celui-ci.",
+					"L'accès aux fonctionnalités de la plateforme nécessite un compte ou une connexion tierce liée.",
+					"Vous êtes responsable de la sécurité de votre compte et de toutes les activités effectuées avec celui-ci.",
 				],
 				items: [],
 			},
 			{
 				title: "4. Utilisation acceptable",
-				paragraphs: ["Vous vous engagez a ne pas :"],
+				paragraphs: ["Vous vous engagez à ne pas :"],
 				items: [
-					"Utiliser la plateforme a des fins illegales",
+					"Utiliser la plateforme à des fins illégales",
 					"Tenter de pirater, perturber ou surcharger le service",
-					"Tricher dans les competitions ou manipuler les classements",
+					"Tricher dans les compétitions ou manipuler les classements",
 					"Envoyer des messages abusifs, offensants ou dangereux",
-					"Usurper l'identite d'un autre utilisateur ou d'une organisation",
+					"Usurper l'identité d'un autre utilisateur ou d'une organisation",
 				],
 			},
 			{
-				title: "5. Competitions et classements",
+				title: "5. Compétitions et classements",
 				paragraphs: [
-					"Echoes of Morse propose des competitions et des classements a des fins educatives et de divertissement.",
-					"Nous nous reservons le droit de supprimer des scores, suspendre des comptes ou reinitialiser des classements en cas de triche, d'abus ou de probleme technique.",
-				],
-				items: [],
-			},
-			{
-				title: "6. Messagerie privee",
-				paragraphs: [
-					"Les utilisateurs peuvent communiquer via les fonctions de chat prive. Vous etes seul responsable du contenu que vous envoyez.",
-					"Nous nous reservons le droit de moderer ou supprimer le contenu qui enfreint ces conditions ou les lois applicables.",
+					"Echoes of Morse propose des compétitions et des classements à des fins éducatives et de divertissement.",
+					"Nous nous réservons le droit de supprimer des scores, suspendre des comptes ou réinitialiser des classements en cas de triche, d'abus ou de problème technique.",
 				],
 				items: [],
 			},
 			{
-				title: "7. Propriete intellectuelle",
+				title: "6. Messagerie privée",
 				paragraphs: [
-					"Sauf indication contraire, le contenu, le design, les logos et les supports d'apprentissage de la plateforme appartiennent a Morse Team.",
+					"Les utilisateurs peuvent communiquer via les fonctions de chat privé. Vous êtes seul responsable du contenu que vous envoyez.",
+					"Nous nous réservons le droit de modérer ou supprimer le contenu qui enfreint ces conditions ou les lois applicables.",
+				],
+				items: [],
+			},
+			{
+				title: "7. Propriété intellectuelle",
+				paragraphs: [
+					"Sauf indication contraire, le contenu, le design, les logos et les supports d'apprentissage de la plateforme appartiennent à Morse Team.",
 					"Vous ne pouvez pas copier, redistribuer ou exploiter commercialement le contenu de la plateforme sans autorisation.",
 				],
 				items: [],
 			},
 			{
-				title: "8. Disponibilite du service",
+				title: "8. Disponibilité du service",
 				paragraphs: [
-					"Nous faisons de notre mieux pour maintenir l'acces a la plateforme, mais nous ne garantissons pas un service ininterrompu.",
-					"La plateforme peut etre modifiee, suspendue ou arretee a tout moment sans preavis.",
+					"Nous faisons de notre mieux pour maintenir l'accès à la plateforme, mais nous ne garantissons pas un service ininterrompu.",
+					"La plateforme peut être modifiée, suspendue ou arrêtée à tout moment sans préavis.",
 				],
 				items: [],
 			},
 			{
-				title: "9. Limitation de responsabilite",
+				title: "9. Limitation de responsabilité",
 				paragraphs: [
 					"Echoes of Morse est fourni tel quel, sans garantie d'aucune sorte.",
-					"Morse Team ne peut pas etre tenu responsable des pertes de donnees, interruptions de service ou dommages lies a l'utilisation de la plateforme.",
+					"Morse Team ne peut pas être tenu responsable des pertes de données, interruptions de service ou dommages liés à l'utilisation de la plateforme.",
 				],
 				items: [],
 			},
 			{
-				title: "10. Resiliation",
+				title: "10. Résiliation",
 				paragraphs: [
-					"Nous nous reservons le droit de suspendre ou de fermer les comptes qui enfreignent ces conditions ou menacent la securite de la plateforme.",
+					"Nous nous réservons le droit de suspendre ou de fermer les comptes qui enfreignent ces conditions ou menacent la sécurité de la plateforme.",
 				],
 				items: [],
 			},
 			{
 				title: "11. Modifications de ces conditions",
 				paragraphs: [
-					"Nous pouvons mettre a jour ces conditions de temps en temps. Continuer a utiliser la plateforme apres des modifications vaut acceptation des conditions mises a jour.",
+					"Nous pouvons mettre à jour ces conditions de temps en temps. Continuer à utiliser la plateforme après des modifications vaut acceptation des conditions mises à jour.",
 				],
 				items: [],
 			},
@@ -577,34 +576,35 @@ const fr = {
 		],
 	},
 
+
 	//=========================================== competition =========================================== 
 	competitionHome: {
 		//--------- CompetitionHeader ---------
-		pageTitle: "Competition",
+		pageTitle: "Compétition",
 
 		//--------- RadioSectionHeader ---------
-		radioWaves: "Ondes radio",
+		radioWaves: "Canaux radio",
 		radioWavesDescription: "Choisissez une vitesse de transmission et rejoignez son lobby en direct.",
 
 		//--------- CompetitionIntro.tsx ---------
-		rules: "Regles",
+		rules: "Règles",
 		rulesList: [
 			"Choisissez un lobby radio selon votre niveau en Morse.",
-			"Chaque lobby radio peut accueillir jusqu'a {maxUsers} joueurs.",
-			"Cliquez sur Pret pour rejoindre la file d'attente de cette radio.",
-			"Quand au moins deux joueurs sont prets, la session peut commencer.",
-			"Tous les joueurs prets recoivent les memes sequences Morse en temps reel.",
-			"Le meilleur score a la fin du chrono gagne le duel.",
+			"Chaque lobby radio peut accueillir jusqu'à {maxUsers} joueurs.",
+			"Cliquez sur Prêt pour rejoindre la file d'attente de cette radio.",
+			"Quand au moins deux joueurs sont prêts, la session peut commencer.",
+			"Tous les joueurs prêts reçoivent les mêmes séquences Morse en temps réel.",
+			"Le meilleur score à la fin du chrono gagne le duel.",
 		],
 
 		//--------- OnlineOverview.tsx ---------
-		onlineOverview: "Apercu en ligne",
+		onlineOverview: "Aperçu en ligne",
 		onlineNow: "En ligne",
 		radioWave01: "Canal radio 01",
 		radioWave02: "Canal radio 02",
 		radioWave03: "Canal radio 03",
-		liveDataConnected: "Donnees en direct connectees.",
-		disconnectedSnapshot: "Deconnecte. Affichage de l'instantane de la base de donnees.",
+		liveDataConnected: "Données en direct connectées.",
+		disconnectedSnapshot: "Déconnecté. Affichage de l'instantané de la base de données.",
 
 		//--------- RadioWaveCard.tsx ---------
 		usersInside: "{count}/{maxUsers} utilisateurs dans le lobby",
@@ -615,12 +615,16 @@ const fr = {
 		lobbyFullAria: "{radioName}, {wpm} WPM, lobby complet",
 		enterRadioAria: "Entrer dans {radioName}, {wpm} WPM, {capacity}",
 
+		radioWave01Description: "Une transmission plus lente pour débuter en Morse.",
+		radioWave02Description: "Une transmission équilibrée pour les joueurs intermédiaires.",
+		radioWave03Description: "Une transmission rapide pour les décodeurs expérimentés.",
+
 		//--------- ReceivedInvitations.tsx ---------
-		failedToAnswerInvitation: "Impossible de repondre a l'invitation.",
+		failedToAnswerInvitation: "Impossible de répondre à l'invitation.",
 
 		gameInvitations: "Invitations de jeu",
 
-		invitedYouTo: "vous invite a rejoindre {radioName}.",
+		invitedYouTo: "vous invite à rejoindre {radioName}.",
 		unknownRadioLobby: "un lobby radio",
 
 		accept: "Accepter",
@@ -629,74 +633,75 @@ const fr = {
 
 	competitionRadio: {
 		//--------- RadioHeader.tsx ---------
-		backToCompetition: "← Retour a la competition",
+		backToCompetition: "← Retour à la compétition",
 		radioLobby: "Lobby radio",
-		lobbyDescription: "{description} Les joueurs de ce lobby peuvent rejoindre la file Pret et lancer ensemble une session de decodage Morse en temps reel.",
+		lobbyDescription: "{description} Les joueurs de ce lobby peuvent rejoindre la file Prêt et lancer ensemble une session de décodage Morse en temps réel.",
 		radioInformation: "Informations radio",
 		speed: "Vitesse",
 		usersInside: "Utilisateurs dans le lobby",
 
 		//--------- LobbyUserList.tsx ---------
 		usersInThisRadio: "Utilisateurs dans cette radio",
-		seatsTaken: "{count}/{maxUsers} places occupees.",
+		seatsTaken: "{count}/{maxUsers} places occupées.",
 		lobbyFull: "Ce lobby est complet.",
-		statusExplanation: "Gris signifie inactif, vert signifie pret, jaune signifie deja en jeu.",
+		statusExplanation: "Gris signifie inactif, vert signifie prêt, jaune signifie déjà en jeu.",
 		inLobby: "Dans le lobby",
-		ready: "Pret",
+		ready: "Prêt",
 		playing: "En jeu",
 		you: "vous",
 		avatarAlt: "Avatar de {displayName}",
 
 		//--------- MatchmakingPanel.tsx ---------
 		matchmakingQueue: "File d'attente",
-		matchmakingDescription: "Rejoignez la file de cette radio. Quand au moins deux joueurs sont prets, un joueur pret peut lancer la session de decodage.",
-		cancelReady: "Annuler Pret",
-		startDecoding: "commencer dechiffrement",
+		matchmakingDescription: "Rejoignez la file de cette radio. Quand au moins deux joueurs sont prêts, un joueur prêt peut lancer la session de décodage.",
+		cancelReady: "Annuler Prêt",
+		startDecoding: "Commencer le décodage",
 
-		currentReadyPlayers: "Joueurs prets:",
+		currentReadyPlayers: "Joueurs prêts:",
 		currentReadyPoint: ".",
-		requiredReadyPlayersPrefix: "\u00A0 Au moins",
-		requiredReadyPlayersSuffix: "joueurs prets sont necessaires pour commencer.",
+		requiredReadyPlayersPrefix: "\u00A0Au moins",
+		requiredReadyPlayersSuffix: "joueurs prêts sont nécessaires pour commencer.",
 
 		//--------- ReadyPlayersList.tsx ---------
-		readyPlayers: "Joueurs prets",
+		readyPlayers: "Joueurs prêts",
 		readyPlayersDescription: "Ces joueurs entreront ensemble dans la prochaine session.",
-		noReadyPlayers: "Aucun joueur n'est pret pour le moment. Cliquez sur Pret pour rejoindre la file.",
+		noReadyPlayers: "Aucun joueur n'est prêt pour le moment. Cliquez sur Prêt pour rejoindre la file.",
 
 		//--------- InviteFriendsPanel.tsx ---------
 		inviteFriends: "Inviter des amis",
-		lobbyFullInviteClosed: "{radioName} est complet, les nouvelles invitations sont fermees pour le moment.",
-		inviteFriendsDescription: "Invitez des amis en ligne a rejoindre {radioName}. L'invitation les amene dans ce lobby, pas directement dans une session de jeu.",
+		lobbyFullInviteClosed: "{radioName} est complet, les nouvelles invitations sont fermées pour le moment.",
+		inviteFriendsDescription: "Invitez des amis en ligne à rejoindre {radioName}. L'invitation les amène dans ce lobby, pas directement dans une session de jeu.",
 		loadingOnlineFriends: "Chargement des amis en ligne...",
 		noOnlineFriend: "Aucun ami en ligne n'est disponible pour le moment.",
 		signInToInvite: "Connectez-vous pour inviter des amis en ligne.",
 		onlineFriend: "Ami en ligne",
-		invited: "Invite",
+		invited: "Invité",
 		invite: "Inviter",
-		inviteHint: "Les invitations sont stockees dans la base de donnees et menent a ce lobby radio.",
+		inviteHint: "Les invitations sont stockées dans la base de données et mènent à ce lobby radio.",
 
 		//--------- RadioWavePickerModal.tsx ---------
-		chooseRadioWave: "Choisir une onde radio",
-		inviteToRadioLobby: "Inviter {displayName} a rejoindre un lobby radio.",
-		closeRadioSelection: "Fermer la selection radio",
+		chooseRadioWave: "Choisir un canal radio",
+		inviteToRadioLobby: "Inviter {displayName} à rejoindre un lobby radio.",
+		closeRadioSelection: "Fermer la sélection radio",
 		cancel: "Annuler",
 		radioWave01: "Canal radio 01",
 		radioWave02: "Canal radio 02",
 		radioWave03: "Canal radio 03",
-		radioWave01Description: "Une transmission plus lente pour debuter en Morse.",
-		radioWave02Description: "Une transmission equilibree pour les joueurs intermediaires.",
-		radioWave03Description: "Une transmission rapide pour les decodeurs experimentes.",
+		radioWave01Description: "Une transmission plus lente pour débuter en Morse.",
+		radioWave02Description: "Une transmission équilibrée pour les joueurs intermédiaires.",
+		radioWave03Description: "Une transmission rapide pour les décodeurs expérimentés.",
 
 		//--------- RadioLobbyClient.tsx ---------
 		failedToLoadLobby: "Impossible de charger le lobby radio.",
 		failedToJoinLobby: "Impossible de rejoindre le lobby.",
-		failedToUpdateReadyStatus: "Impossible de mettre a jour le statut Pret.",
-		needReadyBeforeStart: "Vous devez cliquer sur Pret avant de commencer une partie.",
-		needTwoPlayers: "Il faut au moins deux joueurs prets pour commencer.",
+		failedToUpdateReadyStatus: "Impossible de mettre à jour le statut Prêt.",
+		needReadyBeforeStart: "Vous devez cliquer sur Prêt avant de commencer une partie.",
+		needTwoPlayers: "Il faut au moins deux joueurs prêts pour commencer.",
 		failedToStartGame: "Impossible de lancer la partie.",
 		failedToFetchFriends: "Impossible de charger les amis.",
 		failedToSendInvitation: "Impossible d'envoyer l'invitation.",
 	},
+
 
 
 	

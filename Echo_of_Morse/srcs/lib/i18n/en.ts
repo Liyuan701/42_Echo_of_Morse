@@ -615,6 +615,10 @@ const en = {
 		lobbyFullAria: "{radioName}, {wpm} WPM, lobby full",
 		enterRadioAria: "Enter {radioName}, {wpm} WPM, {capacity}",
 
+		radioWave01Description: "A slower transmission for new Morse learners.",
+		radioWave02Description: "A balanced transmission for intermediate players.",
+		radioWave03Description: "A fast transmission for experienced decoders.",
+
 		//--------- ReceivedInvitations.tsx ---------
 		failedToAnswerInvitation: "Failed to answer invitation.",
 
