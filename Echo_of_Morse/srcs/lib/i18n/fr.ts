@@ -477,7 +477,6 @@ const fr = {
 	},
 
 	//=========================================== termsOfService =========================================== 
-
 	termsOfService: {
 		title: "Conditions d'utilisation",
 		effectiveDate: "Date d'entree en vigueur : [10/07/2026]",
@@ -577,6 +576,131 @@ const fr = {
 			},
 		],
 	},
-	};
+
+	//=========================================== competition =========================================== 
+	competitionHome: {
+		//--------- CompetitionHeader ---------
+		pageTitle: "Competition",
+
+		//--------- RadioSectionHeader ---------
+		radioWaves: "Ondes radio",
+		radioWavesDescription: "Choisissez une vitesse de transmission et rejoignez son lobby en direct.",
+
+		//--------- CompetitionIntro.tsx ---------
+		rules: "Regles",
+		rulesList: [
+			"Choisissez un lobby radio selon votre niveau en Morse.",
+			"Chaque lobby radio peut accueillir jusqu'a {maxUsers} joueurs.",
+			"Cliquez sur Pret pour rejoindre la file d'attente de cette radio.",
+			"Quand au moins deux joueurs sont prets, la session peut commencer.",
+			"Tous les joueurs prets recoivent les memes sequences Morse en temps reel.",
+			"Le meilleur score a la fin du chrono gagne le duel.",
+		],
+
+		//--------- OnlineOverview.tsx ---------
+		onlineOverview: "Apercu en ligne",
+		onlineNow: "En ligne",
+		radioWave01: "Canal radio 01",
+		radioWave02: "Canal radio 02",
+		radioWave03: "Canal radio 03",
+		liveDataConnected: "Donnees en direct connectees.",
+		disconnectedSnapshot: "Deconnecte. Affichage de l'instantane de la base de donnees.",
+
+		//--------- RadioWaveCard.tsx ---------
+		usersInside: "{count}/{maxUsers} utilisateurs dans le lobby",
+
+		full: "Complet",
+		enter: "Entrer",
+
+		lobbyFullAria: "{radioName}, {wpm} WPM, lobby complet",
+		enterRadioAria: "Entrer dans {radioName}, {wpm} WPM, {capacity}",
+
+		//--------- ReceivedInvitations.tsx ---------
+		failedToAnswerInvitation: "Impossible de repondre a l'invitation.",
+
+		gameInvitations: "Invitations de jeu",
+
+		invitedYouTo: "vous invite a rejoindre {radioName}.",
+		unknownRadioLobby: "un lobby radio",
+
+		accept: "Accepter",
+		decline: "Refuser",
+	},
+
+	competitionRadio: {
+		//--------- RadioHeader.tsx ---------
+		backToCompetition: "← Retour a la competition",
+		radioLobby: "Lobby radio",
+		lobbyDescription: "{description} Les joueurs de ce lobby peuvent rejoindre la file Pret et lancer ensemble une session de decodage Morse en temps reel.",
+		radioInformation: "Informations radio",
+		speed: "Vitesse",
+		usersInside: "Utilisateurs dans le lobby",
+
+		//--------- LobbyUserList.tsx ---------
+		usersInThisRadio: "Utilisateurs dans cette radio",
+		seatsTaken: "{count}/{maxUsers} places occupees.",
+		lobbyFull: "Ce lobby est complet.",
+		statusExplanation: "Gris signifie inactif, vert signifie pret, jaune signifie deja en jeu.",
+		inLobby: "Dans le lobby",
+		ready: "Pret",
+		playing: "En jeu",
+		you: "vous",
+		avatarAlt: "Avatar de {displayName}",
+
+		//--------- MatchmakingPanel.tsx ---------
+		matchmakingQueue: "File d'attente",
+		matchmakingDescription: "Rejoignez la file de cette radio. Quand au moins deux joueurs sont prets, un joueur pret peut lancer la session de decodage.",
+		cancelReady: "Annuler Pret",
+		startDecoding: "commencer dechiffrement",
+
+		currentReadyPlayers: "Joueurs prets:",
+		currentReadyPoint: ".",
+		requiredReadyPlayersPrefix: "\u00A0 Au moins",
+		requiredReadyPlayersSuffix: "joueurs prets sont necessaires pour commencer.",
+
+		//--------- ReadyPlayersList.tsx ---------
+		readyPlayers: "Joueurs prets",
+		readyPlayersDescription: "Ces joueurs entreront ensemble dans la prochaine session.",
+		noReadyPlayers: "Aucun joueur n'est pret pour le moment. Cliquez sur Pret pour rejoindre la file.",
+
+		//--------- InviteFriendsPanel.tsx ---------
+		inviteFriends: "Inviter des amis",
+		lobbyFullInviteClosed: "{radioName} est complet, les nouvelles invitations sont fermees pour le moment.",
+		inviteFriendsDescription: "Invitez des amis en ligne a rejoindre {radioName}. L'invitation les amene dans ce lobby, pas directement dans une session de jeu.",
+		loadingOnlineFriends: "Chargement des amis en ligne...",
+		noOnlineFriend: "Aucun ami en ligne n'est disponible pour le moment.",
+		signInToInvite: "Connectez-vous pour inviter des amis en ligne.",
+		onlineFriend: "Ami en ligne",
+		invited: "Invite",
+		invite: "Inviter",
+		inviteHint: "Les invitations sont stockees dans la base de donnees et menent a ce lobby radio.",
+
+		//--------- RadioWavePickerModal.tsx ---------
+		chooseRadioWave: "Choisir une onde radio",
+		inviteToRadioLobby: "Inviter {displayName} a rejoindre un lobby radio.",
+		closeRadioSelection: "Fermer la selection radio",
+		cancel: "Annuler",
+		radioWave01: "Canal radio 01",
+		radioWave02: "Canal radio 02",
+		radioWave03: "Canal radio 03",
+		radioWave01Description: "Une transmission plus lente pour debuter en Morse.",
+		radioWave02Description: "Une transmission equilibree pour les joueurs intermediaires.",
+		radioWave03Description: "Une transmission rapide pour les decodeurs experimentes.",
+
+		//--------- RadioLobbyClient.tsx ---------
+		failedToLoadLobby: "Impossible de charger le lobby radio.",
+		failedToJoinLobby: "Impossible de rejoindre le lobby.",
+		failedToUpdateReadyStatus: "Impossible de mettre a jour le statut Pret.",
+		needReadyBeforeStart: "Vous devez cliquer sur Pret avant de commencer une partie.",
+		needTwoPlayers: "Il faut au moins deux joueurs prets pour commencer.",
+		failedToStartGame: "Impossible de lancer la partie.",
+		failedToFetchFriends: "Impossible de charger les amis.",
+		failedToSendInvitation: "Impossible d'envoyer l'invitation.",
+	},
+
+
+	
+
+};
 
 export default fr;

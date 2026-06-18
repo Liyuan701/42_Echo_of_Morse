@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui";
 import { useSocket } from "@/providers/socket-provider";
@@ -13,6 +14,8 @@ type OnlineOverviewProps = {
 };
 
 export default function OnlineOverview({ overview }: OnlineOverviewProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionHome;
   const { socket, isConnected } = useSocket();
 
   const [onlineNow, setOnlineNow] = useState(overview.totalOnlineUsers);
@@ -50,41 +53,37 @@ export default function OnlineOverview({ overview }: OnlineOverviewProps) {
   return (
     <Card className={styles.overviewCard} aria-labelledby="online-overview">
       <h2 id="online-overview" className={styles.cardTitle}>
-        Online Overview
+        {t.onlineOverview}
       </h2>
 
       <dl className={styles.statsList}>
         <div className={styles.statRow}>
-          <dt>Online now</dt>
+          <dt>{t.onlineNow}</dt>
           <dd>{onlineNow}</dd>
         </div>
 
         <div className={styles.statRow}>
-          <dt>Radio Wave 01</dt>
+          <dt>{t.radioWave01}</dt>
           <dd>{radioUsers["01"] ?? 0}</dd>
         </div>
 
         <div className={styles.statRow}>
-          <dt>Radio Wave 02</dt>
+          <dt>{t.radioWave02}</dt>
           <dd>{radioUsers["02"] ?? 0}</dd>
         </div>
 
         <div className={styles.statRow}>
-          <dt>Radio Wave 03</dt>
+          <dt>{t.radioWave03}</dt>
           <dd>{radioUsers["03"] ?? 0}</dd>
         </div>
       </dl>
 
       <p className={styles.socketHint}>
-        {isConnected
-          ? "Live data connected via socket."
-          : "Disconnected. Showing database snapshot."}
+        {isConnected? t.liveDataConnected : t.disconnectedSnapshot}
       </p>
     </Card>
   );
 }
-
-{/* //! yongyue i18n: move Online Overview labels into the i18n dictionary. */}
 
 // Liyuan:real data-connected:
 // authenticated online users count

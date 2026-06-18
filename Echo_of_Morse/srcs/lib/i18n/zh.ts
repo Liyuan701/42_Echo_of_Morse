@@ -577,6 +577,134 @@ const zh = {
 		],
 	},
 
+	//=========================================== competition =========================================== 
+	competitionHome: {
+		//--------- CompetitionHeader ---------
+		pageTitle: "比赛",
+
+		//--------- RadioSectionHeader ---------
+		radioWaves: "无线电频道",
+		radioWavesDescription: "选择一个传输速度，并进入对应的实时大厅。",
+
+		//--------- CompetitionIntro.tsx ---------
+		rules: "规则",
+		rulesList: [
+			"根据你的摩斯码水平选择一个无线电大厅。",
+			"每个无线电大厅最多容纳 {maxUsers} 名玩家。",
+			"点击准备，加入该频道的匹配队列。",
+			"当至少两名玩家准备好后，可以开始游戏。",
+			"所有准备好的玩家会实时接收相同的摩斯码序列。",
+			"计时结束时，分数最高的玩家获胜。",
+		],
+
+		//--------- OnlineOverview.tsx ---------
+		onlineOverview: "在线概览",
+		onlineNow: "当前在线",
+		liveDataConnected: "实时数据已连接。",
+		disconnectedSnapshot: "连接已断开，正在显示数据库快照。",
+
+		radioWave01: "无线电频道 01",
+		radioWave02: "无线电频道 02",
+		radioWave03: "无线电频道 03",
+
+		//--------- RadioWaveCard.tsx ---------
+		usersInside: "{count}/{maxUsers} 位用户在房间内",
+
+		full: "已满",
+		enter: "进入",
+
+		lobbyFullAria: "{radioName}，{wpm} WPM，大厅已满",
+		enterRadioAria: "进入 {radioName}，{wpm} WPM，{capacity}",
+
+		//--------- ReceivedInvitations.tsx ---------
+		failedToAnswerInvitation: "处理邀请失败。",
+
+		gameInvitations: "游戏邀请",
+
+		invitedYouTo: "邀请你加入 {radioName}。",
+		unknownRadioLobby: "一个无线电大厅",
+
+		accept: "接受",
+		decline: "拒绝",
+	},
+
+	competitionRadio: {
+		//--------- RadioHeader.tsx ---------
+		backToCompetition: "← 返回比赛页",
+		radioLobby: "无线电大厅",
+		lobbyDescription: "{description} 这个大厅中的玩家可以加入准备队列，并一起开始实时摩斯码解码游戏。",
+		radioInformation: "无线电信息",
+		speed: "速度",
+		usersInside: "房间人数",
+
+		//--------- LobbyUserList.tsx ---------
+		usersInThisRadio: "当前频道用户",
+
+		seatsTaken: "{count}/{maxUsers} 个位置已占用。",
+		statusExplanation: "灰色表示仅在大厅中，绿色表示已准备，黄色表示游戏中。",
+		
+		lobbyFull: "这个大厅已满。",
+		inLobby: "在大厅中",
+		ready: "准备",
+		playing: "游戏中",
+		
+		you: "你",
+		avatarAlt: "{displayName} 的头像",
+
+		//--------- MatchmakingPanel.tsx ---------
+		matchmakingQueue: "匹配队列",
+		matchmakingDescription: "加入这个频道的队列。当至少两名玩家准备好后，任意已准备玩家都可以开始解码游戏。",
+		cancelReady: "取消准备",
+		startDecoding: "开始解码",
+
+		currentReadyPlayers: "当前准备玩家:",
+		currentReadyPoint: "。 ",
+		requiredReadyPlayersPrefix: "至少需要",
+		requiredReadyPlayersSuffix: "名准备玩家才能开始。",
+
+		//--------- ReadyPlayersList.tsx ---------
+		readyPlayers: "已准备玩家",
+		readyPlayersDescription: "这些玩家会一起进入下一场游戏。",
+		noReadyPlayers: "还没有玩家准备。点击准备加入队列。",
+
+		//--------- InviteFriendsPanel.tsx ---------
+		inviteFriends: "邀请好友",
+		inviteFriendsDescription: "邀请在线好友加入 {radioName}。邀请会把他们带到这个大厅，而不是直接进入游戏。",
+		loadingOnlineFriends: "正在加载在线好友...",
+		
+		noOnlineFriend: "现在没有在线好友可邀请。",
+		signInToInvite: "请先登录以邀请在线好友。",
+		
+		onlineFriend: "在线好友",
+		invited: "已邀请",
+		invite: "邀请",
+		lobbyFullInviteClosed: "{radioName} 已满，暂时无法发送新的邀请。",
+		inviteHint: "邀请会保存在数据库中，并跳转到当前无线电大厅。",
+
+		//--------- RadioWavePickerModal.tsx ---------
+		chooseRadioWave: "选择无线电频道",
+		inviteToRadioLobby: "邀请 {displayName} 加入一个无线电大厅。",
+		closeRadioSelection: "关闭无线电选择",
+		cancel: "取消",
+		radioWave01: "无线电频道 01",
+		radioWave02: "无线电频道 02",
+		radioWave03: "无线电频道 03",
+		radioWave01Description: "适合摩斯码初学者的较慢传输速度。",
+		radioWave02Description: "适合中级玩家的平衡传输速度。",
+		radioWave03Description: "适合熟练解码者的高速传输速度。",
+
+		//--------- RadioLobbyClient.tsx ---------
+		failedToLoadLobby: "加载无线电大厅失败。",
+		failedToJoinLobby: "加入大厅失败。",
+		failedToUpdateReadyStatus: "更新准备状态失败。",
+		needReadyBeforeStart: "你需要先点击准备才能开始游戏。",
+		needTwoPlayers: "至少需要两名准备玩家才能开始。",
+		failedToStartGame: "开始游戏失败。",
+		failedToFetchFriends: "加载好友失败。",
+		failedToSendInvitation: "发送邀请失败。",
+	},
+
+
 };
 
 export default zh;

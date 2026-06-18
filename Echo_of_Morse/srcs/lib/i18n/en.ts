@@ -577,6 +577,134 @@ const en = {
 		],
 	},
 
+	//=========================================== competition =========================================== 
+	competitionHome: {
+		//--------- CompetitionHeader ---------
+		pageTitle: "Competition",
+
+		//--------- RadioSectionHeader ---------
+		radioWaves: "Radio Waves",
+		radioWavesDescription: "Choose a transmission speed and join its live lobby.",
+
+		//--------- CompetitionIntro.tsx ---------
+		rules: "Rules",
+		rulesList: [
+			"Choose a radio lobby according to your Morse level.",
+			"Each radio lobby can host up to {maxUsers} players.",
+			"Click Ready to join the matchmaking queue of this radio.",
+			"When at least two players are ready, the session can start.",
+			"All ready players receive the same Morse sequences in real time.",
+			"The best score at the end of the timer wins the duel.",
+		],
+
+		//--------- OnlineOverview.tsx ---------
+		onlineOverview: "Online Overview",
+		onlineNow: "Online now",
+		radioWave01: "Radio Wave 01",
+		radioWave02: "Radio Wave 02",
+		radioWave03: "Radio Wave 03",
+		liveDataConnected: "Live data connected.",
+		disconnectedSnapshot: "Disconnected. Showing database snapshot.",
+
+		//--------- RadioWaveCard.tsx ---------
+		usersInside: "{count}/{maxUsers} users inside",
+
+		full: "Full",
+		enter: "Enter",
+
+		lobbyFullAria: "{radioName}, {wpm} WPM, lobby full",
+		enterRadioAria: "Enter {radioName}, {wpm} WPM, {capacity}",
+
+		//--------- ReceivedInvitations.tsx ---------
+		failedToAnswerInvitation: "Failed to answer invitation.",
+
+		gameInvitations: "Game Invitations",
+
+		invitedYouTo: "invited you to {radioName}.",
+		unknownRadioLobby: "a radio lobby",
+
+		accept: "Accept",
+		decline: "Decline",
+	},
+
+	competitionRadio: {
+		//--------- RadioHeader.tsx ---------
+		backToCompetition: "← Back to Competition",
+		radioLobby: "Radio Lobby",
+		lobbyDescription: "{description} Players in this lobby can join the ready queue and start a real-time Morse decoding session together.",
+		radioInformation: "Radio information",
+		speed: "Speed",
+		usersInside: "Users inside",
+
+		//--------- LobbyUserList.tsx ---------
+		usersInThisRadio: "Users in this radio",
+		seatsTaken: "{count}/{maxUsers} seats taken.",
+		lobbyFull: "This lobby is full.",
+		statusExplanation: "Gray means idle, green means ready, yellow means already playing.",
+		inLobby: "In lobby",
+		ready: "Ready",
+		playing: "Playing",
+		you: "you",
+		avatarAlt: "{displayName} avatar",
+
+		//--------- MatchmakingPanel.tsx ---------
+		matchmakingQueue: "Matchmaking Queue",
+		matchmakingDescription: "Join this radio queue. When at least two players are ready, one ready player can start the decoding session.",
+		cancelReady: "Cancel Ready",
+		startDecoding: "Start decoding",
+
+		currentReadyPlayers: "Current ready players:",
+		currentReadyPoint: ".",
+		requiredReadyPlayersPrefix: "\u00A0 At least",
+		requiredReadyPlayersSuffix: "ready players are required to start.",
+
+		//--------- ReadyPlayersList.tsx ---------
+		readyPlayers: "Ready Players",
+		readyPlayersDescription: "These players will enter the next game session together.",
+		noReadyPlayers: "No player is ready yet. Click Ready to join the queue.",
+
+		//--------- InviteFriendsPanel.tsx ---------
+		inviteFriends: "Invite Friends",
+		lobbyFullInviteClosed: "{radioName} is full, so new invitations are closed for now.",
+		inviteFriendsDescription: "Invite online friends to join {radioName}. The invitation brings them to this lobby, not directly into a game session.",
+		
+		loadingOnlineFriends: "Loading online friends...",
+		
+		noOnlineFriend: "No online friend is available right now.",
+		signInToInvite: "Sign in to invite online friends.",
+		
+		onlineFriend: "Online friend",
+		invited: "Invited",
+		invite: "Invite",
+		inviteHint: "Invitations are stored in the database and lead to this radio lobby.",
+
+		//--------- RadioWavePickerModal.tsx ---------
+		chooseRadioWave: "Choose a Radio Wave",
+		inviteToRadioLobby: "Invite {displayName} to join a radio lobby.",
+		closeRadioSelection: "Close radio selection",
+		cancel: "Cancel",
+		radioWave01: "Radio Wave 01",
+		radioWave02: "Radio Wave 02",
+		radioWave03: "Radio Wave 03",
+		radioWave01Description: "A slower transmission for new Morse learners.",
+		radioWave02Description: "A balanced transmission for intermediate players.",
+		radioWave03Description: "A fast transmission for experienced decoders.",
+
+		//--------- RadioLobbyClient.tsx ---------
+		failedToLoadLobby: "Failed to load the radio lobby.",
+		failedToJoinLobby: "Failed to join the lobby.",
+		failedToUpdateReadyStatus: "Failed to update ready status.",
+		needReadyBeforeStart: "You need to click Ready before starting a game.",
+		needTwoPlayers: "At least two ready players are required to start.",
+		failedToStartGame: "Failed to start the game.",
+		failedToFetchFriends: "Failed to fetch friends.",
+		failedToSendInvitation: "Failed to send invitation.",
+	},
+
+
+
+
+
 };
 
 export default en;

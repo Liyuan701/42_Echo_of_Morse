@@ -1,3 +1,7 @@
+
+"use client";
+
+import { useI18n } from "@/lib/i18n";
 import Link from "next/link";
 import { RADIO_LOBBY_MAX_USERS } from "@/config/competition";
 import type { RadioConfig } from "@/types/competition";
@@ -12,30 +16,47 @@ export default function RadioHeader({
   radio,
   usersCount,
 }: RadioHeaderProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionRadio;
+
+	const radioDescriptionById: Record<string, string> = {
+		"01": t.radioWave01Description,
+		"02": t.radioWave02Description,
+		"03": t.radioWave03Description,
+	};
+
+	const radioNameById: Record<string, string> = {
+		"01": t.radioWave01,
+		"02": t.radioWave02,
+		"03": t.radioWave03,
+	};
+
+	const radioName = radioNameById[radio.id];
+	const radioDescription = radioDescriptionById[radio.id];
+
   return (
     <header className={styles.header}>
       <div>
         <Link href="/competition" className={styles.backLink}>
-          ← Back to Competition
+          {t.backToCompetition}
         </Link>
 
-        <p className={styles.kicker}>Radio Lobby</p>
-        <h1 className={styles.title}>{radio.name}</h1>
+        <p className={styles.kicker}>{t.radioLobby}</p>
+        <h1 className={styles.title}>{radioName}</h1>
 
         <p className={styles.description}>
-          {radio.description} Players in this lobby can join the ready queue
-          and start a real-time Morse decoding session together.
+          {t.lobbyDescription.replace("{description}", radioDescription)}
         </p>
       </div>
 
-      <aside className={styles.metaBox} aria-label="Radio information">
+      <aside className={styles.metaBox} aria-label={t.radioInformation}>
         <div className={styles.metaGroup}>
-          <p className={styles.metaLabel}>Speed</p>
+          <p className={styles.metaLabel}>{t.speed}</p>
           <p className={styles.metaValue}>{radio.wpm} WPM</p>
         </div>
 
         <div className={styles.metaGroup}>
-          <p className={styles.metaLabel}>Users inside</p>
+          <p className={styles.metaLabel}>{t.usersInside}</p>
           <p className={styles.metaValue}>
             {usersCount}/{RADIO_LOBBY_MAX_USERS}
           </p>

@@ -2,6 +2,7 @@
 //! mock data deleted
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui";
 import type { RadioId } from "@/types/competition";
 import styles from "./css/radio-wave-picker-modal.module.css";
@@ -12,27 +13,6 @@ type RadioConfig = {
   wpm: number;
   description: string;
 };
-
-const radioConfigs: RadioConfig[] = [
-  {
-    id: "01",
-    name: "Radio Wave 01",
-    wpm: 5,
-    description: "A slower transmission for new Morse learners.",
-  },
-  {
-    id: "02",
-    name: "Radio Wave 02",
-    wpm: 10,
-    description: "A balanced transmission for intermediate players.",
-  },
-  {
-    id: "03",
-    name: "Radio Wave 03",
-    wpm: 15,
-    description: "A fast transmission for experienced decoders.",
-  },
-];
 
 type RadioWavePickerModalProps = {
   isOpen: boolean;
@@ -47,6 +27,30 @@ export default function RadioWavePickerModal({
   onClose,
   onSelectRadio,
 }: RadioWavePickerModalProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionRadio;
+
+	const radioConfigs: RadioConfig[] = [
+		{
+			id: "01",
+			name: t.radioWave01,
+			wpm: 5,
+			description: t.radioWave01Description,
+		},
+		{
+			id: "02",
+			name: t.radioWave02,
+			wpm: 10,
+			description: t.radioWave02Description,
+		},
+		{
+			id: "03",
+			name: t.radioWave03,
+			wpm: 15,
+			description: t.radioWave03Description,
+		},
+	];
+
   if (!isOpen) return null;
 
   return (
@@ -61,11 +65,11 @@ export default function RadioWavePickerModal({
         <header className={styles.header}>
           <div>
             <h2 id="radio-invite-title" className={styles.title}>
-              Choose a Radio Wave
+              {t.chooseRadioWave}
             </h2>
 
             <p className={styles.description}>
-              Invite {targetDisplayName} to join a radio lobby.
+              {t.inviteToRadioLobby.replace("{displayName}", targetDisplayName)}
             </p>
           </div>
 
@@ -73,7 +77,7 @@ export default function RadioWavePickerModal({
             type="button"
             className={styles.closeButton}
             onClick={onClose}
-            aria-label="Close radio selection"
+            aria-label={t.closeRadioSelection}
           >
             ×
           </button>
@@ -98,7 +102,7 @@ export default function RadioWavePickerModal({
 
         <footer className={styles.footer}>
           <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
+            {t.cancel}
           </Button>
         </footer>
       </section>

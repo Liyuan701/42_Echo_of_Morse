@@ -168,7 +168,7 @@
 // }
 
 "use client";
-
+import { useI18n } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Card } from "@/components/ui";
@@ -190,6 +190,9 @@ type GameInvitation = {
 };
 
 export default function ReceivedInvitations() {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionHome;
+	
   const { status } = useSession();
   const { socket } = useSocket();
   const { answerGameInvitation } = useGameInvitationActions();
@@ -271,7 +274,7 @@ export default function ReceivedInvitations() {
       window.alert(
         error instanceof Error
           ? error.message
-          : "Failed to answer invitation."
+          : t.failedToAnswerInvitation
       );
     } finally {
       setUpdatingId(null);
@@ -285,7 +288,7 @@ export default function ReceivedInvitations() {
   return (
     <Card className={styles.invitationPanel} aria-labelledby="game-invitations">
       <h2 id="game-invitations" className={styles.cardTitle}>
-        Game Invitations
+        {t.gameInvitations}
       </h2>
 
       <div className={styles.invitationList}>
@@ -294,7 +297,7 @@ export default function ReceivedInvitations() {
             <div>
               <strong>{invitation.fromUser.username}</strong>
               <p>
-                invited you to {invitation.radio?.name ?? "a radio lobby"}.
+                {t.invitedYouTo.replace("{radioName}", invitation.radio?.name ?? t.unknownRadioLobby )}
               </p>
             </div>
 
@@ -305,7 +308,7 @@ export default function ReceivedInvitations() {
                 disabled={updatingId === invitation.id || !invitation.radio}
                 onClick={() => answerInvitation(invitation, "accept")}
               >
-                Accept
+               {t.accept}
               </Button>
 
               <Button
@@ -315,7 +318,7 @@ export default function ReceivedInvitations() {
                 disabled={updatingId === invitation.id}
                 onClick={() => answerInvitation(invitation, "decline")}
               >
-                Decline
+                {t.decline}
               </Button>
             </div>
           </article>

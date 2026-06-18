@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui";
 import { RADIO_LOBBY_MAX_USERS } from "@/config/competition";
 import type { RadioUser, RadioUserStatus } from "@/types/competition";
@@ -7,14 +10,6 @@ type LobbyUserListProps = {
   users: RadioUser[];
 };
 
-// //! yongyue i18n:
-// Move status labels "In lobby", "Ready", "Playing" into the i18n dictionary.
-const statusLabelByStatus: Record<RadioUserStatus, string> = {
-  idle: "In lobby",
-  ready: "Ready",
-  playing: "Playing",
-};
-
 const statusClassByStatus: Record<RadioUserStatus, string> = {
   idle: styles.statusIdle,
   ready: styles.statusReady,
@@ -22,6 +17,15 @@ const statusClassByStatus: Record<RadioUserStatus, string> = {
 };
 
 export default function LobbyUserList({ users }: LobbyUserListProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionRadio;
+
+	const statusLabelByStatus: Record<RadioUserStatus, string> = {
+		idle: t.inLobby,
+		ready: t.ready,
+		playing: t.playing,
+	};
+
   const isLobbyFull = users.length >= RADIO_LOBBY_MAX_USERS;
 
   return (
@@ -29,13 +33,13 @@ export default function LobbyUserList({ users }: LobbyUserListProps) {
       <div className={styles.panelHeader}>
         <div>
           <h2 id="lobby-users" className={styles.panelTitle}>
-            Users in this radio
+            {t.usersInThisRadio}
           </h2>
           <p className={styles.panelText}>
-            {users.length}/{RADIO_LOBBY_MAX_USERS} seats taken.{" "}
-            {isLobbyFull
-              ? "This lobby is full."
-              : "Gray means idle, green means ready, yellow means already playing."}
+            {t.seatsTaken
+				.replace("{count}", String(users.length))
+				.replace("{maxUsers}", String(RADIO_LOBBY_MAX_USERS))}{" "}
+			{isLobbyFull ? t.lobbyFull : t.statusExplanation}
           </p>
         </div>
       </div>
@@ -55,7 +59,7 @@ export default function LobbyUserList({ users }: LobbyUserListProps) {
               <img
                 className={styles.avatarImage}
                 src={user.avatarUrl}
-                alt={`${user.displayName} avatar`}
+                alt={t.avatarAlt.replace("{displayName}", user.displayName)}
               />
             ) : (
               <span className={styles.avatarFallback} aria-hidden="true">
@@ -66,7 +70,7 @@ export default function LobbyUserList({ users }: LobbyUserListProps) {
             <div className={styles.userInfo}>
               <p className={styles.username}>
                 {user.displayName}
-                {user.isCurrentUser ? " (you)" : ""}
+                {user.isCurrentUser ? ` (${t.you})` : ""}
               </p>
               <p className={styles.statusLabel}>
                 {statusLabelByStatus[user.status]}

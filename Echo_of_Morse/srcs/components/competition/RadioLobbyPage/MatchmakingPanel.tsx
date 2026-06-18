@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n";
 import { Button, Card } from "@/components/ui";
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
 
@@ -20,17 +23,19 @@ export default function MatchmakingPanel({
   onToggleReady,
   onStartGame,
 }: MatchmakingPanelProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionRadio;
+
   return (
     <Card className={styles.panel} aria-labelledby="matchmaking-panel">
       <div className={styles.panelHeader}>
         <div>
           <h2 id="matchmaking-panel" className={styles.panelTitle}>
-            Matchmaking Queue
+            {t.matchmakingQueue}
           </h2>
 
           <p className={styles.panelText}>
-            Join this radio queue. When at least two players are ready, one
-            ready player can start the decoding session.
+            {t.matchmakingDescription}
           </p>
         </div>
       </div>
@@ -42,7 +47,7 @@ export default function MatchmakingPanel({
           disabled={isUpdating}
           onClick={onToggleReady}
         >
-          {isCurrentUserReady ? "Cancel Ready" : "Ready"}
+          {isCurrentUserReady ? t.cancelReady : t.ready}
         </Button>
 
         <Button
@@ -53,22 +58,16 @@ export default function MatchmakingPanel({
           disabled={isUpdating}
           onClick={onStartGame}
         >
-          Commencer le déchiffrement
+          {t.startDecoding}
         </Button>
       </div>
 
       <p className={styles.queueInfo}>
-        Current ready players: <strong>{readyPlayersCount}</strong>. At least{" "}
-        <strong>2</strong> ready players are required to start.
+		{t.currentReadyPlayers} <strong>{readyPlayersCount}</strong> {t.currentReadyPoint}
+		{t.requiredReadyPlayersPrefix} <strong>2</strong> {t.requiredReadyPlayersSuffix}
       </p>
 
       {message ? <p className={styles.message}>{message}</p> : null}
     </Card>
   );
 }
-
-{/* //! yongyue i18n: move matchmaking texts and button labels into the i18n dictionary. */}
-
-// Liyuan: real data for button - connected
-// canStartGame currently comes from local mock readyPlayers.
-// Later it should come from the server-confirmed ready queue.

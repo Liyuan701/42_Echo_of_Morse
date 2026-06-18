@@ -244,6 +244,7 @@
 
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Card } from "@/components/ui";
@@ -281,6 +282,9 @@ export default function InviteFriendsPanel({
   radioName,
   isLobbyFull,
 }: InviteFriendsPanelProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionRadio;
+
   const { data: session, status } = useSession();
   const currentUserId = (session?.user as { id?: string } | undefined)?.id;
   const { socket } = useSocket();
@@ -318,7 +322,7 @@ export default function InviteFriendsPanel({
         ]);
 
         if (!friendsResponse.ok || !invitationsResponse.ok) {
-          throw new Error("Failed to fetch friends.");
+          throw new Error(t.failedToFetchFriends);
         }
 
         const friends = (await friendsResponse.json()) as ApiFriend[];
@@ -404,7 +408,7 @@ export default function InviteFriendsPanel({
       }
 
       window.alert(
-        error instanceof Error ? error.message : "Failed to send invitation."
+        error instanceof Error ? error.message : t.failedToSendInvitation
       );
     }
   }
@@ -418,23 +422,24 @@ export default function InviteFriendsPanel({
       <div className={styles.panelHeader}>
         <div>
           <h2 id="invite-friends" className={styles.panelTitle}>
-            Invite Friends
+            {t.inviteFriends}
           </h2>
           <p className={styles.panelText}>
             {isLobbyFull
-              ? `${radioName} is full, so new invitations are closed for now.`
-              : `Invite online friends to join ${radioName}. The invitation brings them to this lobby, not directly into a game session.`}
+				? t.lobbyFullInviteClosed.replace("{radioName}", radioName)
+				: t.inviteFriendsDescription.replace("{radioName}", radioName)}
           </p>
         </div>
       </div>
 
       {isLoadingFriends ? (
-        <p className={styles.emptyState}>Loading online friends...</p>
+        <p className={styles.emptyState}>{t.loadingOnlineFriends}</p>
       ) : friendsToDisplay.length === 0 ? (
         <p className={styles.emptyState}>
           {hasTriedRealFriends
-            ? "No online friend is available right now."
-            : "Sign in to invite online friends."}
+            ? t.noOnlineFriend
+			: t.signInToInvite
+			}
         </p>
       ) : (
         <div className={styles.friendList}>
@@ -449,7 +454,7 @@ export default function InviteFriendsPanel({
                   <img
                     className={styles.avatarImage}
                     src={friend.avatarUrl}
-                    alt={`${friend.displayName} avatar`}
+                    alt={t.avatarAlt.replace("{displayName}", friend.displayName)}
                   />
                 ) : (
                   <span className={styles.avatarFallback} aria-hidden="true">
@@ -459,7 +464,7 @@ export default function InviteFriendsPanel({
 
                 <div className={styles.friendMeta}>
                   <p className={styles.username}>{friend.displayName}</p>
-                  <p className={styles.statusLabel}>Online friend</p>
+                  <p className={styles.statusLabel}>{t.onlineFriend}</p>
                 </div>
 
                 <Button
@@ -469,7 +474,7 @@ export default function InviteFriendsPanel({
                   disabled={alreadyInvited || isLobbyFull}
                   onClick={() => handleInviteFriend(friend)}
                 >
-                  {isLobbyFull ? "Full" : alreadyInvited ? "Invited" : "Invite"}
+                  {isLobbyFull ? t.lobbyFull : alreadyInvited ? t.invited : t.invite}
                 </Button>
               </article>
             );
@@ -478,7 +483,7 @@ export default function InviteFriendsPanel({
       )}
 
       <p className={styles.inviteHint}>
-        Invitations are stored in the database and lead to this radio lobby.
+        {t.inviteHint}
       </p>
     </Card>
   );
