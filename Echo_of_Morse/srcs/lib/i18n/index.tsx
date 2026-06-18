@@ -41,15 +41,35 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
 	//useState = cree une variable geree par React et une fonction pour la modifier
 	//il faut utiliser cette fonction pour que React mette a jour la page quand la variable change
-	const [selectedLanguage, setSelectedLanguage] = useState<Language>("fr");
+
+	// const [selectedLanguage, setSelectedLanguage] = useState<Language>("fr");
+	const [selectedLanguage, setSelectedLanguage] = useState<Language>(() => {
+		if (typeof window === "undefined") {
+			return "fr";
+		}
+
+		const savedLanguage = window.localStorage.getItem("language");
+
+		if (savedLanguage === "en" || savedLanguage === "fr" || savedLanguage === "zh") {
+			return savedLanguage;
+		}
+
+		return "fr";
+	});
+
+	function changeLanguage(language: Language) {
+		setSelectedLanguage(language);
+		window.localStorage.setItem("language", language);
+	}
 
 	return (
 		//I18nContext.Provider = on utilise le box global pour fournir les valeurs
 		//value = les valeurs que on veut fournir
 		<I18nContext.Provider value={{ 
-			language: selectedLanguage, 
+			language: selectedLanguage,
 			dictionary: dictionaries[selectedLanguage], 
-			setLanguage:setSelectedLanguage }}>
+			setLanguage: changeLanguage,
+		}}>
 		{children}
 		</I18nContext.Provider>
 	);
