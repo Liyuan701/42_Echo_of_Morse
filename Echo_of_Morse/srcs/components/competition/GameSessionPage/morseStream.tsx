@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import styles from "./css/morseStream.module.css";
+import { useI18n } from "@/lib/i18n";
 
 type MorseStreamProps = {
 	morse: string;
@@ -67,6 +68,9 @@ export default function MorseStream({
 	speedWpm,
 	disabled,
 }: MorseStreamProps) {
+
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionGame;
 
 	//useEffect ==> executer du code après l’affichage, pour contrôler quand exécuter les actions secondaires
 	useEffect(() => {
@@ -150,13 +154,13 @@ export default function MorseStream({
 			{showMorseText ? (
 				<>
 					<span className={styles.streamHint}>
-						可使用键盘左/右箭头或鼠标，滑动查看完整内容。
+						{t.morseScrollHint}
 					</span>
 
 					<strong className={styles.morseText}>{morse}</strong>
 				</>
 			) : (
-				<strong className={`${styles.morseText} ${styles.hiddenText}`}>Hidden</strong>
+				<strong className={`${styles.morseText} ${styles.hiddenText}`}>{t.hidden}</strong>
 			)}
 		</div>
 	);

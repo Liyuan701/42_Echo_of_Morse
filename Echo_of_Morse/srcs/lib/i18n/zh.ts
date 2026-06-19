@@ -708,6 +708,36 @@ const zh = {
 		failedToSendInvitation: "发送邀请失败。",
 	},
 
+	competitionGame: {
+		//--------- gameSession.tsx ---------
+		noChallengeSequences: "这个游戏目前没有可用题目。",
+		failedToLoadGameSession: "加载游戏失败。",
+		failedToSaveGameResult: "保存游戏结果失败。",
+		
+		loadingGameSession: "正在加载游戏...",
+		radioWaveTitle: "无线电频道 {radioId}",
+		decodeSessionTitle: "{wpm} WPM 解码",
+		showMorseText: "显示摩斯文本",
+
+		//--------- answer.tsx ---------
+		morseScrollHint: "可使用键盘左/右箭头或鼠标，滑动查看完整内容。",
+		hidden: "已隐藏",
+
+		//--------- answer.tsx ---------
+		answerPlaceholder: "在此输入你的解码结果...",
+
+		//--------- ranking.tsx ---------
+		ranking: "排行榜",
+		rank: "排名",
+		player: "玩家",
+		score: "分数",
+		accuracySymbol: "%",
+
+		//--------- finalRanking.tsx ---------
+		winner: "获胜者",
+		tie: "平局",
+		backToRadioLobby: "返回无线电大厅",
+	},
 
 };
 

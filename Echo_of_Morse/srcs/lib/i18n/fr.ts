@@ -702,8 +702,36 @@ const fr = {
 		failedToSendInvitation: "Impossible d'envoyer l'invitation.",
 	},
 
+	competitionGame: {
+		//--------- gameSession.tsx ---------
+		noChallengeSequences: "Cette session de jeu ne contient aucune séquence.",
+		failedToLoadGameSession: "Impossible de charger la session de jeu.",
+		failedToSaveGameResult: "Impossible d'enregistrer le résultat du jeu.",
+		
+		loadingGameSession: "Chargement de la session de jeu...",
+		radioWaveTitle: "Canal radio {radioId}",
+		decodeSessionTitle: "Session de décodage {wpm} WPM",
+		showMorseText: "Afficher le texte Morse",
 
+		//--------- morseStream.tsx ---------
+		morseScrollHint: "Utilisez les flèches gauche/droite ou la souris pour faire défiler et voir tout le contenu.",
+		hidden: "Masqué",
 
+		//--------- answer.tsx ---------
+		answerPlaceholder: "Entrez ici votre résultat décodé...",
+
+		//--------- ranking.tsx ---------
+		ranking: "Classement",
+		rank: "Rang",
+		player: "Joueur",
+		score: "Score",
+		accuracySymbol: "%",
+
+		//--------- finalRanking.tsx ---------
+		winner: "Vainqueur",
+		tie: "Égalité",
+		backToRadioLobby: "Retour au lobby radio",
+	},
 	
 
 };

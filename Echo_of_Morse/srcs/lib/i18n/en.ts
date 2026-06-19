@@ -705,7 +705,36 @@ const en = {
 		failedToSendInvitation: "Failed to send invitation.",
 	},
 
+	competitionGame: {
+		//--------- gameSession.tsx ---------
+		noChallengeSequences: "This game has no challenge sequences.",
+		failedToLoadGameSession: "Failed to load game.",
+		failedToSaveGameResult: "Failed to save game result.",
+		
+		loadingGameSession: "Loading game...",
+		radioWaveTitle: "Radio Wave {radioId}",
+		decodeSessionTitle: "{wpm} WPM Decode Session",
+		showMorseText: "Show Morse text",
 
+		//--------- answer.tsx ---------
+		morseScrollHint: "Use the left/right arrow keys or mouse to scroll and view the full content.",
+		hidden: "Hidden",
+
+		//--------- answer.tsx ---------
+		answerPlaceholder: "Enter your decoded result here...",
+
+		//--------- ranking.tsx ---------
+		ranking: "Ranking",
+		rank: "Rank",
+		player: "Player",
+		score: "Score",
+		accuracySymbol: "%",
+
+		//--------- finalRanking.tsx ---------
+		winner: "Winner",
+		tie: "Tie",
+		backToRadioLobby: "Back to Radio Lobby",
+	},
 
 
 

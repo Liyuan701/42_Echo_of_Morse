@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import { useEffect, useRef, type ChangeEvent, type UIEvent } from "react";
 import styles from "./css/answer.module.css";
 
@@ -18,6 +19,9 @@ export default function Answer({
 	isCorrect,
 	onChange,
 }: AnswerProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionGame;
+
 	//useRef = arder une valeur sans relancer l’affichage de la page
 	//HTMLTextAreaElement = textarea, et HTMLDivElement = div
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -77,7 +81,7 @@ export default function Answer({
 						})
 					) : (
 						<span className={styles.answerLabel}>
-							在此输入你的解码结果...
+							{t.answerPlaceholder}
 						</span>
 					)}
 				</div>

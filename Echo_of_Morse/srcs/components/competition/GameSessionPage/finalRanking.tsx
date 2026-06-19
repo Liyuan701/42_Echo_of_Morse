@@ -2,6 +2,7 @@ import Link from "next/link";
 import Ranking from "./ranking";
 import styles from "./css/finalRanking.module.css";
 import type { Player } from "./gameSessionType";
+import { useI18n } from "@/lib/i18n";
 
 type FinalRankingProps = {
 	radioId: string;
@@ -18,12 +19,15 @@ export default function FinalRanking({
 	players,
 	winners,
 }: FinalRankingProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionGame;
+
 	const isTie = winners.length > 1;
 
 	return (
 		<section className={styles.finalOverlay}>
 			<div className={styles.winnerBlock}>
-				<span>{isTie ? "Tie" : "Winner"}</span>
+				<span>{isTie ? t.tie : t.winner}</span>
 				<strong>{getWinnerNames(winners)}</strong>
 			</div>
 
@@ -31,7 +35,7 @@ export default function FinalRanking({
 
 			<div className={styles.actions}>
 				<Link href={`/competition/radio/${radioId}`}>
-					Back to Radio Lobby
+					{t.backToRadioLobby}
 				</Link>
 			</div>
 		</section>

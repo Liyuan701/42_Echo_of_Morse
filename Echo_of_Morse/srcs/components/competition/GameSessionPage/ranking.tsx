@@ -1,4 +1,5 @@
 import styles from "./css/ranking.module.css";
+import { useI18n } from "@/lib/i18n";
 
 type Player = {
 	id: string;
@@ -22,21 +23,24 @@ function getAccuracy(player: Player) {
 }
 
 export default function Ranking({ players, status = "live" }: RankingProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionGame;
+	
 	const highestScore = players[0]?.score ?? 0;
 
 	return (
 		<aside
 			className={`${styles.ranking} ${ status === "final" ? styles.finalranking : styles.liveRanking}`}
 		>
-			<h2 className={styles.title}>Ranking</h2>
+			<h2 className={styles.title}>{t.ranking}</h2>
 
 			<div className={styles.rankingTable}>
 				{/*----------- titre du tableau -----------*/}
 					<div className={styles.rankingHeader}>
-						<span>Rank</span>
-						<span>Player</span>
-						<span>Score</span>
-						<span>%</span>
+						<span>{t.rank}</span>
+						<span>{t.player}</span>
+						<span>{t.score}</span>
+						<span>{t.accuracySymbol}</span>
 					</div>
 				{/*----------- données du tableau -----------*/}
 				<ol className={styles.rankList}>
