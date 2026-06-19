@@ -700,6 +700,7 @@ const zh = {
 		//--------- RadioLobbyClient.tsx ---------
 		failedToLoadLobby: "加载无线电大厅失败。",
 		failedToJoinLobby: "加入大厅失败。",
+		failedToAnswerInvitation: "处理邀请失败。",
 		failedToUpdateReadyStatus: "更新准备状态失败。",
 		needReadyBeforeStart: "你需要先点击准备才能开始游戏。",
 		needTwoPlayers: "至少需要两名准备玩家才能开始。",

@@ -113,11 +113,7 @@ export default function GameSession({
 				setIsAnswerLocked(false);
 			} catch (error) {
 				if (!cancelled) {
-					setLoadError(
-						error instanceof Error
-							? error.message
-							: t.failedToLoadGameSession
-					);
+					setLoadError(t.failedToLoadGameSession);
 				}
 			}
 		}

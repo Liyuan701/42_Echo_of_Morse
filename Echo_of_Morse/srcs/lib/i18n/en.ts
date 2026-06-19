@@ -697,6 +697,7 @@ const en = {
 		//--------- RadioLobbyClient.tsx ---------
 		failedToLoadLobby: "Failed to load the radio lobby.",
 		failedToJoinLobby: "Failed to join the lobby.",
+		failedToAnswerInvitation: "Failed to answer invitation.",
 		failedToUpdateReadyStatus: "Failed to update ready status.",
 		needReadyBeforeStart: "You need to click Ready before starting a game.",
 		needTwoPlayers: "At least two ready players are required to start.",

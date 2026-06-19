@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -67,6 +68,9 @@ function getActionStatus(action: "accept" | "decline") {
 }
 
 export function useGameInvitationActions() {
+	const { dictionary } = useI18n();
+	const t = dictionary.competitionRadio;
+
   const router = useRouter();
   const { data: session } = useSession();
   const { socket } = useSocket();
@@ -95,7 +99,7 @@ export function useGameInvitationActions() {
 
         if (!joinResponse.ok) {
           throw new GameInvitationActionError(
-            joinBody.error || "Failed to join the radio lobby.",
+            joinBody.error || t.failedToJoinLobby,
             joinResponse.status,
             joinBody
           );
@@ -118,7 +122,7 @@ export function useGameInvitationActions() {
 
       if (!invitationResponse.ok || !invitationBody.id) {
         throw new GameInvitationActionError(
-          invitationBody.error || "Failed to send invitation.",
+          invitationBody.error || t.failedToSendInvitation,
           invitationResponse.status,
           invitationBody
         );
@@ -177,7 +181,7 @@ export function useGameInvitationActions() {
         }
 
         throw new GameInvitationActionError(
-          body.error || "Failed to answer invitation.",
+          body.error || t.failedToAnswerInvitation,
           response.status,
           body
         );

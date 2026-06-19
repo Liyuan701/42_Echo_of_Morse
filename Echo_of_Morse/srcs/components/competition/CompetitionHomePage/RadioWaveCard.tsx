@@ -77,7 +77,7 @@ export default function RadioWaveCard({
       href={`/competition/radio/${radio.id}`}
       className={styles.radioLink}
       aria-label={t.enterRadioAria
-		.replace("{radioName}", radio.name)
+		.replace("{radioName}", radioName)
 		.replace("{wpm}", String(radio.wpm))
 		.replace("{capacity}", usersCapacityLabel)}
     >

@@ -35,6 +35,14 @@ export default function RadioLobbyClient({
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionRadio;
 
+	const radioNameById: Record<string, string> = {
+		"01": t.radioWave01,
+		"02": t.radioWave02,
+		"03": t.radioWave03,
+	};
+
+	const radioName = radioNameById[radio.radioId];
+
   const router = useRouter();
   const { socket } = useSocket();
 
@@ -281,7 +289,7 @@ export default function RadioLobbyClient({
         <div className={styles.rightColumn}>
           <InviteFriendsPanel
             radioId={radio.radioId}
-            radioName={radio.name}
+            radioName={radioName}
             isLobbyFull={isLobbyFull}
           />
         </div>
