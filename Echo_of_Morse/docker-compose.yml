@@ -28,17 +28,21 @@ services:
       - PARANOIA=1
       - ANOMALY_INBOUND=5
       - ANOMALY_OUTBOUND=4
+      - ALLOWED_METHODS=GET HEAD POST OPTIONS PUT PATCH DELETE
       - NGINX_ALWAYS_TLS_REDIRECT=on  # redirige HTTP (8080) vers HTTPS (8443)
     volumes:
       # Monte la config WebSocket dans le template nginx du WAF.
       # location_common.conf.template est inclus à l'intérieur du bloc server {}
       # C'est le seul endroit où un bloc location peut être ajouté dans cette image.
       - ./docker/nginx/location_common.conf.template:/etc/nginx/templates/includes/location_common.conf.template
+      # Utilise une variable nginx pour proxy_pass afin que Docker DNS soit
+      # réévalué quand le conteneur web est recréé avec une nouvelle IP.
+      - ./docker/nginx/proxy_backend.conf.template:/etc/nginx/templates/includes/proxy_backend.conf.template
       # Exception ModSecurity pour Socket.IO : autorise Content-Type text/plain
       # que Socket.IO utilise dans ses requêtes POST de polling.
-      # Monté dans owasp-crs/rules/ car setup.conf inclut automatiquement *.conf
-      # de ce répertoire. Le préfixe REQUEST-999 garantit qu'il se charge en dernier.
-      - ./docker/modsecurity/socket-io-exception.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-999-SOCKETIO-EXCEPTION.conf
+      # Monté avant les règles CRS : ctl:ruleRemoveById doit s'appliquer
+      # avant que REQUEST-920-PROTOCOL-ENFORCEMENT.conf ne soit évalué.
+      - ./docker/modsecurity/socket-io-exception.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-900-SOCKETIO-EXCEPTION.conf
       # Certificat SSL auto-signé généré par le Makefile (make prod) via openssl — sans sudo
       # Ces 2 lignes remplacent le certificat auto-généré de l'image par le nôtre (certs/)
       - ./certs/cert.pem:/etc/nginx/conf/server.crt
@@ -75,6 +79,9 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+      args:
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
+        NEXTAUTH_URL: ${NEXTAUTH_URL}
     container_name: transcendence_web
     restart: always
     # ports:
@@ -90,7 +97,7 @@ services:
     networks:
       - transcendence_network
     env_file:
-      - .env
+      - .env.prod
 
   # ============================================================
   # HashiCorp Vault — gestionnaire de secrets

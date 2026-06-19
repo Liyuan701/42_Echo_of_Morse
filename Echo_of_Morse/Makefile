@@ -22,19 +22,19 @@ endif
 # =========================
 
 dev:
-	$(COMPOSE) -f docker-compose.dev.yml up -d
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml up -d
 
 dev-logs:
-	$(COMPOSE) -f docker-compose.dev.yml up
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml up
 
 down:
-	$(COMPOSE) -f docker-compose.dev.yml down
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml down
 
 up:
-	$(COMPOSE) up -d
+	$(COMPOSE) --env-file .env.prod up -d
 
 stop:
-	$(COMPOSE) down
+	$(COMPOSE) --env-file .env.prod down
 
 # =========================
 # Production
@@ -50,13 +50,13 @@ prod:
 	# chmod 644 : nginx dans le conteneur tourne sous un autre utilisateur que le host
 	# Sans ces permissions, nginx ne peut pas lire la clé privée et refuse de démarrer
 	@chmod 644 certs/key.pem certs/cert.pem
-	$(COMPOSE) -f docker-compose.yml up -d
+	$(COMPOSE) --env-file .env.prod -f docker-compose.yml up -d --build
 
 prod-down:
-	$(COMPOSE) -f docker-compose.yml down
+	$(COMPOSE) --env-file .env.prod -f docker-compose.yml down
 
 prod-logs:
-	$(COMPOSE) -f docker-compose.yml logs -f
+	$(COMPOSE) --env-file .env.prod -f docker-compose.yml logs -f
 
 
 # =========================
@@ -64,27 +64,27 @@ prod-logs:
 # =========================
 
 db-init:
-	$(COMPOSE) -f docker-compose.dev.yml exec web npx prisma migrate deploy
-	$(COMPOSE) -f docker-compose.dev.yml exec web npx prisma db seed
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml exec web npx prisma migrate deploy
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml exec web npx prisma db seed
 
 # =========================
 # Debug
 # =========================
 
 ps:
-	$(COMPOSE) ps
+	$(COMPOSE) --env-file .env.prod ps
 
 logs:
-	$(COMPOSE) logs -f
+	$(COMPOSE) --env-file .env.prod logs -f
 
 seed:
-	$(COMPOSE) exec web npx prisma db seed
+	$(COMPOSE) --env-file .env.prod exec web npx prisma db seed
 
 typecheck:
-	$(COMPOSE) -f docker-compose.dev.yml exec web npm run typecheck
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml exec web npm run typecheck
 
 lint:
-	$(COMPOSE) -f docker-compose.dev.yml exec web npm run lint
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml exec web npm run lint
 
 check: typecheck lint
 
@@ -93,23 +93,23 @@ check: typecheck lint
 # =========================
 
 reset-db:
-	$(COMPOSE) -f docker-compose.dev.yml down -v
-	$(COMPOSE) -f docker-compose.dev.yml up -d db
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml down -v
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml up -d db
 
 rebuild:
-	$(COMPOSE) -f docker-compose.dev.yml up -d --build
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml up -d --build
 
 re:
-	$(COMPOSE) -f docker-compose.dev.yml down -v
-	$(COMPOSE) -f docker-compose.dev.yml up -d --build
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml down -v
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml up -d --build
 
 # =========================
 # FULL CLEAN (IMPORTANT)
 # =========================
 
 fclean:
-	$(COMPOSE) -f docker-compose.dev.yml down -v --remove-orphans || true
-	$(COMPOSE) down -v --remove-orphans || true
+	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml down -v --remove-orphans || true
+	$(COMPOSE) --env-file .env.prod down -v --remove-orphans || true
 	@echo "Clean done"
 
 # =========================
@@ -127,8 +127,8 @@ kill-port:
 
 reset:
 	@echo "🧨 Stopping compose..."
-	-$(COMPOSE) -f docker-compose.dev.yml down -v --remove-orphans || true
-	-$(COMPOSE) down -v --remove-orphans || true
+	-$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml down -v --remove-orphans || true
+	-$(COMPOSE) --env-file .env.prod down -v --remove-orphans || true
 
 	@echo "🧹 Killing ports..."
 	-fuser -k 3000/tcp || true
