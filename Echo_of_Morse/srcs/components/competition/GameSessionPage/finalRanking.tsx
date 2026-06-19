@@ -6,7 +6,7 @@ import type { Player } from "./gameSessionType";
 type FinalRankingProps = {
 	radioId: string;
 	players: Player[];
-	winners: Player;
+	winners: Player[];
 };
 
 function getWinnerNames(winners: Player[]) {
