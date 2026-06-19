@@ -83,7 +83,7 @@ services:
       VAULT_ADDR: http://vault:8200       # adresse de Vault pour lire les secrets
       WS_INTERNAL_URL: http://ws:3001
     volumes:
-      - ./vault/data:/vault/data          # accès au root-token.txt généré par vault-unseal
+      - vault_data:/vault/data            # accès au root-token.txt généré par vault-unseal
     depends_on:
       - db
       - vault-init
@@ -100,6 +100,10 @@ services:
     image: hashicorp/vault:latest
     container_name: transcendence_vault
     restart: unless-stopped
+    # root dans le conteneur (pas sur l'hôte) — l'entrypoint de l'image fait
+    # le chown du volume nommé (créé root:root par Docker) vers vault:vault,
+    # puis redescend ses privilèges pour lancer le serveur.
+    user: root
     ports:
       - "8200:8200"   # interface UI Vault accessible sur http://localhost:8200
     environment:
@@ -109,8 +113,13 @@ services:
       - IPC_LOCK      # empêche les secrets d'être swappés sur le disque
     volumes:
       - ./vault/config:/vault/config    # fichier de configuration local.json
-      - ./vault/data:/vault/data        # données chiffrées persistantes
-    command: vault server -config=/vault/config/local.json
+      - vault_data:/vault/data          # données chiffrées persistantes
+    # L'entrypoint de l'image hashicorp/vault chown automatiquement
+    # /vault/config, /vault/logs et /vault/file vers l'utilisateur vault,
+    # mais PAS /vault/data (le chemin de storage configuré ici). Sans ce
+    # chown manuel, le volume nommé reste root:root et le process vault
+    # (UID 100, non-root) ne peut pas y écrire → "permission denied".
+    command: sh -c "chown -R vault:vault /vault/data && exec docker-entrypoint.sh vault server -config=/vault/config/local.json"
     networks:
       - transcendence_network
 
@@ -126,7 +135,7 @@ services:
     environment:
       - VAULT_ADDR=http://vault:8200
     volumes:
-      - ./vault/data:/vault/data        # lit/écrit init-keys.txt et root-token.txt
+      - vault_data:/vault/data          # lit/écrit init-keys.txt et root-token.txt
       - ./vault/scripts:/vault/scripts  # script vault-unseal.sh
     depends_on:
       - vault
@@ -158,7 +167,7 @@ services:
       - FORTYTWO_CLIENT_ID=${FORTYTWO_CLIENT_ID}
       - FORTYTWO_CLIENT_SECRET=${FORTYTWO_CLIENT_SECRET}
     volumes:
-      - ./vault/data:/vault/data    # lit root-token.txt généré par vault-unseal
+      - vault_data:/vault/data      # lit root-token.txt généré par vault-unseal
     depends_on:
       vault-unseal:
         condition: service_completed_successfully
@@ -189,9 +198,12 @@ services:
     networks:
       - transcendence_network
 
-# Volume nommé pour persister les données PostgreSQL
+# Volumes nommés — Docker gère les permissions internement (évite les
+# erreurs "permission denied" des bind mounts quand l'UID du conteneur
+# diffère de celui de l'hôte)
 volumes:
   postgres_data:
+  vault_data:
 
 # Réseau interne — tous les services communiquent ici
 networks:
