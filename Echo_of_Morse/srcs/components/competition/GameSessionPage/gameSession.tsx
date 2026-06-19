@@ -51,8 +51,12 @@ export default function GameSession({
 	//-------------------- données pour aider à la gestion --------------------
 	const isFinished = secondsLeft <= 0;
 	const sequence = sessionData?.sequences ?? [];
+
+	//ranking: 
 	const leaderboard = [...players].sort((a, b) => b.score - a.score);
-	const winner = leaderboard[0];
+	const highestScore = leaderboard[0]?.score ?? 0;
+	//filter = garder seulement les elements qui respectent une condition
+	const winners = leaderboard.filter((player) => player.score === highestScore);
 
 	function resetStreak() {
 		setPlayers((currentPlayers) =>
@@ -324,7 +328,7 @@ export default function GameSession({
 			<FinalRanking
 				radioId={radioId}
 				players={leaderboard}
-				winner={winner}
+				winners={winners}
 			/>
 		</section>
 		);

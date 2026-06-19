@@ -22,6 +22,8 @@ function getAccuracy(player: Player) {
 }
 
 export default function Ranking({ players, status = "live" }: RankingProps) {
+	const highestScore = players[0]?.score ?? 0;
+
 	return (
 		<aside
 			className={`${styles.ranking} ${ status === "final" ? styles.finalranking : styles.liveRanking}`}
@@ -40,7 +42,10 @@ export default function Ranking({ players, status = "live" }: RankingProps) {
 				<ol className={styles.rankList}>
 					{players.map((player, index) => {
 						const rank = index + 1;
-						const isWinner = rank === 1;
+						//avec couleur et 👑, meme si 0
+						const isWinner = player.score === highestScore;
+						//supp couleur et 👑, lorsque = 0
+						// const isWinner = highestScore > 0 && player.score === highestScore;
 
 						return (
 							<li

@@ -34,7 +34,7 @@
 /* ranking pour la page gameSession */
 .liveRanking .rankingHeader,
 .liveRanking .rankItem {
-	grid-template-columns: 32px minmax(0, 1fr) 58px 38px;	/* largeur des colonnes */
+	grid-template-columns: 32px minmax(0, 1fr) 64px 52px;	/* largeur des colonnes（rank, player, score, %） */
 	column-gap: 16px;									/* espace entre les colonnes */
 	padding: 0 10px 0 10px;								/* padding: top right bottom left */
 }
@@ -85,7 +85,9 @@
 	color: #111111;
 	font-size: 1rem;
 	font-weight: 850;
-	overflow-wrap: anywhere;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .rank,
