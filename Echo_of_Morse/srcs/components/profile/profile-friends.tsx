@@ -35,7 +35,7 @@ export default function ProfileFriends({
 		image,
 		bio: bio ?? "",
 		accuracy: `${accuracy ?? 0}%`,
-		learningLevel: `Level ${learningLevel ?? 1}`,
+		learningLevel: `${t.levelPrefix} ${learningLevel ?? 1}`,
 		friendsCount: String(friendCount ?? 0),
     // fix the date format to be YYYY-MM-DD, not depending on the locale of the user
 		joinedAt: createdAt ? createdAt.toLocaleDateString("en-CA") : "-",
@@ -51,7 +51,7 @@ export default function ProfileFriends({
               <img
                 src={user.image}
                 className={styles.avatarImage}
-                alt={`${user.name}'s avatar`}
+                alt={t.avatarAlt.replace("{displayName}", user.name)}
               />
             ) : (
               avatarLetter

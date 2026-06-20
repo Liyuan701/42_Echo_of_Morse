@@ -341,6 +341,13 @@ export default function Navbar() {
 
   const { dictionary } = useI18n();
   const t = dictionary.layout;
+  const radioT = dictionary.competitionRadio;
+
+  const radioNameById: Record<string, string> = {
+	"01": radioT.radioWave01,
+	"02": radioT.radioWave02,
+	"03": radioT.radioWave03,
+	};
 
   const visibleGameInvitations = pendingGameInvitations.slice(0, 4);
 
@@ -387,7 +394,7 @@ export default function Navbar() {
               <details className={styles.notificationDetails}>
                 <summary
                   className={styles.notificationTrigger}
-                  aria-label="Open notifications"
+                  aria-label={t.openNotifications}
                 >
                   <span className={styles.notificationIcon}>🔔</span>
 
@@ -400,7 +407,7 @@ export default function Navbar() {
 
                 <div className={styles.notificationPanel}>
                   <div className={styles.notificationHeader}>
-                    <strong>Notifications</strong>
+                    <strong>{t.notifications}</strong>
 
                     {totalGlobalUnreadCount > 0 ? (
                       <span className={styles.notificationCount}>
@@ -411,17 +418,22 @@ export default function Navbar() {
 
                   {!hasVisibleNotifications ? (
                     <p className={styles.emptyNotification}>
-                      No new notifications.
+                      {t.noNewNotifications}
                     </p>
                   ) : null}
 
                   {visibleGameInvitations.length > 0 ? (
                     <div className={styles.notificationSection}>
                       <p className={styles.notificationSectionTitle}>
-                        Game invitations
+                        {t.gameInvitations}
                       </p>
 
-                      {visibleGameInvitations.map((invitation) => (
+                      {visibleGameInvitations.map((invitation) => {
+						  const radioId = invitation.radio?.radioId;
+						const radioName = radioId
+							? radioNameById[radioId] ?? t.radioLobbyFallback
+							: t.radioLobbyFallback;
+						return (
                         <Link
                           key={invitation.id}
                           href="/chat?panel=system"
@@ -430,24 +442,23 @@ export default function Navbar() {
                           <span className={styles.notificationItemMain}>
                             <strong>{invitation.fromUser.username}</strong>
                             <span>
-                              invited you to{" "}
-                              {invitation.radio?.name ?? "a radio lobby"}. You
-                              have 1 minute to accept.
+                              {t.invitedYouToRadio.replace("{radioName}", radioName)}
                             </span>
                           </span>
 
                           <span className={styles.notificationItemAction}>
-                            View
+                            {t.view}
                           </span>
                         </Link>
-                      ))}
+                      )
+					  })}
                     </div>
                   ) : null}
 
                   {groupedFriendNotifications.length > 0 ? (
                     <div className={styles.notificationSection}>
                       <p className={styles.notificationSectionTitle}>
-                        Messages
+                        {t.messages}
                       </p>
 
                       {groupedFriendNotifications.map((group) => (
@@ -470,7 +481,7 @@ export default function Navbar() {
                           </span>
 
                           <span className={styles.notificationItemAction}>
-                            View
+                            {t.view}
                           </span>
                         </Link>
                       ))}
@@ -480,7 +491,7 @@ export default function Navbar() {
                   {unreadSystemMessageCount > 0 ? (
                     <div className={styles.notificationSection}>
                       <p className={styles.notificationSectionTitle}>
-                        System
+                        {t.system}
                       </p>
 
                       <Link
@@ -489,16 +500,14 @@ export default function Navbar() {
                         onClick={markSystemNotificationsAsRead}
                       >
                         <span className={styles.notificationItemMain}>
-                          <strong>System messages</strong>
+                          <strong>{t.systemMessages}</strong>
                           <span>
-                            You have {unreadSystemMessageCount} unread system
-                            notification
-                            {unreadSystemMessageCount > 1 ? "s" : ""}.
+                            {t.unreadSystemNotifications.replace("{count}", String(unreadSystemMessageCount))}
                           </span>
                         </span>
 
                         <span className={styles.notificationItemAction}>
-                          View
+                          {t.view}
                         </span>
                       </Link>
                     </div>

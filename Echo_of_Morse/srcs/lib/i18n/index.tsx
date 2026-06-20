@@ -3,7 +3,7 @@
 //ex：ici on a utilise la fonction "useState"
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import en from "./en";
 import fr from "./fr";
 import zh from "./zh";
@@ -43,19 +43,15 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 	//il faut utiliser cette fonction pour que React mette a jour la page quand la variable change
 
 	// const [selectedLanguage, setSelectedLanguage] = useState<Language>("fr");
-	const [selectedLanguage, setSelectedLanguage] = useState<Language>(() => {
-		if (typeof window === "undefined") {
-			return "fr";
-		}
+	const [selectedLanguage, setSelectedLanguage] = useState<Language>("fr");
 
+	useEffect(() => {
 		const savedLanguage = window.localStorage.getItem("language");
 
 		if (savedLanguage === "en" || savedLanguage === "fr" || savedLanguage === "zh") {
-			return savedLanguage;
+			setSelectedLanguage(savedLanguage);
 		}
-
-		return "fr";
-	});
+	}, []);
 
 	function changeLanguage(language: Language) {
 		setSelectedLanguage(language);

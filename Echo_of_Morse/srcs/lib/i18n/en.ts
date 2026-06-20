@@ -29,6 +29,7 @@ const en = {
 		noEmail: "No email",
 		//------------------ profile friends ------------------
 		userNotFound: "User not found",
+		avatarAlt: "{displayName}'s avatar",
 		//------------------ profile edit ------------------
 		username: "Username",
 		usernamePlaceholder: "Enter your username",
@@ -78,6 +79,18 @@ const en = {
 		login: "Login",
 		logout: "Logout",
 		user: "User",
+
+		openNotifications: "Open notifications",
+		notifications: "Notifications",
+		noNewNotifications: "No new notifications.",
+		gameInvitations: "Game invitations",
+		radioLobbyFallback: "a radio lobby",
+		invitedYouToRadio: "invited you to {radioName}. You have 1 minute to accept.",
+		view: "View",
+		messages: "Messages",
+		system: "System",
+		systemMessages: "System messages",
+		unreadSystemNotifications: "Unread system notifications: {count}.",
 
 		//------------------ footer ------------------
 		footerDescription: "Learn, communicate, and compete through Morse code.",
@@ -132,6 +145,14 @@ const en = {
 		pending: "Pending",
 		inviteAlreadyPending: "A game invitation is already pending.",
 		inviteSent: "Game invitation sent to {displayName}. Waiting for their response.",
+		failedToSendInvitation: "Failed to send invitation.",
+	},
+
+	notification: {
+		newGameInvitationTitle: "New game invitation",
+		gameInvitationToastBody: "{username} invited you to {radioName}.",
+		newMessageFromTitle: "New message from {username}",
+		radioLobbyFallback: "a radio lobby",
 	},
 
 	//=========================================== learning =========================================== 
@@ -253,6 +274,18 @@ const en = {
 		successRate: "success rate",
 		correct: "correct",
 		wrong: "wrong",
+
+		//------------------ srcs/components/learning/LearningPlay.tsx------------------
+		breadcrumb: "Navigation",
+		breadcrumbPlay: "Play",
+		playFallbackOptions: "Play options",
+		noCompletedLevelYet: "No completed level yet",
+		playFallbackDescription: "Play mode reviews levels you have already completed. Complete your current level first, then come back to practice one randomly.",
+		currentLevel: "Current level",
+		startLevel: "Start Level {level}",
+		currentLevelDescription: "Continue your current mixed practice session. Play mode will be available after you complete at least one level.",
+		levelsFallbackDescription: "Go back to the level directory and choose an unlocked level to continue your training.",
+
 	},
 
 	learningReview: {
@@ -338,9 +371,77 @@ const en = {
 		//--------- SystemMessage ---------
 		systemDescription: "Notifications about friend requests, shared contacts, and local chat actions.",
 
+		//--------- SystemMessageWindow ---------
+		systemWindowDescription: "Game invitations, friend requests, and system notifications.",
+		accepted: "Accepted",
+		declined: "Declined",
+		expired: "Expired",
+		actionFailed: "Action failed",
+		updating: "Updating...",
+		joining: "Joining...",
+		joinLobby: "Join lobby",
+		accept: "Accept",
+		decline: "Decline",
+
 		//--------- chat/page---------
 		pageTitle: "Chat",
 		pageDescription: "This page will host real-time chat and communication features.",
+	},
+
+	chatLayout: {
+		//--------- game invitation system message ---------
+		newGameInvitationTitle: "New game invitation",
+		radioLobbyFallback: "a radio lobby",
+		gameInvitationBody: "{username} invited you to {radioName}. You have 1 minute to accept before it expires.",
+
+		//--------- invite disabled reasons ---------
+		friendOffline: "This friend is offline.",
+		gameInvitationAlreadyPending: "A game invitation is already pending with this friend.",
+		friendAlreadyInvitedYou: "This friend has already invited you. Please accept or decline their invitation first.",
+		friendInGame: "This friend is currently in a game.",
+		friendReadyInLobby: "This friend is already ready in a lobby.",
+
+		//--------- invitation errors ---------
+		failedToUpdateInvitation: "Failed to update the invitation.",
+		systemMessageWithoutRadio: "This system message does not include a radio lobby.",
+		failedToJoinRadioLobby: "Failed to join the radio lobby.",
+		failedToSendInvitation: "Failed to send invitation.",
+
+		//--------- conversation errors ---------
+		failedToOpenConversation: "Failed to open the conversation.",
+		conversationNotReady: "The conversation is not ready yet.",
+		failedToSendMessage: "Failed to send the message.",
+
+		//--------- friend request ---------
+		userAlreadyFriend: "This user is already in your friend list.",
+		friendRequestAlreadySent: "Friend request already sent.",
+		friendRequestAlreadyExists: "A friend request already exists with this user.",
+		failedToSendFriendRequest: "Failed to send friend request. Please try again.",
+		networkError: "Network error. Please try again.",
+		friendRequestSentTitle: "Friend request sent",
+		friendRequestSentBody: "Friend request sent to {displayName}. Waiting for acceptance.",
+
+		//--------- friend remark ---------
+		friendRemarkEmpty: "Friend remark name cannot be empty.",
+		friendRemarkDuplicate: "This remark name already exists in your friend list.",
+		friendRemarkUpdatedTitle: "Friend remark updated",
+		friendRemarkUpdatedBody: "{oldName} was renamed to {newName}.",
+
+		//--------- friend delete/share ---------
+		friendRemovedTitle: "Friend removed",
+		friendRemovedBody: "{displayName} was removed locally.",
+		openChatBeforeSharingFriend: "Please open a chat before sharing a friend.",
+		cannotShareFriendToThemselves: "You cannot share this friend to themselves.",
+		sharedContactMessage: "Shared contact: {displayName} (@{username})",
+		contactSharedTitle: "Contact shared",
+		contactSharedBody: "{displayName} was shared to {friendName}.",
+
+		//--------- game invitation sent ---------
+		gameInvitationSentTitle: "Game invitation sent",
+		gameInvitationSentBody: "Game invitation sent to {displayName}. Waiting for their response.",
+
+		emptyMessage: "Message cannot be empty.",
+		invalidMorseInput: "Invalid Morse input. Use only dots, dashes, spaces, and / between words.",
 	},
 
 	//=========================================== login =========================================== 

@@ -364,7 +364,7 @@ export default function FriendListItem({
                 <img
                   className={styles.previewAvatar}
                   src={friend.avatarUrl}
-                  alt={`${displayName}'s avatar`}
+                  alt={t.avatarAlt.replace("{displayName}", displayName)}
                 />
               ) : (
                 <span className={styles.previewAvatarFallback}>

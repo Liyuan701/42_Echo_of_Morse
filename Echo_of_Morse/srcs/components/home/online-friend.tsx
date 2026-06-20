@@ -454,9 +454,8 @@ export default function OnlineFriendsPreview() {
         markFriendAsPending(invited.id);
       }
 
-      window.alert(
-        error instanceof Error ? error.message : "Failed to send invitation."
-      );
+		console.error(error);
+		window.alert(t.failedToSendInvitation);
     }
   }
 
@@ -506,7 +505,7 @@ export default function OnlineFriendsPreview() {
                     <img
                       className={styles.avatar}
                       src={friend.avatarUrl}
-                      alt={`${displayName}'s avatar`}
+                      alt={t.avatarAlt.replace("{displayName}", displayName)}
                     />
                   ) : (
                     <span className={styles.avatarFallback}>

@@ -107,7 +107,7 @@
 //-------------------------------
 
 "use client";
-
+import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 
 import { useSocket } from "@/providers/socket-provider";
@@ -115,6 +115,9 @@ import styles from "./home.module.css";
 import { Card } from "@/components/ui";
 
 export default function OnlineCounter() {
+	const { dictionary } = useI18n();
+  	const t = dictionary.home;
+
   const { socket, isConnected } = useSocket();
 
   const [onlineCount, setOnlineCount] = useState(0);
@@ -142,17 +145,11 @@ export default function OnlineCounter() {
 
   return (
   <Card className={styles.sectionBlock}>
-    <h2 className={styles.sectionTitle}>Online now</h2>
+    <h2 className={styles.sectionTitle}>{t.onlineNow}</h2>
 
     <p className={styles.onlineText}>
-      {onlineCount} users connected
+      {t.usersConnected.replace("{count}", String(onlineCount))}
     </p>
   </Card>
   );
 }
-
-// ! i18n: move home page titles, descriptive paragraphs, online-user labels, empty states, buttons, and alert messages into the i18n dictionary.
-// ! i18n: keep dynamic values such as onlineCount and displayName as interpolation variables.
-//? yren to jdu:
-//? TODO_i18n: This component is server-side, so it cannot use useI18n directly.
-//? Ask the owner whether to pass translated labels as props or convert it to a client component.

@@ -4,7 +4,7 @@
 //* New add: GET /api/system-messages, get sys messages from the DB.
 
 "use client";
-
+import { useI18n } from "@/lib/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type {
@@ -70,6 +70,10 @@ function formatSystemMessageTime(createdAt: string) {
 }
 
 export default function ChatLayout() {
+	const { dictionary, language } = useI18n();
+	const t = dictionary.chatLayout;
+	const radioT = dictionary.competitionRadio;
+
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const { socket } = useSocket();
@@ -116,6 +120,7 @@ export default function ChatLayout() {
     string[]
   >([]);
   const [composerError, setComposerError] = useState("");
+  useEffect(() => { setComposerError(""); }, [language]);
   const [inviteTargetFriendId, setInviteTargetFriendId] = useState<
     string | null
   >(null);
@@ -351,24 +356,34 @@ export default function ChatLayout() {
   // system-message history until they are accepted or declined.
   const gameInvitationMessages = useMemo<SystemMessage[]>(
     () =>
-      pendingGameInvitations.map((invitation) => ({
-        id: `game-invitation:${invitation.id}`,
-        title: "New game invitation",
-        body: `${invitation.fromUser.username} invited you to ${
-          invitation.radio?.name ?? "a radio lobby"
-        }. You have 1 minute to accept before it expires.`,
-        createdAt: new Date(invitation.createdAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        isRead: false,
-        kind: "game-invitation",
-        invitationId: invitation.id,
-        fromUserId: invitation.fromUser.id,
-        radioId: invitation.radio?.radioId,
-        actionStatus: invitationActionStatuses[invitation.id] ?? "idle",
-      })),
-    [invitationActionStatuses, pendingGameInvitations]
+      pendingGameInvitations.map((invitation) => {
+		const radioNameById: Record<string, string> = {
+			"01": radioT.radioWave01,
+			"02": radioT.radioWave02,
+			"03": radioT.radioWave03,
+		};
+		const radioId = invitation.radio?.radioId;
+		const radioName = radioId ? radioNameById[radioId] ?? t.radioLobbyFallback : t.radioLobbyFallback;
+
+		return{
+			id: `game-invitation:${invitation.id}`,
+			title: t.newGameInvitationTitle,
+			body: t.gameInvitationBody
+						.replace("{username}", invitation.fromUser.username)
+						.replace("{radioName}", radioName),
+			createdAt: new Date(invitation.createdAt).toLocaleTimeString([], {
+			hour: "2-digit",
+			minute: "2-digit",
+			}),
+			isRead: false,
+			kind: "game-invitation",
+			invitationId: invitation.id,
+			fromUserId: invitation.fromUser.id,
+			radioId: invitation.radio?.radioId,
+			actionStatus: invitationActionStatuses[invitation.id] ?? "idle",
+		}
+      }),
+    [invitationActionStatuses, pendingGameInvitations, radioT, t]
   );
 
   const visibleSystemMessages = useMemo(
@@ -427,26 +442,26 @@ export default function ChatLayout() {
     const friendWithStatus = friend as FriendWithOptionalGameStatus;
 
     if (!friend.isOnline) {
-      return "This friend is offline.";
+      return t.friendOffline;
     }
 
     if (pendingGameInviteFriendIds.includes(friend.id)) {
-      return "A game invitation is already pending with this friend.";
+      return t.gameInvitationAlreadyPending;
     }
 
     if (incomingPendingInviteFriendIds.has(friend.id)) {
-      return "This friend has already invited you. Please accept or decline their invitation first.";
+      return t.friendAlreadyInvitedYou;
     }
 
     if (
       friendWithStatus.gameStatus === "PLAYING" ||
       friendWithStatus.lobbyStatus === "PLAYING"
     ) {
-      return "This friend is currently in a game.";
+      return t.friendInGame;
     }
 
     if (friendWithStatus.lobbyStatus === "READY") {
-      return "This friend is already ready in a lobby.";
+      return t.friendReadyInLobby;
     }
 
     return null;
@@ -464,6 +479,7 @@ export default function ChatLayout() {
     friendsWithUnread,
     incomingPendingInviteFriendIds,
     pendingGameInviteFriendIds,
+	t,
   ]);
 
   async function handleAnswerGameInvitation(
@@ -502,11 +518,8 @@ export default function ChatLayout() {
         [message.invitationId as string]: "error",
       }));
 
-      window.alert(
-        error instanceof Error
-          ? error.message
-          : "Failed to update the invitation."
-      );
+	console.error(error);
+	window.alert(t.failedToUpdateInvitation);
     }
   }
 
@@ -515,7 +528,7 @@ export default function ChatLayout() {
   // The sender joins only after clicking this action.
   async function handleJoinRadioLobbyFromSystemMessage(message: SystemMessage) {
     if (!message.radioId) {
-      window.alert("This system message does not include a radio lobby.");
+      window.alert(t.systemMessageWithoutRadio);
       return;
     }
 
@@ -556,7 +569,8 @@ export default function ChatLayout() {
         )
       );
 
-      window.alert(body.error || "Failed to join the radio lobby.");
+      console.error(body.error);
+	  window.alert(t.failedToJoinRadioLobby);
       return;
     }
 
@@ -647,13 +661,15 @@ export default function ChatLayout() {
       const data = await res.json();
 
       if (!res.ok || !data.id) {
-        setComposerError(data.error || "Failed to open the conversation.");
+        console.error(data.error);
+		setComposerError(t.failedToOpenConversation);
+
         return;
       }
 
       setConversationId(data.id);
     },
-    [markFriendAsRead, router]
+    [markFriendAsRead, router, t]
   );
 
   useEffect(() => {
@@ -729,12 +745,12 @@ export default function ChatLayout() {
     user: SearchableUser
   ): Promise<boolean> {
     if (friends.some((friend) => friend.id === user.id)) {
-      window.alert("This user is already in your friend list.");
+      window.alert(t.userAlreadyFriend);
       return false;
     }
 
     if (pendingFriendRequestUserIds.includes(user.id)) {
-      window.alert("Friend request already sent.");
+      window.alert(t.friendRequestAlreadySent);
       return false;
     }
 
@@ -750,24 +766,24 @@ export default function ChatLayout() {
       });
 
       if (res.status === 409) {
-        window.alert("A friend request already exists with this user.");
+        window.alert(t.friendRequestAlreadyExists);
         return false;
       }
 
       if (!res.ok) {
-        window.alert("Failed to send friend request. Please try again.");
+        window.alert(t.failedToSendFriendRequest);
         return false;
       }
     } catch {
-      window.alert("Network error. Please try again.");
+      window.alert(t.networkError);
       return false;
     }
 
     setPendingFriendRequestUserIds((prev) => [...prev, user.id]);
 
     addSystemMessage(
-      "Friend request sent",
-      `Friend request sent to ${user.displayName}. Waiting for acceptance.`
+      t.friendRequestSentTitle,
+      t.friendRequestSentBody.replace("{displayName}", user.displayName)
     );
 
     return true;
@@ -777,12 +793,12 @@ export default function ChatLayout() {
     const trimmed = nextDisplayName.trim();
 
     if (!trimmed) {
-      window.alert("Friend remark name cannot be empty.");
+      window.alert(t.friendRemarkEmpty);
       return;
     }
 
     if (isDuplicateDisplayName(trimmed, friendId)) {
-      window.alert("This remark name already exists in your friend list.");
+      window.alert(t.friendRemarkDuplicate);
       return;
     }
 
@@ -801,8 +817,10 @@ export default function ChatLayout() {
 
     if (target) {
       addSystemMessage(
-        "Friend remark updated",
-        `${target.displayName} was renamed to ${trimmed}.`
+        t.friendRemarkUpdatedTitle,
+		t.friendRemarkUpdatedBody
+			.replace("{oldName}", target.displayName)
+			.replace("{newName}", trimmed)
       );
     }
   }
@@ -826,8 +844,8 @@ export default function ChatLayout() {
 
     if (target) {
       addSystemMessage(
-        "Friend removed",
-        `${target.displayName} was removed locally.`
+        t.friendRemovedTitle,
+		t.friendRemovedBody.replace("{displayName}", target.displayName)
       );
     }
   }
@@ -840,30 +858,34 @@ export default function ChatLayout() {
     }
 
     if (!selectedFriend) {
-      window.alert("Please open a chat before sharing a friend.");
+      window.alert(t.openChatBeforeSharingFriend);
       return;
     }
 
     if (selectedFriend.id === target.id) {
-      window.alert("You cannot share this friend to themselves.");
+      window.alert(t.cannotShareFriendToThemselves);
       return;
     }
 
     const sharedMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      friendId: selectedFriend.id,
-      sender: "me",
-      rawText: `Shared contact: ${target.displayName} (@${target.username})`,
-      translatedText: undefined,
-      mode: "LANGUAGE_ONLY",
-      createdAt: getCurrentTime(),
+		id: crypto.randomUUID(),
+		friendId: selectedFriend.id,
+		sender: "me",
+		rawText: t.sharedContactMessage
+			.replace("{displayName}", target.displayName)
+			.replace("{username}", target.username),
+		translatedText: undefined,
+		mode: "LANGUAGE_ONLY",
+		createdAt: getCurrentTime(),
     };
 
     setMessages((prev) => [...prev, sharedMsg]);
 
     addSystemMessage(
-      "Contact shared",
-      `${target.displayName} was shared to ${selectedFriend.displayName}.`
+      	t.contactSharedTitle,
+		t.contactSharedBody
+			.replace("{displayName}", target.displayName)
+			.replace("{friendName}", selectedFriend.displayName)
     );
   }
 
@@ -913,8 +935,8 @@ export default function ChatLayout() {
       markGameInviteFriendAsPending(invited.id);
 
       addSystemMessage(
-        "Game invitation sent",
-        `Game invitation sent to ${invited.displayName}. Waiting for their response.`
+        t.gameInvitationSentTitle,
+		t.gameInvitationSentBody.replace("{displayName}", invited.displayName)
       );
 
       setInviteTargetFriendId(null);
@@ -923,9 +945,8 @@ export default function ChatLayout() {
         markGameInviteFriendAsPending(invited.id);
       }
 
-      window.alert(
-        error instanceof Error ? error.message : "Failed to send invitation."
-      );
+		console.error(error);
+		window.alert(t.failedToSendInvitation);
     }
   }
 
@@ -936,10 +957,15 @@ export default function ChatLayout() {
 
     const transformed = transformChatMessage(text, chatMode);
 
-    if (transformed.error) {
-      setComposerError(transformed.error);
-      return false;
-    }
+	if (transformed.error) {
+		if (transformed.error === "Message cannot be empty.") {
+			setComposerError(t.emptyMessage);
+		} else {
+			setComposerError(t.invalidMorseInput);
+		}
+
+		return false;
+	}
 
     if (!transformed.rawText) {
       return false;
@@ -950,7 +976,7 @@ export default function ChatLayout() {
     const dbMode = mapChatModeToDB(chatMode);
 
     if (!conversationId || !userId) {
-      setComposerError("The conversation is not ready yet.");
+      setComposerError(t.conversationNotReady);
       return false;
     }
 
@@ -974,7 +1000,8 @@ export default function ChatLayout() {
     };
 
     if (!response.ok || !result.message || !result.recipientId) {
-      setComposerError(result.error || "Failed to send the message.");
+      	console.error(result.error);
+		setComposerError(t.failedToSendMessage);
       return false;
     }
 
@@ -1083,7 +1110,3 @@ export default function ChatLayout() {
   );
 }
 
-// ! i18n: move all chat UI labels, placeholders, aria-labels, empty states, mode names, prompt/confirm/alert messages, and button text into the i18n dictionary.
-// ! i18n: keep real chat messages, usernames, display names, timestamps, and Morse-transformed content unchanged.
-// ! i18n: dynamic strings such as "View ${displayName}'s profile" should use interpolation variables.
-// ! i18n: move game invitation labels and messages into the i18n dictionary.

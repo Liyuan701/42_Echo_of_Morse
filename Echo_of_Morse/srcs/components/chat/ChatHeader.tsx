@@ -32,7 +32,7 @@ export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
               <img
                 className={styles.avatarImage}
                 src={friend.image}
-                alt={`${displayName}'s avatar`}
+                alt={t.avatarAlt.replace("{displayName}", displayName)}
               />
             ) : (
               <span className={styles.avatarFallback}>{avatarLetter}</span>

@@ -29,6 +29,7 @@ const fr = {
 		noEmail: "Aucun email",
 		//------------------ profil amis ------------------
 		userNotFound: "Utilisateur introuvable",
+		avatarAlt: "Photo de profil de {displayName}",
 		//------------------ modification du profil ------------------
 		username: "Nom d'utilisateur",
 		usernamePlaceholder: "Entrez votre nom d'utilisateur",
@@ -78,6 +79,18 @@ const fr = {
 		login: "Connexion",
 		logout: "Déconnexion",
 		user: "Utilisateur",
+
+		openNotifications: "Ouvrir les notifications",
+		notifications: "Notifications",
+		noNewNotifications: "Aucune nouvelle notification.",
+		gameInvitations: "Invitations de jeu",
+		radioLobbyFallback: "un lobby radio",
+		invitedYouToRadio: "vous invite à rejoindre {radioName}. Vous avez 1 minute pour accepter.",
+		view: "Voir",
+		messages: "Messages",
+		system: "Système",
+		systemMessages: "Messages système",
+		unreadSystemNotifications: "Notifications système non lues : {count}.",
 
 		//------------------ footer ------------------
 		footerDescription: "Apprenez, communiquez et relevez des défis avec le code Morse.",
@@ -132,8 +145,16 @@ const fr = {
 		pending: "En attente",
 		inviteAlreadyPending: "Une invitation de jeu est déjà en attente.",
 		inviteSent: "Invitation envoyée à {displayName}. En attente de sa réponse.",
+		failedToSendInvitation: "Impossible d'envoyer l'invitation.",
 	},
 
+	notification: {
+		newGameInvitationTitle: "Nouvelle invitation de jeu",
+		gameInvitationToastBody: "{username} vous invite à rejoindre {radioName}.",
+		newMessageFromTitle: "Nouveau message de {username}",
+		radioLobbyFallback: "un lobby radio",
+
+	},
 	//=========================================== learning =========================================== 
 	learningPractice: {
 		//------------------ titre ------------------
@@ -252,6 +273,18 @@ const fr = {
 		successRate: "taux de réussite",
 		correct: "correct",
 		wrong: "faux",
+
+		//------------------ srcs/components/learning/LearningPlay.tsx------------------
+		breadcrumb: "Navigation",
+		breadcrumbPlay: "Pratique",
+		playFallbackOptions: "Options de pratique",
+		noCompletedLevelYet: "Aucun niveau terminé",
+		playFallbackDescription: "Le mode pratique révise les niveaux que vous avez déjà terminés. Terminez d'abord votre niveau actuel, puis revenez vous entraîner sur un niveau aléatoire.",
+		currentLevel: "Niveau actuel",
+		startLevel: "Commencer le niveau {level}",
+		currentLevelDescription: "Continuez votre session de pratique mixte actuelle. Le mode pratique sera disponible après avoir terminé au moins un niveau.",
+		levelsFallbackDescription: "Retournez à la liste des niveaux et choisissez un niveau débloqué pour continuer votre entraînement.",
+
 	},
 
 	learningReview: {
@@ -336,9 +369,77 @@ const fr = {
 		//--------- SystemMessage ---------
 		systemDescription: "Notifications sur les demandes d'ami, les contacts partagés et les actions du chat.",
 
+		//--------- SystemMessageWindow ---------
+		systemWindowDescription: "Invitations de jeu, demandes d'ami et notifications système.",
+		accepted: "Acceptée",
+		declined: "Refusée",
+		expired: "Expirée",
+		actionFailed: "Action échouée",
+		updating: "Mise à jour...",
+		joining: "Connexion...",
+		joinLobby: "Rejoindre le lobby",
+		accept: "Accepter",
+		decline: "Refuser",
+
 		//--------- chat/page---------
 		pageTitle: "Chat",
 		pageDescription: "Cette page accueillera le chat en temps réel et les fonctions de communication.",
+	},
+
+	chatLayout: {
+		//--------- game invitation system message ---------
+		newGameInvitationTitle: "Nouvelle invitation de jeu",
+		radioLobbyFallback: "un lobby radio",
+		gameInvitationBody: "{username} vous a invité à rejoindre {radioName}. Vous avez 1 minute pour accepter avant expiration.",
+
+		//--------- invite disabled reasons ---------
+		friendOffline: "Cet ami est hors ligne.",
+		gameInvitationAlreadyPending: "Une invitation de jeu est déjà en attente avec cet ami.",
+		friendAlreadyInvitedYou: "Cet ami vous a déjà invité. Veuillez d'abord accepter ou refuser son invitation.",
+		friendInGame: "Cet ami est actuellement en partie.",
+		friendReadyInLobby: "Cet ami est déjà prêt dans un lobby.",
+
+		//--------- invitation errors ---------
+		failedToUpdateInvitation: "Impossible de mettre à jour l'invitation.",
+		systemMessageWithoutRadio: "Ce message système ne contient aucun lobby radio.",
+		failedToJoinRadioLobby: "Impossible de rejoindre le lobby radio.",
+		failedToSendInvitation: "Impossible d'envoyer l'invitation.",
+
+		//--------- conversation errors ---------
+		failedToOpenConversation: "Impossible d'ouvrir la conversation.",
+		conversationNotReady: "La conversation n'est pas encore prête.",
+		failedToSendMessage: "Impossible d'envoyer le message.",
+
+		//--------- friend request ---------
+		userAlreadyFriend: "Cet utilisateur est déjà dans votre liste d'amis.",
+		friendRequestAlreadySent: "Demande d'ami déjà envoyée.",
+		friendRequestAlreadyExists: "Une demande d'ami existe déjà avec cet utilisateur.",
+		failedToSendFriendRequest: "Impossible d'envoyer la demande d'ami. Veuillez réessayer.",
+		networkError: "Erreur réseau. Veuillez réessayer.",
+		friendRequestSentTitle: "Demande d'ami envoyée",
+		friendRequestSentBody: "Demande d'ami envoyée à {displayName}. En attente de son acceptation.",
+
+		//--------- friend remark ---------
+		friendRemarkEmpty: "La remarque de l'ami ne peut pas être vide.",
+		friendRemarkDuplicate: "Cette remarque existe déjà dans votre liste d'amis.",
+		friendRemarkUpdatedTitle: "Remarque de l'ami mise à jour",
+		friendRemarkUpdatedBody: "{oldName} a été renommé en {newName}.",
+
+		//--------- friend delete/share ---------
+		friendRemovedTitle: "Ami supprimé",
+		friendRemovedBody: "{displayName} a été supprimé localement.",
+		openChatBeforeSharingFriend: "Veuillez ouvrir un chat avant de partager un ami.",
+		cannotShareFriendToThemselves: "Vous ne pouvez pas partager cet ami avec lui-même.",
+		sharedContactMessage: "Contact partagé : {displayName} (@{username})",
+		contactSharedTitle: "Contact partagé",
+		contactSharedBody: "{displayName} a été partagé avec {friendName}.",
+
+		//--------- game invitation sent ---------
+		gameInvitationSentTitle: "Invitation de jeu envoyée",
+		gameInvitationSentBody: "Invitation de jeu envoyée à {displayName}. En attente de sa réponse.",
+
+		emptyMessage: "Le message ne peut pas être vide.",
+		invalidMorseInput: "Entrée Morse invalide. Utilisez seulement des points, des tirets, des espaces et / entre les mots.",
 	},
 
 	//=========================================== login =========================================== 

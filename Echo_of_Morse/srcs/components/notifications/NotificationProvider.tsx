@@ -360,6 +360,7 @@
 // }
 
 "use client";
+import { useI18n } from "@/lib/i18n";
 
 import {
   createContext,
@@ -442,6 +443,17 @@ export function NotificationProvider({
 }: {
   children: React.ReactNode;
 }) {
+
+	const { dictionary } = useI18n();
+	const t = dictionary.notification;
+	const radioT = dictionary.competitionRadio;
+	const radioNameById: Record<string, string> = {
+		"01": radioT.radioWave01,
+		"02": radioT.radioWave02,
+		"03": radioT.radioWave03,
+	};
+
+
   const { status, data: session } = useSession();
   const { socket } = useSocket();
   const userId = session?.user?.id;
@@ -528,18 +540,23 @@ export function NotificationProvider({
         );
 
         if (newestInvitation) {
+			const radioId = newestInvitation.radio?.radioId;
+			const radioName = radioId
+				? radioNameById[radioId] ?? t.radioLobbyFallback
+				: t.radioLobbyFallback;
+
           setToast({
             id: `invite:${newestInvitation.id}`,
-            title: "New game invitation",
-            body: `${newestInvitation.fromUser.username} invited you to ${
-              newestInvitation.radio?.name ?? "a radio lobby"
-            }.`,
+            title: t.newGameInvitationTitle,
+            body: t.gameInvitationToastBody
+					.replace("{username}", newestInvitation.fromUser.username)
+					.replace("{radioName}", radioName),
             href: "/chat?panel=system",
           });
         } else if (newestMessage) {
           setToast({
             id: `message:${newestMessage.id}`,
-            title: `New message from ${newestMessage.senderUsername}`,
+            title: t.newMessageFromTitle.replace( "{username}", newestMessage.senderUsername),
             body: newestMessage.rawText,
             href: `/chat?friendId=${newestMessage.senderId}`,
           });
@@ -558,7 +575,7 @@ export function NotificationProvider({
       setRecentFriendMessages([]);
       setUnreadSystemMessagesFromServer(0);
     }
-  }, [clearNotificationState, status]);
+  }, [clearNotificationState, status, t, radioNameById]);
 
   useEffect(() => {
     void refreshNotifications();

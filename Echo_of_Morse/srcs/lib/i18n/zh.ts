@@ -29,6 +29,7 @@ const zh = {
 		noEmail: "无邮箱",
 		//------------------ profil friends ------------------
 		userNotFound: "未找到用户",
+		avatarAlt: "{displayName} 的头像",
 		//------------------ profil edit ------------------
 		username: "用户名",
 		usernamePlaceholder: "请输入用户名",
@@ -78,6 +79,18 @@ const zh = {
 		login: "登录",
 		logout: "退出",
 		user: "用户",
+
+		openNotifications: "打开通知",
+		notifications: "通知",
+		noNewNotifications: "没有新通知。",
+		gameInvitations: "游戏邀请",
+		radioLobbyFallback: "一个无线电大厅",
+		invitedYouToRadio: "邀请你加入 {radioName}。你有 1 分钟接受邀请。",
+		view: "查看",
+		messages: "消息",
+		system: "系统",
+		systemMessages: "系统消息",
+		unreadSystemNotifications: "未读系统通知：{count} 条。",
 
 		//------------------ footer ------------------
 		footerDescription: "学习、交流，并通过摩斯码进行挑战。",
@@ -132,6 +145,14 @@ const zh = {
 		pending: "等待中",
 		inviteAlreadyPending: "已经有一个比赛邀请在等待中。",
 		inviteSent: "已向 {displayName} 发送比赛邀请，等待对方回应。",
+		failedToSendInvitation: "发送邀请失败。",
+	},
+
+	notification: {
+		newGameInvitationTitle: "新的游戏邀请",
+		gameInvitationToastBody: "{username} 邀请你加入 {radioName}。",
+		newMessageFromTitle: "来自 {username} 的新消息",
+		radioLobbyFallback: "一个无线电大厅",
 	},
 
 	//=========================================== learning =========================================== 
@@ -253,6 +274,18 @@ const zh = {
 		successRate: "正确率",
 		correct: "正确",
 		wrong: "错误",
+
+		//------------------ srcs/components/learning/LearningPlay.tsx------------------
+		breadcrumb: "目录",
+		breadcrumbPlay: "练习",
+		playFallbackOptions: "练习选项",
+		noCompletedLevelYet: "还没有完成的等级",
+		playFallbackDescription: "练习模式会复习你已经完成的等级。请先完成当前等级，然后再回来随机练习。",
+		currentLevel: "当前等级",
+		startLevel: "开始等级 {level}",
+		currentLevelDescription: "继续当前的混合练习。完成至少一个等级后，练习模式才会可用。",
+		levelsFallbackDescription: "返回等级列表，选择一个已解锁的等级继续训练。",
+
 	},
 
 	learningReview: {
@@ -338,9 +371,70 @@ const zh = {
 		//--------- SystemMessage ---------
 		systemDescription: "关于好友请求、分享联系人和聊天操作的通知。",
 
+		//--------- SystemMessageWindow ---------
+		systemWindowDescription: "游戏邀请、好友请求和系统通知。",
+		accepted: "已接受",
+		declined: "已拒绝",
+		expired: "已过期",
+		actionFailed: "操作失败",
+		updating: "更新中...",
+		joining: "加入中...",
+		joinLobby: "加入大厅",
+		accept: "接受",
+		decline: "拒绝",
+
 		//--------- chat/page---------
 		pageTitle: "聊天",
 		pageDescription: "这个页面将用于实时聊天和交流功能。",
+	},
+
+	chatLayout: {
+		newGameInvitationTitle: "新的游戏邀请",
+		radioLobbyFallback: "某个无线电大厅",
+		gameInvitationBody: "{username} 邀请你加入 {radioName}。你有 1 分钟时间接受邀请。",
+
+		friendOffline: "这个好友不在线。",
+		gameInvitationAlreadyPending: "已经向这个好友发送了游戏邀请。",
+		friendAlreadyInvitedYou: "这个好友已经邀请了你，请先接受或拒绝对方的邀请。",
+		friendInGame: "这个好友正在游戏中。",
+		friendReadyInLobby: "这个好友已经在大厅中准备好了。",
+
+		failedToUpdateInvitation: "更新邀请失败。",
+		systemMessageWithoutRadio: "这条系统消息没有关联无线电大厅。",
+		failedToJoinRadioLobby: "加入无线电大厅失败。",
+		failedToSendInvitation: "发送邀请失败。",
+
+		failedToOpenConversation: "打开对话失败。",
+		conversationNotReady: "对话还没有准备好。",
+		failedToSendMessage: "发送消息失败。",
+
+		userAlreadyFriend: "这个用户已经在你的好友列表中。",
+		friendRequestAlreadySent: "好友请求已经发送。",
+		friendRequestAlreadyExists: "已经存在与这个用户的好友请求。",
+		failedToSendFriendRequest: "发送好友请求失败，请稍后再试。",
+		networkError: "网络错误，请稍后再试。",
+		friendRequestSentTitle: "好友请求已发送",
+		friendRequestSentBody: "已向 {displayName} 发送好友请求，等待对方接受。",
+
+		friendRemarkEmpty: "好友备注不能为空。",
+		friendRemarkDuplicate: "这个备注名已经存在于你的好友列表中。",
+		friendRemarkUpdatedTitle: "好友备注已更新",
+		friendRemarkUpdatedBody: "{oldName} 已被重命名为 {newName}。",
+
+		friendRemovedTitle: "好友已删除",
+		friendRemovedBody: "{displayName} 已从本地好友列表中删除。",
+		
+		openChatBeforeSharingFriend: "请先打开一个聊天窗口再分享好友。",
+		cannotShareFriendToThemselves: "不能把这个好友分享给自己。",
+		sharedContactMessage: "分享联系人：{displayName} (@{username})",
+		contactSharedTitle: "联系人已分享",
+		contactSharedBody: "{displayName} 已分享给 {friendName}。",
+
+		gameInvitationSentTitle: "游戏邀请已发送",
+		gameInvitationSentBody: "已向 {displayName} 发送游戏邀请，等待对方回应。",
+
+		emptyMessage: "消息不能为空。",
+		invalidMorseInput: "摩斯码格式不正确。只能使用点、划、空格，以及用于分隔单词的 /。",
 	},
 
 	//=========================================== login =========================================== 

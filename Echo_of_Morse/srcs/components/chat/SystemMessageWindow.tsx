@@ -148,6 +148,7 @@
 
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import type { SystemMessage } from "@/types/chat";
 import styles from "./css/SystemMessageWindow.module.css";
 
@@ -169,6 +170,9 @@ export default function SystemMessageWindow({
   onAnswerGameInvitation,
   onJoinRadioLobby,
 }: SystemMessageWindowProps) {
+	const { dictionary } = useI18n();
+	const t = dictionary.chat;
+
   async function handleAnswerInvitation(
     message: SystemMessage,
     action: GameInvitationAction
@@ -192,9 +196,9 @@ export default function SystemMessageWindow({
     <section className={styles.window}>
       <header className={styles.header}>
         <div>
-          <h2 className={styles.title}>System Messages</h2>
+          <h2 className={styles.title}>{t.systemMessages}</h2>
           <p className={styles.subtitle}>
-            Game invitations, friend requests, and system notifications.
+            {t.systemWindowDescription}
           </p>
         </div>
 
@@ -205,7 +209,7 @@ export default function SystemMessageWindow({
 
       <div className={styles.body}>
         {messages.length === 0 ? (
-          <p className={styles.empty}>No system messages yet.</p>
+          <p className={styles.empty}>{t.noSystemMessages}</p>
         ) : (
           <ul className={styles.list}>
             {messages.map((message) => {
@@ -239,31 +243,31 @@ export default function SystemMessageWindow({
                       <div className={styles.invitationArea}>
                         {message.actionStatus === "accepted" ? (
                           <span className={styles.acceptedBadge}>
-                            Accepted
+                            {t.accepted}
                           </span>
                         ) : null}
 
                         {message.actionStatus === "declined" ? (
                           <span className={styles.declinedBadge}>
-                            Declined
+                            {t.declined}
                           </span>
                         ) : null}
 
                         {message.actionStatus === "expired" ? (
                           <span className={styles.declinedBadge}>
-                            Expired
+                            {t.expired}
                           </span>
                         ) : null}
 
                         {message.actionStatus === "error" ? (
                           <span className={styles.errorBadge}>
-                            Action failed
+                            {t.actionFailed}
                           </span>
                         ) : null}
 
                         {isUpdating ? (
                           <span className={styles.pendingBadge}>
-                            Updating...
+                            {t.updating}
                           </span>
                         ) : null}
 
@@ -279,7 +283,7 @@ export default function SystemMessageWindow({
                                 )
                               }
                             >
-                              Accept
+                              {t.accept}
                             </button>
 
                             <button
@@ -292,7 +296,7 @@ export default function SystemMessageWindow({
                                 )
                               }
                             >
-                              Decline
+                              {t.decline}
                             </button>
                           </div>
                         ) : null}
@@ -303,13 +307,13 @@ export default function SystemMessageWindow({
                       <div className={styles.invitationArea}>
                         {message.actionStatus === "error" ? (
                           <span className={styles.errorBadge}>
-                            Action failed
+                            {t.actionFailed}
                           </span>
                         ) : null}
 
                         {isUpdating ? (
                           <span className={styles.pendingBadge}>
-                            Joining...
+                            {t.joining}
                           </span>
                         ) : null}
 
@@ -323,7 +327,7 @@ export default function SystemMessageWindow({
                                 void handleJoinRadioLobby(message)
                               }
                             >
-                              Join lobby
+                              {t.joinLobby}
                             </button>
                           </div>
                         ) : null}
