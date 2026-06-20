@@ -447,11 +447,11 @@ export function NotificationProvider({
 	const { dictionary } = useI18n();
 	const t = dictionary.notification;
 	const radioT = dictionary.competitionRadio;
-	const radioNameById: Record<string, string> = {
+	const radioNameById: Record<string, string> = useMemo(() => ({
 		"01": radioT.radioWave01,
 		"02": radioT.radioWave02,
 		"03": radioT.radioWave03,
-	};
+	}), [radioT]);
 
 
   const { status, data: session } = useSession();

@@ -102,6 +102,9 @@ const fr = {
 
 		//------------------ languageSwitcher ------------------
 		languageSwitcher: "Changer de langue",
+
+		//------------------ SkipLink ------------------
+		skipToMainContent: "Aller au contenu principal",
 	},
 
 	dashboard: {

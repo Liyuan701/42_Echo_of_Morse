@@ -102,6 +102,9 @@ const en = {
 
 		//------------------ languageSwitcher ------------------
 		languageSwitcher: "Language switcher",
+
+		//------------------ SkipLink ------------------
+		skipToMainContent: "Skip to main content",
 	},
 
 	dashboard: {

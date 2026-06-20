@@ -1,6 +1,7 @@
 import "./globals.css";
 
 import { I18nProvider } from "@/lib/i18n";
+import SkipLink from "@/components/layout/skipLink";
 import AuthSessionProvider from "@/components/auth/session-provider";
 import { SocketProvider } from "@/providers/socket-provider";
 import { NotificationProvider } from "@/components/notifications/NotificationProvider";
@@ -16,15 +17,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body>
         <AuthSessionProvider>
           <SocketProvider>
             <I18nProvider>
               <NotificationProvider>
-                <a href="#main-content" className="skip-link">
-                  Skip to main content
-                </a>
+                  <SkipLink />
                 {children}
               </NotificationProvider>
             </I18nProvider>
@@ -34,6 +33,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-// ! i18n: move metadata title, metadata description, html lang, and skip-link text into the i18n setup.
-// ! i18n: html lang should follow the current selected locale, for example en / fr / zh.

@@ -102,6 +102,10 @@ const zh = {
 
 		//------------------ languageSwitcher ------------------
 		languageSwitcher: "语言切换",
+
+		//------------------ SkipLink ------------------
+		skipToMainContent: "跳到主要内容",
+
 	},
 
 	dashboard: {
