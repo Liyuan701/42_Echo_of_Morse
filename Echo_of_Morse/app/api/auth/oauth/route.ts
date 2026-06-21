@@ -51,3 +51,23 @@ export async function POST(request: NextRequest) {
 
 	return response;
 }
+
+export async function DELETE() {
+	const response = NextResponse.json({ ok: true });
+
+	response.cookies.set("oauth_link_provider", "", {
+		httpOnly: true,
+		sameSite: "lax",
+		path: "/",
+		maxAge: 0,
+	});
+
+	response.cookies.set("oauth_link_user_id", "", {
+		httpOnly: true,
+		sameSite: "lax",
+		path: "/",
+		maxAge: 0,
+	});
+
+	return response;
+}

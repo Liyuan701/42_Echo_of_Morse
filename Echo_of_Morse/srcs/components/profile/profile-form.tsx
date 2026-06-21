@@ -74,9 +74,12 @@ export default function Profile() {
 				const data = await response.json();
 				setProfileUser(data);
 			} catch (error) {
-				console.error(error);
+				console.error("loadProfile", error);
 			}
 		}
+		void fetch("/api/auth/oauth", { method: "DELETE" }).catch((error) => {
+			console.error("loadProfile --> failed to clear OAuth cookies", error);
+		});
 		loadProfile();
 	}, [session, status]);//si session ou status change, on recharge le profil
 
