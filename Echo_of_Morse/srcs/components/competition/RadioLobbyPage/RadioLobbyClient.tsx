@@ -96,7 +96,8 @@ export default function RadioLobbyClient({
         const body = (await response.json().catch(() => null)) as
           | { error?: string }
           | null;
-        throw new Error(body?.error || t.failedToLoadLobby);
+        	console.error(body?.error);
+			throw new Error(t.failedToLoadLobby);
       }
 
       const lobby = (await response.json()) as {
@@ -111,9 +112,8 @@ export default function RadioLobbyClient({
 
     requestLobby("POST").catch((error: unknown) => {
       if (!cancelled) {
-        setMessage(
-          error instanceof Error ? error.message : t.failedToJoinLobby
-        );
+		console.error(error);
+		setMessage(t.failedToJoinLobby);
       }
     });
 
@@ -195,7 +195,8 @@ export default function RadioLobbyClient({
       };
 
       if (!response.ok || !body.users) {
-        throw new Error(body.error || t.failedToUpdateReadyStatus);
+        	console.error(body.error);
+			throw new Error(t.failedToUpdateReadyStatus);
       }
 
       applyLobbyResponse({
@@ -203,11 +204,8 @@ export default function RadioLobbyClient({
         activeSessionId: body.activeSessionId ?? null,
       });
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : t.failedToUpdateReadyStatus
-      );
+		console.error(error);
+		setMessage(t.failedToUpdateReadyStatus);
     } finally {
       setIsUpdating(false);
     }
@@ -238,16 +236,16 @@ export default function RadioLobbyClient({
       };
 
       if (!response.ok || !body.sessionId) {
-        throw new Error(body.error || t.failedToStartGame);
+        	console.error(body.error);
+			throw new Error(t.failedToStartGame);
       }
 
       router.push(
         `/competition/radio/${radio.radioId}/session/${body.sessionId}`
       );
     } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : t.failedToStartGame
-      );
+    	console.error(error);
+		setMessage(t.failedToStartGame);
     } finally {
       setIsUpdating(false);
     }

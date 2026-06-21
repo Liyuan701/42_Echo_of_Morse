@@ -407,9 +407,8 @@ export default function InviteFriendsPanel({
         markFriendAsPending(friend.id);
       }
 
-      window.alert(
-        error instanceof Error ? error.message : t.failedToSendInvitation
-      );
+    	console.error(error);
+		window.alert(t.failedToSendInvitation);
     }
   }
 

@@ -25,7 +25,7 @@ export default function LevelsPageClient({
       <PageShell>
         <section className={styles.learningPage} aria-labelledby="levels-title">
           <div className={styles.learningContainer}>
-            <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+            <nav className={styles.breadcrumb} aria-label={t.breadcrumb}>
               <Link className={styles.link} href="/learning">
                 {t.breadcrumbLearning}
               </Link>

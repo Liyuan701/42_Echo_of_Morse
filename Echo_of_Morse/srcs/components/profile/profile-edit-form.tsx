@@ -179,7 +179,8 @@ export default function ProfileEditForm() {
 		const data = await response.json();
 
 		if (!response.ok) {
-			setError(data.error ?? t.failedToUpdateProfile);
+			console.error(data.error);
+			setError(t.failedToUpdateProfile);
 			return;
 		}
 

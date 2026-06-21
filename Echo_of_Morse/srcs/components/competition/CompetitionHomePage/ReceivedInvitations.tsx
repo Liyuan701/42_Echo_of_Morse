@@ -286,11 +286,9 @@ export default function ReceivedInvitations() {
         );
       }
 
-      window.alert(
-        error instanceof Error
-          ? error.message
-          : t.failedToAnswerInvitation
-      );
+		console.error(error);
+		window.alert(t.failedToAnswerInvitation);
+
     } finally {
       setUpdatingId(null);
     }
