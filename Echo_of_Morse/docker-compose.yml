@@ -180,7 +180,12 @@ services:
         condition: service_completed_successfully
     command: >
       sh -c "
+        echo '[vault-init] Attente du root token (écrit par vault-unseal)...' &&
+        until [ -f /vault/data/root-token.txt ]; do sleep 2; done &&
         export VAULT_TOKEN=$$(cat /vault/data/root-token.txt) &&
+        echo '[vault-init] Attente du déscellement de Vault...' &&
+        until vault status -address=$$VAULT_ADDR 2>&1 | grep -q 'Sealed.*false'; do sleep 2; done &&
+        echo '[vault-init] Vault prêt — chargement des secrets' &&
         vault secrets enable -path=secret kv-v2 || true &&
         vault kv put secret/database DB_USER=$$DB_USER DB_PASSWORD=$$DB_PASS DB_NAME=$$DB_NAME &&
         vault kv put secret/app NEXTAUTH_SECRET=$$NEXTAUTH_SECRET NEXTAUTH_URL=$$NEXTAUTH_URL GITHUB_CLIENT_ID=$$GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET=$$GITHUB_CLIENT_SECRET GOOGLE_CLIENT_ID=$$GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET=$$GOOGLE_CLIENT_SECRET FORTYTWO_CLIENT_ID=$$FORTYTWO_CLIENT_ID FORTYTWO_CLIENT_SECRET=$$FORTYTWO_CLIENT_SECRET &&
