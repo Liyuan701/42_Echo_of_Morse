@@ -219,13 +219,6 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         throw new Error("TARGET_READY");
       }
 
-      if (
-        targetState.presence &&
-        targetState.presence.roomId !== freshInvitation.radioRoom.id
-      ) {
-        throw new Error("TARGET_IN_OTHER_ROOM");
-      }
-
       if (senderState.isPlaying) {
         throw new Error("SENDER_PLAYING");
       }
@@ -256,6 +249,14 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         where: {
           userId,
           roomId: { not: freshInvitation.radioRoom.id },
+        },
+      });
+
+      await transaction.radioLobbyPresence.deleteMany({
+        where: {
+          userId,
+          roomId: { not: freshInvitation.radioRoom.id },
+          status: { not: "PLAYING" },
         },
       });
 

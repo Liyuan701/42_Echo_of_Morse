@@ -12,6 +12,7 @@ type MatchmakingPanelProps = {
   isUpdating: boolean;
   onToggleReady: () => void;
   onStartGame: () => void;
+  onLeaveLobby: () => void;
 };
 
 export default function MatchmakingPanel({
@@ -22,6 +23,7 @@ export default function MatchmakingPanel({
   isUpdating,
   onToggleReady,
   onStartGame,
+  onLeaveLobby,
 }: MatchmakingPanelProps) {
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionRadio;
@@ -59,6 +61,15 @@ export default function MatchmakingPanel({
           onClick={onStartGame}
         >
           {t.startDecoding}
+        </Button>
+
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={isUpdating}
+          onClick={onLeaveLobby}
+        >
+          {t.leaveLobby}
         </Button>
       </div>
 

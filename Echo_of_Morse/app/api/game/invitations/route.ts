@@ -9,6 +9,7 @@ import {
   expirePendingGameInvitationsForUser,
   getGameInvitationExpiresAt,
 } from "@/lib/services/game-invitations";
+import { ensureInviterLobbyPresence } from "@/lib/services/invitation-lobby";
 import { getRadioUserState } from "@/lib/services/radio-user-state";
 import { prisma } from "@/server/prisma";
 
@@ -181,7 +182,13 @@ export async function POST(request: NextRequest) {
         expirePendingGameInvitationsForUser(transaction, toUserId),
       ]);
 
-      const [senderState, targetState, existingInvitation, targetPending] =
+      const [
+        senderState,
+        targetState,
+        existingInvitation,
+        targetPending,
+        lobbyUserCount,
+      ] =
         await Promise.all([
           getRadioUserState(transaction, fromUserId),
           getRadioUserState(transaction, toUserId),
@@ -201,6 +208,9 @@ export async function POST(request: NextRequest) {
               toUserId,
             },
             select: { id: true },
+          }),
+          transaction.radioLobbyPresence.count({
+            where: { roomId: room.id },
           }),
         ]);
 
@@ -228,13 +238,17 @@ export async function POST(request: NextRequest) {
         throw new Error("TARGET_IN_SAME_ROOM");
       }
 
-      if (targetState.presence && targetState.presence.roomId !== room.id) {
-        throw new Error("TARGET_IN_OTHER_ROOM");
-      }
-
       if (existingInvitation || targetPending) {
         throw new Error("INVITATION_ALREADY_PENDING");
       }
+
+      await ensureInviterLobbyPresence(transaction, {
+        userId: fromUserId,
+        roomId: room.id,
+        inviterAlreadyPresent: senderState.presence?.roomId === room.id,
+        lobbyUserCount,
+        maxUsers: room.maxUsers,
+      });
 
       return transaction.gameInvitation.create({
         data: {
@@ -276,9 +290,9 @@ export async function POST(request: NextRequest) {
       TARGET_PLAYING: "Friend is currently in a game",
       TARGET_READY: "Friend is already ready in a lobby",
       TARGET_IN_SAME_ROOM: "Friend is already in this radio room",
-      TARGET_IN_OTHER_ROOM:
-        "Friend is already in another radio room and must leave before joining a new one",
       INVITATION_ALREADY_PENDING: "Invitation already pending",
+      ROOM_LACKS_INVITE_CAPACITY:
+        "The radio room needs one free place for your friend",
     };
 
     if (errors[message]) {

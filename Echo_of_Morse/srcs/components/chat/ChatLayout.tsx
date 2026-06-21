@@ -62,6 +62,13 @@ type FriendWithOptionalGameStatus = Friend & {
   currentRadioId?: string | null;
 };
 
+type JoinRadioLobbyErrorResponse = {
+  error?: string;
+  code?: string;
+  currentRadioId?: string | null;
+  targetRadioId?: string | null;
+};
+
 function formatSystemMessageTime(createdAt: string) {
   return new Date(createdAt).toLocaleTimeString([], {
     hour: "2-digit",
@@ -438,6 +445,22 @@ export default function ChatLayout() {
     );
   }
 
+  function updateSystemMessage(
+    messageId: string,
+    patch: Partial<SystemMessage>
+  ) {
+    setSystemMessages((current) =>
+      current.map((item) =>
+        item.id === messageId
+          ? {
+              ...item,
+              ...patch,
+            }
+          : item
+      )
+    );
+  }
+
   function getFriendInviteDisabledReason(friend: Friend): string | null {
     const friendWithStatus = friend as FriendWithOptionalGameStatus;
 
@@ -532,25 +555,26 @@ export default function ChatLayout() {
       return;
     }
 
-    setSystemMessages((current) =>
-      current.map((item) =>
-        item.id === message.id
-          ? {
-              ...item,
-              actionStatus: "updating",
-            }
-          : item
-      )
-    );
+    updateSystemMessage(message.id, { actionStatus: "updating" });
 
-    const response = await fetch(`/api/competition/radio/${message.radioId}`, {
-      method: "POST",
-    });
+    let response: Response;
+
+    try {
+      response = await fetch(`/api/competition/radio/${message.radioId}`, {
+        method: "POST",
+      });
+    } catch (error) {
+      updateSystemMessage(message.id, { actionStatus: "error" });
+
+      console.error(error);
+      window.alert(t.failedToJoinRadioLobby);
+      return;
+    }
 
     if (!response.ok) {
-      const body = (await response.json().catch(() => ({}))) as {
-        error?: string;
-      };
+      const body = (await response
+        .json()
+        .catch(() => ({}))) as JoinRadioLobbyErrorResponse;
 
       //! A 在01, 邀请B 去02， B 接受了，然后现在A 收到系统信息
       //! TODO jdu: If the backend says the user is already in another lobby,
@@ -558,16 +582,25 @@ export default function ChatLayout() {
       //! You can use:
       //! DELETE /api/competition/radio/[currentRadioId]
       //! POST /api/competition/radio/[targetRadioId]
-      setSystemMessages((current) =>
-        current.map((item) =>
-          item.id === message.id
-            ? {
-                ...item,
-                actionStatus: "error",
-              }
-            : item
-        )
-      );
+      //! jdu follow-up: handled ALREADY_IN_OTHER_LOBBY by setting this message
+      //! to switch-required with currentRadioId, then SystemMessageWindow shows
+      //! Leave and join / Cancel actions. The switch action below calls DELETE
+      //! current lobby first, then POST target lobby.
+      if (
+        response.status === 409 &&
+        body.code === "ALREADY_IN_OTHER_LOBBY" &&
+        body.currentRadioId
+      ) {
+        updateSystemMessage(message.id, {
+          actionStatus: "switch-required",
+          currentRadioId: body.currentRadioId,
+          radioId: body.targetRadioId ?? message.radioId,
+        });
+
+        return;
+      }
+
+      updateSystemMessage(message.id, { actionStatus: "error" });
 
       console.error(body.error);
 	  window.alert(t.failedToJoinRadioLobby);
@@ -575,6 +608,59 @@ export default function ChatLayout() {
     }
 
     router.push(`/competition/radio/${message.radioId}`);
+  }
+
+  async function handleSwitchRadioLobbyFromSystemMessage(
+    message: SystemMessage
+  ) {
+    if (!message.currentRadioId || !message.radioId) {
+      window.alert(t.systemMessageWithoutRadio);
+      return;
+    }
+
+    updateSystemMessage(message.id, { actionStatus: "updating" });
+
+    try {
+      const leaveResponse = await fetch(
+        `/api/competition/radio/${message.currentRadioId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!leaveResponse.ok) {
+        throw new Error("Failed to leave current radio lobby");
+      }
+
+      const joinResponse = await fetch(
+        `/api/competition/radio/${message.radioId}`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (!joinResponse.ok) {
+        const body = (await joinResponse
+          .json()
+          .catch(() => ({}))) as JoinRadioLobbyErrorResponse;
+
+        throw new Error(body.error ?? "Failed to join target radio lobby");
+      }
+
+      router.push(`/competition/radio/${message.radioId}`);
+    } catch (error) {
+      updateSystemMessage(message.id, { actionStatus: "error" });
+
+      console.error(error);
+      window.alert(t.failedToJoinRadioLobby);
+    }
+  }
+
+  function handleCancelRadioLobbySwitch(message: SystemMessage) {
+    updateSystemMessage(message.id, {
+      actionStatus: "idle",
+      currentRadioId: undefined,
+    });
   }
 
   function isDuplicateDisplayName(
@@ -928,8 +1014,7 @@ export default function ChatLayout() {
       await sendGameInvitation({
         toUserId: invited.id,
         radioId,
-        joinLobbyBeforeSend: false,
-        redirectAfterSend: false,
+        redirectAfterSend: true,
       });
 
       markGameInviteFriendAsPending(invited.id);
@@ -1094,6 +1179,8 @@ export default function ChatLayout() {
           onClose={handleClosePanel}
           onAnswerGameInvitation={handleAnswerGameInvitation}
           onJoinRadioLobby={handleJoinRadioLobbyFromSystemMessage}
+          onSwitchRadioLobby={handleSwitchRadioLobbyFromSystemMessage}
+          onCancelRadioLobbySwitch={handleCancelRadioLobbySwitch}
         />
       ) : null}
 
@@ -1109,4 +1196,3 @@ export default function ChatLayout() {
     </section>
   );
 }
-

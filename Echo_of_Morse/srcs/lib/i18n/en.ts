@@ -383,6 +383,9 @@ const en = {
 		updating: "Updating...",
 		joining: "Joining...",
 		joinLobby: "Join lobby",
+		switchLobbyRequired: "You are already in another radio lobby.",
+		leaveAndJoinLobby: "Leave and join",
+		cancel: "Cancel",
 		accept: "Accept",
 		decline: "Decline",
 
@@ -760,6 +763,7 @@ const en = {
 		matchmakingDescription: "Join this radio queue. When at least two players are ready, one ready player can start the decoding session.",
 		cancelReady: "Cancel Ready",
 		startDecoding: "Start decoding",
+		leaveLobby: "Leave lobby",
 
 		currentReadyPlayers: "Current ready players:",
 		currentReadyPoint: ".",
@@ -801,6 +805,7 @@ const en = {
 		//--------- RadioLobbyClient.tsx ---------
 		failedToLoadLobby: "Failed to load the radio lobby.",
 		failedToJoinLobby: "Failed to join the lobby.",
+		failedToLeaveLobby: "Failed to leave the lobby.",
 		failedToAnswerInvitation: "Failed to answer invitation.",
 		failedToUpdateReadyStatus: "Failed to update ready status.",
 		needReadyBeforeStart: "You need to click Ready before starting a game.",

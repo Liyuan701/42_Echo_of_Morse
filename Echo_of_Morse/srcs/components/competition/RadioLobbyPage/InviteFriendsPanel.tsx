@@ -245,7 +245,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Card } from "@/components/ui";
 import type { RadioId } from "@/types/competition";
@@ -255,6 +255,7 @@ import {
   GameInvitationActionError,
   useGameInvitationActions,
 } from "@/hooks/useGameInvitationActions";
+import { getInviteFriendState } from "./invite-friend-state";
 
 type ApiFriend = {
   id: string;
@@ -262,12 +263,16 @@ type ApiFriend = {
   displayName?: string;
   avatarUrl: string | null;
   isOnline: boolean;
+  gameStatus?: "IDLE" | "READY" | "PLAYING" | null;
+  lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
+  currentRadioId?: string | null;
 };
 
 type InviteFriendsPanelProps = {
   radioId: RadioId;
   radioName: string;
   isLobbyFull: boolean;
+  lobbyMembershipRevision: number;
 };
 
 type InviteFriendItem = {
@@ -275,12 +280,16 @@ type InviteFriendItem = {
   username: string;
   displayName: string;
   avatarUrl: string | null;
+  gameStatus?: "IDLE" | "READY" | "PLAYING" | null;
+  lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
+  currentRadioId?: string | null;
 };
 
 export default function InviteFriendsPanel({
   radioId,
   radioName,
   isLobbyFull,
+  lobbyMembershipRevision,
 }: InviteFriendsPanelProps) {
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionRadio;
@@ -296,6 +305,7 @@ export default function InviteFriendsPanel({
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [hasTriedRealFriends, setHasTriedRealFriends] = useState(false);
   const [presenceRevision, setPresenceRevision] = useState(0);
+  const hasLoadedFriendsRef = useRef(false);
   const [pendingInviteFriendIds, setPendingInviteFriendIds] = useState<
     string[]
   >([]);
@@ -303,32 +313,45 @@ export default function InviteFriendsPanel({
   useEffect(() => {
     if (status !== "authenticated" || !currentUserId) {
       setRealOnlineFriends([]);
+      setPendingInviteFriendIds([]);
       setHasTriedRealFriends(false);
+      hasLoadedFriendsRef.current = false;
       return;
     }
 
     async function fetchOnlineFriends() {
       try {
-        setIsLoadingFriends(true);
+        if (!hasLoadedFriendsRef.current) {
+          setIsLoadingFriends(true);
+        }
         setHasTriedRealFriends(true);
 
-        const [friendsResponse, invitationsResponse] = await Promise.all([
+        const [
+          friendsResponse,
+          sentInvitationsResponse,
+          receivedInvitationsResponse,
+        ] = await Promise.all([
           fetch(`/api/friends?userId=${currentUserId}`),
-          fetch(
-            `/api/game/invitations?direction=sent&radioId=${encodeURIComponent(
-              radioId
-            )}`
-          ),
+          fetch("/api/game/invitations?direction=sent"),
+          fetch("/api/game/invitations?direction=received"),
         ]);
 
-        if (!friendsResponse.ok || !invitationsResponse.ok) {
+        if (
+          !friendsResponse.ok ||
+          !sentInvitationsResponse.ok ||
+          !receivedInvitationsResponse.ok
+        ) {
           throw new Error(t.failedToFetchFriends);
         }
 
         const friends = (await friendsResponse.json()) as ApiFriend[];
-        const invitations = (await invitationsResponse.json()) as {
+        const sentInvitations = (await sentInvitationsResponse.json()) as {
           toUser: { id: string };
         }[];
+        const receivedInvitations =
+          (await receivedInvitationsResponse.json()) as {
+            fromUser: { id: string };
+          }[];
 
         const onlineFriends = friends
           .filter((friend) => friend.isOnline)
@@ -337,38 +360,73 @@ export default function InviteFriendsPanel({
             username: friend.username,
             displayName: friend.displayName || friend.username,
             avatarUrl: friend.avatarUrl,
+            gameStatus: friend.gameStatus,
+            lobbyStatus: friend.lobbyStatus,
+            currentRadioId: friend.currentRadioId,
           }));
 
         setRealOnlineFriends(onlineFriends);
         setPendingInviteFriendIds(
-          invitations.map((invitation) => invitation.toUser.id)
+          Array.from(
+            new Set([
+              ...sentInvitations.map((invitation) => invitation.toUser.id),
+              ...receivedInvitations.map(
+                (invitation) => invitation.fromUser.id
+              ),
+            ])
+          )
         );
       } catch (error) {
         console.error(error);
         setRealOnlineFriends([]);
       } finally {
+        hasLoadedFriendsRef.current = true;
         setIsLoadingFriends(false);
       }
     }
 
     void fetchOnlineFriends();
-  }, [status, currentUserId, radioId, presenceRevision]);
+  }, [
+    status,
+    currentUserId,
+    radioId,
+    presenceRevision,
+    lobbyMembershipRevision,
+  ]);
 
   useEffect(() => {
     if (!socket) {
       return;
     }
 
-    const handleOnlineUsers = () => {
+    const handleStateChange = () => {
       setPresenceRevision((revision) => revision + 1);
     };
 
-    socket.on("online-users", handleOnlineUsers);
+    socket.on("online-users", handleStateChange);
+    socket.on("game-invitation:new", handleStateChange);
+    socket.on("game-invitation:updated", handleStateChange);
+    socket.on("game-invitation:answered", handleStateChange);
 
     return () => {
-      socket.off("online-users", handleOnlineUsers);
+      socket.off("online-users", handleStateChange);
+      socket.off("game-invitation:new", handleStateChange);
+      socket.off("game-invitation:updated", handleStateChange);
+      socket.off("game-invitation:answered", handleStateChange);
     };
   }, [socket]);
+
+  useEffect(() => {
+    if (status !== "authenticated") {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setPresenceRevision((revision) => revision + 1);
+    }, 6000);
+
+    return () => window.clearInterval(intervalId);
+  }, [status]);
 
   const friendsToDisplay = useMemo(() => {
     return status === "authenticated" ? realOnlineFriends : [];
@@ -383,13 +441,16 @@ export default function InviteFriendsPanel({
   }
 
   async function handleInviteFriend(friend: InviteFriendItem) {
-    if (isLobbyFull) {
-      return;
-    }
+    const inviteState = getInviteFriendState({
+      isLobbyFull,
+      isPending: pendingInviteFriendIds.includes(friend.id),
+      currentRadioId: friend.currentRadioId,
+      targetRadioId: radioId,
+      gameStatus: friend.gameStatus,
+      lobbyStatus: friend.lobbyStatus,
+    });
 
-    const alreadyPending = pendingInviteFriendIds.includes(friend.id);
-
-    if (alreadyPending) {
+    if (inviteState.disabled) {
       return;
     }
 
@@ -397,14 +458,13 @@ export default function InviteFriendsPanel({
       await sendGameInvitation({
         toUserId: friend.id,
         radioId,
-        joinLobbyBeforeSend: false,
         redirectAfterSend: false,
       });
 
       markFriendAsPending(friend.id);
     } catch (error) {
       if (error instanceof GameInvitationActionError && error.status === 409) {
-        markFriendAsPending(friend.id);
+        setPresenceRevision((revision) => revision + 1);
       }
 
     	console.error(error);
@@ -443,7 +503,14 @@ export default function InviteFriendsPanel({
       ) : (
         <div className={styles.friendList}>
           {friendsToDisplay.map((friend) => {
-            const alreadyInvited = pendingInviteFriendIds.includes(friend.id);
+            const inviteState = getInviteFriendState({
+              isLobbyFull,
+              isPending: pendingInviteFriendIds.includes(friend.id),
+              currentRadioId: friend.currentRadioId,
+              targetRadioId: radioId,
+              gameStatus: friend.gameStatus,
+              lobbyStatus: friend.lobbyStatus,
+            });
             const avatarLetter =
               friend.displayName.charAt(0).toUpperCase() || "?";
 
@@ -470,10 +537,16 @@ export default function InviteFriendsPanel({
                   type="button"
                   variant="secondary"
                   size="sm"
-                  disabled={alreadyInvited || isLobbyFull}
+                  disabled={inviteState.disabled}
                   onClick={() => handleInviteFriend(friend)}
                 >
-                  {isLobbyFull ? t.lobbyFull : alreadyInvited ? t.invited : t.invite}
+                  {inviteState.reason === "lobby-full"
+                    ? t.lobbyFull
+                    : inviteState.reason === "in-lobby"
+                      ? t.inLobby
+                      : inviteState.reason === "pending"
+                        ? t.invited
+                        : t.invite}
                 </Button>
               </article>
             );

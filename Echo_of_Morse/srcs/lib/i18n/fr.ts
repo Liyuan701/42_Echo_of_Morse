@@ -381,6 +381,9 @@ const fr = {
 		updating: "Mise à jour...",
 		joining: "Connexion...",
 		joinLobby: "Rejoindre le lobby",
+		switchLobbyRequired: "Vous êtes déjà dans un autre lobby radio.",
+		leaveAndJoinLobby: "Quitter et rejoindre",
+		cancel: "Annuler",
 		accept: "Accepter",
 		decline: "Refuser",
 
@@ -760,6 +763,7 @@ const fr = {
 		matchmakingDescription: "Rejoignez la file de cette radio. Quand au moins deux joueurs sont prêts, un joueur prêt peut lancer la session de décodage.",
 		cancelReady: "Annuler Prêt",
 		startDecoding: "Commencer le décodage",
+		leaveLobby: "Quitter le lobby",
 
 		currentReadyPlayers: "Joueurs prêts:",
 		currentReadyPoint: ".",
@@ -798,6 +802,7 @@ const fr = {
 		//--------- RadioLobbyClient.tsx ---------
 		failedToLoadLobby: "Impossible de charger le lobby radio.",
 		failedToJoinLobby: "Impossible de rejoindre le lobby.",
+		failedToLeaveLobby: "Impossible de quitter le lobby.",
 		failedToAnswerInvitation: "Impossible de répondre à l'invitation.",
 		failedToUpdateReadyStatus: "Impossible de mettre à jour le statut Prêt.",
 		needReadyBeforeStart: "Vous devez cliquer sur Prêt avant de commencer une partie.",

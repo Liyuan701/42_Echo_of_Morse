@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSocket } from "@/providers/socket-provider";
 
@@ -10,6 +10,7 @@ import LobbyUserList from "./LobbyUserList";
 import MatchmakingPanel from "./MatchmakingPanel";
 import RadioHeader from "./RadioHeader";
 import ReadyPlayersList from "./ReadyPlayersList";
+import { createLobbyLeaveScheduler } from "./lobby-leave-scheduler";
 
 import type { RadioUser } from "@/types/competition";
 import type { RadioConfig } from "@/types/competition";
@@ -49,6 +50,20 @@ export default function RadioLobbyClient({
   const [users, setUsers] = useState<RadioUser[]>(initialUsers);
   const [message, setMessage] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [lobbyMembershipRevision, setLobbyMembershipRevision] = useState(0);
+  const memberIdsRef = useRef(
+    initialUsers.map((user) => user.id).sort().join(",")
+  );
+  const leaveScheduler = useMemo(
+    () =>
+      createLobbyLeaveScheduler(() => {
+        fetch(`/api/competition/radio/${radio.radioId}`, {
+          method: "DELETE",
+          keepalive: true,
+        }).catch(() => undefined);
+      }),
+    [radio.radioId]
+  );
 
   const currentUser = users.find((u) => u.isCurrentUser);
 
@@ -63,6 +78,16 @@ export default function RadioLobbyClient({
 
   const applyLobbyResponse = useCallback(
     (lobby: { users: RadioUser[]; activeSessionId: string | null }) => {
+      const nextMemberIds = lobby.users
+        .map((user) => user.id)
+        .sort()
+        .join(",");
+
+      if (nextMemberIds !== memberIdsRef.current) {
+        memberIdsRef.current = nextMemberIds;
+        setLobbyMembershipRevision((revision) => revision + 1);
+      }
+
       setUsers(lobby.users);
 
       if (lobby.activeSessionId) {
@@ -82,6 +107,7 @@ export default function RadioLobbyClient({
   // used to join the lobby and the DELETE cleanup used when leaving the page.
   useEffect(() => {
     let cancelled = false;
+    leaveScheduler.cancelLeave();
 
     async function requestLobby(method: "GET" | "POST") {
       const response = await fetch(
@@ -126,12 +152,9 @@ export default function RadioLobbyClient({
     return () => {
       cancelled = true;
       window.clearInterval(intervalId);
-      fetch(`/api/competition/radio/${radio.radioId}`, {
-        method: "DELETE",
-        keepalive: true,
-      }).catch(() => undefined);
+      leaveScheduler.scheduleLeave();
     };
-  }, [applyLobbyResponse, radio.radioId]);
+  }, [applyLobbyResponse, leaveScheduler, radio.radioId]);
 
   /**
    * =========================================================
@@ -251,6 +274,30 @@ export default function RadioLobbyClient({
     }
   }
 
+  async function handleLeaveLobby() {
+    setMessage("");
+    setIsUpdating(true);
+
+    try {
+      const response = await fetch(`/api/competition/radio/${radio.radioId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+
+        throw new Error(body?.error || t.failedToLeaveLobby);
+      }
+
+      router.push("/competition");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : t.failedToLeaveLobby);
+      setIsUpdating(false);
+    }
+  }
+
   /**
    * =========================================================
    * ADAPTER: Prisma RadioRoom -> UI RadioConfig
@@ -278,6 +325,7 @@ export default function RadioLobbyClient({
             message={message}
             onToggleReady={handleToggleReady}
             onStartGame={handleStartGame}
+            onLeaveLobby={handleLeaveLobby}
             isUpdating={isUpdating}
           />
 
@@ -289,6 +337,7 @@ export default function RadioLobbyClient({
             radioId={radio.radioId}
             radioName={radioName}
             isLobbyFull={isLobbyFull}
+            lobbyMembershipRevision={lobbyMembershipRevision}
           />
         </div>
       </section>

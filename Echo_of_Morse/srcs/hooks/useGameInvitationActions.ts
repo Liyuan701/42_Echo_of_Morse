@@ -31,7 +31,6 @@ type AnswerGameInvitationResult = {
 type SendGameInvitationArgs = {
   toUserId: string;
   radioId: RadioId;
-  joinLobbyBeforeSend?: boolean;
   redirectAfterSend?: boolean;
 };
 
@@ -85,27 +84,8 @@ export function useGameInvitationActions() {
     async ({
       toUserId,
       radioId,
-      joinLobbyBeforeSend = false,
       redirectAfterSend = false,
     }: SendGameInvitationArgs) => {
-      if (joinLobbyBeforeSend) {
-        const joinResponse = await fetch(`/api/competition/radio/${radioId}`, {
-          method: "POST",
-        });
-
-        const joinBody = await readJsonSafely<{ error?: string }>(
-          joinResponse
-        );
-
-        if (!joinResponse.ok) {
-          throw new GameInvitationActionError(
-            joinBody.error || t.failedToJoinLobby,
-            joinResponse.status,
-            joinBody
-          );
-        }
-      }
-
       const invitationResponse = await fetch("/api/game/invitations", {
         method: "POST",
         headers: {

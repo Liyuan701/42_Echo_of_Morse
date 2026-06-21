@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:unit": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\"}' node --test -r ts-node/register srcs/lib/services/invitation-lobby.test.ts srcs/components/competition/RadioLobbyPage/invite-friend-state.test.ts srcs/components/competition/RadioLobbyPage/lobby-leave-scheduler.test.ts",
+    "dev:clear-radio-state": "node scripts/dev-clear-radio-state.js"
   },
 
   "prisma": {

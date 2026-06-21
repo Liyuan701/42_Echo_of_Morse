@@ -57,13 +57,18 @@ export type SystemMessage = {
   invitationId?: string;
   fromUserId?: string;
   radioId?: string;
+
+  // 当前用户已经所在的 lobby。
+  // 仅在尝试加入另一个 lobby 时发生 409 冲突后写入。
+  currentRadioId?: string;
+
   actionStatus?:
     | "idle"
     | "updating"
     | "accepted"
     | "declined"
-    | "expired"
-    | "error";
+    | "error"
+    | "switch-required";
 };
 
 export type ChatPanelView =

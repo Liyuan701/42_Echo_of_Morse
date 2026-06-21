@@ -384,6 +384,9 @@ const zh = {
 		updating: "更新中...",
 		joining: "加入中...",
 		joinLobby: "加入大厅",
+		switchLobbyRequired: "你已经在另一个无线电大厅中。",
+		leaveAndJoinLobby: "离开并加入",
+		cancel: "取消",
 		accept: "接受",
 		decline: "拒绝",
 
@@ -758,6 +761,7 @@ const zh = {
 		matchmakingDescription: "加入这个频道的队列。当至少两名玩家准备好后，任意已准备玩家都可以开始解码游戏。",
 		cancelReady: "取消准备",
 		startDecoding: "开始解码",
+		leaveLobby: "离开大厅",
 
 		currentReadyPlayers: "当前准备玩家:",
 		currentReadyPoint: "。 ",
@@ -798,6 +802,7 @@ const zh = {
 		//--------- RadioLobbyClient.tsx ---------
 		failedToLoadLobby: "加载无线电大厅失败。",
 		failedToJoinLobby: "加入大厅失败。",
+		failedToLeaveLobby: "离开大厅失败。",
 		failedToAnswerInvitation: "处理邀请失败。",
 		failedToUpdateReadyStatus: "更新准备状态失败。",
 		needReadyBeforeStart: "你需要先点击准备才能开始游戏。",
