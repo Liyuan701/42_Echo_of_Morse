@@ -215,6 +215,7 @@ export const authOptions: NextAuthOptions = {
 	// personnalise les pages utilisees par NextAuth
 	pages: {
 		signIn: "/login",	//page de connexion
+		error: "/auth/error",
 	},
 
 	//============================ key = secret ============================

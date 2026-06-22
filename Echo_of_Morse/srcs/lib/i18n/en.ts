@@ -41,36 +41,6 @@ const en = {
 		updateProfileError: "Something went wrong while updating profile.",
 	},
 
-	//=========================================== register =========================================== 
-	register: {
-		title: "Register",
-		description: "Create your account to access the platform.",
-		name: "Name",
-		email: "Email",
-		password: "Password",
-		confirmPassword: "Confirm Password",
-		namePlaceholder: "Enter your name",
-		emailPlaceholder: "Enter your email",
-		passwordPlaceholder: "Enter your password",
-		confirmPasswordPlaceholder: "Confirm your password",
-		passwordHint: "Password must contain at least 8 characters.",
-		submitting: "Submitting...",
-		createAccount: "Create account",
-		nameRequired: "Name is required.",
-		emailRequired: "Email is required.",
-		passwordRequired: "Password is required.",
-		passwordTooShort: "Password must be at least 8 characters long.",
-		passwordsDoNotMatch: "Passwords do not match.",
-		success: "Account created successfully. Redirecting to login...",
-		genericError: "Something went wrong during registration.",
-		usernameOrEmailInUse: "Username or email already in use.",
-
-		showPassword: "Show",
-		hidePassword: "Hide",
-		
-		emailInvalid: "Invalid email format.",
-	},
-
 	layout: {
 		//------------------ navbar ------------------
 		brand: "Echoes of Morse",
@@ -450,7 +420,7 @@ const en = {
 		invalidMorseInput: "Invalid Morse input. Use only dots, dashes, spaces, and / between words.",
 	},
 
-	//=========================================== login =========================================== 
+	//=========================================== auth =========================================== 
 	login: {
 		title: "Login",
 		description: "Sign in to continue to your account.",
@@ -478,6 +448,43 @@ const en = {
 
 		showPassword: "Show",
 		hidePassword: "Hide",
+	},
+
+	register: {
+		title: "Register",
+		description: "Create your account to access the platform.",
+		name: "Name",
+		email: "Email",
+		password: "Password",
+		confirmPassword: "Confirm Password",
+		namePlaceholder: "Enter your name",
+		emailPlaceholder: "Enter your email",
+		passwordPlaceholder: "Enter your password",
+		confirmPasswordPlaceholder: "Confirm your password",
+		passwordHint: "Password must contain at least 8 characters.",
+		submitting: "Submitting...",
+		createAccount: "Create account",
+		nameRequired: "Name is required.",
+		emailRequired: "Email is required.",
+		passwordRequired: "Password is required.",
+		passwordTooShort: "Password must be at least 8 characters long.",
+		passwordsDoNotMatch: "Passwords do not match.",
+		success: "Account created successfully. Redirecting to login...",
+		genericError: "Something went wrong during registration.",
+		usernameOrEmailInUse: "Username or email already in use.",
+
+		showPassword: "Show",
+		hidePassword: "Hide",
+		
+		emailInvalid: "Invalid email format.",
+	},
+
+	authError: {
+		title: "Login failed",
+		accessDenied: "This Google or 42 account is not linked yet. Please link it from your profile first.",
+		oauthCallback: "The third-party login callback failed. Please try again later.",
+		defaultError: "Something went wrong during login. Please try again later.",
+		backToLogin: "Back to login",
 	},
 
 	//=========================================== privacyPolicy =========================================== 

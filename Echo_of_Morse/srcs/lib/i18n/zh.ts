@@ -41,36 +41,6 @@ const zh = {
 		updateProfileError: "更新个人资料时出现错误。",
 	},
 
-	//=========================================== register =========================================== 
-	register: {
-		title: "注册",
-		description: "创建你的账号以使用平台功能。",
-		name: "用户名",
-		email: "邮箱",
-		password: "密码",
-		confirmPassword: "确认密码",
-		namePlaceholder: "请输入用户名",
-		emailPlaceholder: "请输入邮箱",
-		passwordPlaceholder: "请输入密码",
-		confirmPasswordPlaceholder: "请再次输入密码",
-		passwordHint: "密码至少需要 8 个字符。",
-		submitting: "提交中...",
-		createAccount: "创建账号",
-		nameRequired: "用户名不能为空。",
-		emailRequired: "邮箱不能为空。",
-		passwordRequired: "密码不能为空。",
-		passwordTooShort: "密码长度至少需要 8 个字符。",
-		passwordsDoNotMatch: "两次输入的密码不一致。",
-		success: "账号创建成功，正在跳转到登录页面...",
-		genericError: "注册时出现错误，请稍后再试。",
-		usernameOrEmailInUse: "用户名或邮箱已被使用。",
-
-		showPassword: "显示",
-		hidePassword: "隐藏",
-
-		emailInvalid: "邮箱格式不正确。",
-	},
-
 	layout: {
 		//------------------ navbar ------------------
 		brand: "摩斯之声",
@@ -444,7 +414,7 @@ const zh = {
 		invalidMorseInput: "摩斯码格式不正确。只能使用点、划、空格，以及用于分隔单词的 /。",
 	},
 
-	//=========================================== login =========================================== 
+	//=========================================== auth =========================================== 
 	login: {
 		title: "登录",
 		description: "登录以继续使用你的账号。",
@@ -472,6 +442,43 @@ const zh = {
 
 		showPassword: "显示",
 		hidePassword: "隐藏",
+	},
+
+	register: {
+		title: "注册",
+		description: "创建你的账号以使用平台功能。",
+		name: "用户名",
+		email: "邮箱",
+		password: "密码",
+		confirmPassword: "确认密码",
+		namePlaceholder: "请输入用户名",
+		emailPlaceholder: "请输入邮箱",
+		passwordPlaceholder: "请输入密码",
+		confirmPasswordPlaceholder: "请再次输入密码",
+		passwordHint: "密码至少需要 8 个字符。",
+		submitting: "提交中...",
+		createAccount: "创建账号",
+		nameRequired: "用户名不能为空。",
+		emailRequired: "邮箱不能为空。",
+		passwordRequired: "密码不能为空。",
+		passwordTooShort: "密码长度至少需要 8 个字符。",
+		passwordsDoNotMatch: "两次输入的密码不一致。",
+		success: "账号创建成功，正在跳转到登录页面...",
+		genericError: "注册时出现错误，请稍后再试。",
+		usernameOrEmailInUse: "用户名或邮箱已被使用。",
+
+		showPassword: "显示",
+		hidePassword: "隐藏",
+
+		emailInvalid: "邮箱格式不正确。",
+	},
+	
+	authError: {
+		title: "登录失败",
+		accessDenied: "Google 或 42 账号还没有绑定，请先在个人主页绑定账号。",
+		oauthCallback: "第三方登录回调失败，请稍后重试。",
+		defaultError: "登录过程中出现错误，请稍后重试。",
+		backToLogin: "返回登录页",
 	},
 
 	//=========================================== privacyPolicy =========================================== 
