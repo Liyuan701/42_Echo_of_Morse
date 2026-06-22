@@ -826,6 +826,8 @@ const en = {
 		decodeSessionTitle: "{wpm} WPM Decode Session",
 		showMorseText: "Show Morse text",
 
+		abandonGame: "Abandon",
+
 		//--------- answer.tsx ---------
 		morseScrollHint: "Use the left/right arrow keys or mouse to scroll and view the full content.",
 		hidden: "Hidden",

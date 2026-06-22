@@ -63,6 +63,37 @@ export default function GameSession({
 	//filter = garder seulement les elements qui respectent une condition
 	const winners = leaderboard.filter((player) => player.score === highestScore);
 
+
+	//-------------------- fonction tool --------------------
+	//
+	async function abandonGame() {
+		const currentPlayer = players.find((player) => player.id === "me");
+
+		if (!currentPlayer || hasSubmittedResultRef.current) {
+			return;
+		}
+
+		hasSubmittedResultRef.current = true;
+
+		try {
+			const data = await submitGameSessionResult({
+				radioId,
+				sessionId,
+				score: currentPlayer.score,
+				timeMs: Date.now() - sessionStartedAtRef.current,
+				// playerStatus: "abandoned",
+			});
+
+			//mettre a jour les donnes pour afficher FinalRanking
+			setSessionData(data);
+			setPlayers(data.players);
+			setSecondsLeft(0);
+		} catch (error) {
+			hasSubmittedResultRef.current = false;
+			console.error(t.failedToSaveGameResult, error);
+		}
+	}
+
 	function resetStreak() {
 		setPlayers((currentPlayers) =>
 			currentPlayers.map((player) => {
@@ -378,6 +409,17 @@ export default function GameSession({
 				isCorrect={isAnswerCorrect}
 				onChange={checkAnswer}
 			/>
+
+			<div className={styles.footerActions}>
+				<button
+					type="button"
+					className={styles.abandonButton}
+					onClick={abandonGame}
+					disabled={isFinished}
+				>
+					{t.abandonGame}
+				</button>
+			</div>
 		</section>
     </section>
   );

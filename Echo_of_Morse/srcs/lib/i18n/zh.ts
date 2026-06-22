@@ -823,6 +823,8 @@ const zh = {
 		decodeSessionTitle: "{wpm} WPM 解码",
 		showMorseText: "显示摩斯文本",
 
+		abandonGame: "放弃",
+
 		//--------- answer.tsx ---------
 		morseScrollHint: "可使用键盘左/右箭头或鼠标，滑动查看完整内容。",
 		hidden: "已隐藏",

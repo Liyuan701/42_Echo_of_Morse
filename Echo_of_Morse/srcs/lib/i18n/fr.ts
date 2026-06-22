@@ -823,6 +823,8 @@ const fr = {
 		decodeSessionTitle: "Session de décodage {wpm} WPM",
 		showMorseText: "Afficher le texte Morse",
 
+		abandonGame: "Abandonner",
+		
 		//--------- morseStream.tsx ---------
 		morseScrollHint: "Utilisez les flèches gauche/droite ou la souris pour faire défiler et voir tout le contenu.",
 		hidden: "Masqué",
