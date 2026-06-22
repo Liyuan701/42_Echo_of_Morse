@@ -90,7 +90,7 @@ services:
       VAULT_ADDR: http://vault:8200       # adresse de Vault pour lire les secrets
       WS_INTERNAL_URL: http://ws:3001
     volumes:
-      - vault_data:/vault/data            # accès au root-token.txt généré par vault-unseal
+      - vault_data:/vault/data:Z          # accès au root-token.txt généré par vault-unseal
     depends_on:
       - db
       - vault-init
@@ -119,8 +119,8 @@ services:
     cap_add:
       - IPC_LOCK      # empêche les secrets d'être swappés sur le disque
     volumes:
-      - ./vault/config:/vault/config    # fichier de configuration local.json
-      - vault_data:/vault/data          # données chiffrées persistantes
+      - ./vault/config:/vault/config:Z  # fichier de configuration local.json
+      - vault_data:/vault/data:Z        # données chiffrées persistantes
     # L'entrypoint de l'image hashicorp/vault chown automatiquement
     # /vault/config, /vault/logs et /vault/file vers l'utilisateur vault,
     # mais PAS /vault/data (le chemin de storage configuré ici). Sans ce
@@ -142,8 +142,8 @@ services:
     environment:
       - VAULT_ADDR=http://vault:8200
     volumes:
-      - vault_data:/vault/data          # lit/écrit init-keys.txt et root-token.txt
-      - ./vault/scripts:/vault/scripts  # script vault-unseal.sh
+      - vault_data:/vault/data:Z        # lit/écrit init-keys.txt et root-token.txt
+      - ./vault/scripts:/vault/scripts:Z  # script vault-unseal.sh
     depends_on:
       - vault
     command: sh /vault/scripts/vault-unseal.sh
@@ -174,7 +174,7 @@ services:
       - FORTYTWO_CLIENT_ID=${FORTYTWO_CLIENT_ID}
       - FORTYTWO_CLIENT_SECRET=${FORTYTWO_CLIENT_SECRET}
     volumes:
-      - vault_data:/vault/data      # lit root-token.txt généré par vault-unseal
+      - vault_data:/vault/data:Z    # lit root-token.txt généré par vault-unseal
     depends_on:
       vault-unseal:
         condition: service_completed_successfully
