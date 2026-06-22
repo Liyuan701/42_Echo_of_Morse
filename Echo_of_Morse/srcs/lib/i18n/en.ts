@@ -1,19 +1,11 @@
 const en = {
 	profile: {
-		//------------------ sentences ------------------
 		loading: "Loading profile...",
 		loginRequired: "Please log in to view your profile.",
-		editLoginRequired: "Please log in to edit your profile.",
-		loadingCurrentProfile: "Loading current profile...",
-		saving: "Saving...",
-		failedToLoadProfile: "Failed to load profile.",
-		loadProfileError: "Something went wrong while loading profile.",
-		missingUserId: "Missing user ID.",
-		//------------------ words ------------------
-		changeAvatar: "Change avatar",
+		noEmail: "No email",
 		editProfile: "Edit profile",
 		defaultUser: "User",
-		//------- personal info -------
+		//------- statistique------- 
 		bio: "Bio",
 		stats: "Statistics",
 		accuracy: "Accuracy",
@@ -21,16 +13,27 @@ const en = {
 		levelPrefix: "Level",
 		friends: "Friends",
 		joined: "Joined",
+		//------- oauth ------- 
 		connectedAccounts: "Linked accounts",
 		notConnected: "Not linked",
 		connected: "Linked",
-		bindGoogle: "Bind Google",
-		bindFortyTwo: "Bind 42",
-		noEmail: "No email",
-		//------------------ profile friends ------------------
+		bindGoogle: "Link Google",
+		bindFortyTwo: "Link 42",
+		unlinkGoogle: "Unlink Google",
+		unlinkFortyTwo: "Unlink 42",
+		unlinkError: "Failed to unlink the account. Please try again later.",
+		linkError: "Failed to link the account. Please try again later.",
+		//------------------ profil friends ------------------
 		userNotFound: "User not found",
 		avatarAlt: "{displayName}'s avatar",
-		//------------------ profile edit ------------------
+		//------------------ profil edit ------------------
+		loadingCurrentProfile: "Loading current profile...",
+		editLoginRequired: "Please log in to edit your profile.",
+		saving: "Saving...",
+		failedToLoadProfile: "Failed to load profile.",
+		loadProfileError: "Something went wrong while loading profile.",
+		missingUserId: "Missing user ID.",
+		changeAvatar: "Change avatar",
 		username: "Username",
 		usernamePlaceholder: "Enter your username",
 		bioPlaceholder: "Tell something about yourself",

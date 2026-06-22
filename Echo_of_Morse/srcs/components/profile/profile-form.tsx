@@ -6,27 +6,6 @@ import { useI18n } from "@/lib/i18n";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-async function handleLinkProvider(provider: "google" | "42-school") {
-	//envoyer pour le type de provider
-	const response = await fetch("/api/auth/oauth", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({ provider }),
-	});
-
-	if (!response.ok) {
-		return;
-	}
-
-	if (provider === "google") {
-		signIn("google", { callbackUrl: "/profile" }, { prompt: "select_account" });
-	} else {
-		signIn(provider, { callbackUrl: "/profile" });
-	}
-}
-
 export default function Profile() {
 	const { dictionary } = useI18n();
   	const t = dictionary.profile;
@@ -77,11 +56,70 @@ export default function Profile() {
 				console.error("loadProfile", error);
 			}
 		}
-		void fetch("/api/auth/oauth", { method: "DELETE" }).catch((error) => {
+		void fetch("/api/auth/oauth/link", { method: "DELETE" }).catch((error) => {
 			console.error("loadProfile --> failed to clear OAuth cookies", error);
 		});
 		loadProfile();
 	}, [session, status]);//si session ou status change, on recharge le profil
+
+	// ===================== associer/disoccier Google/42 =====================
+	async function handleLinkProvider(provider: "google" | "42-school") {
+		try {
+			//envoyer pour le type de provider
+			const response = await fetch("/api/auth/oauth/link", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ provider }),
+			});
+
+			if (!response.ok) {
+				return;
+			}
+
+			if (provider === "google") {
+				signIn("google", { callbackUrl: "/profile" }, { prompt: "select_account" });
+			} else {
+				signIn(provider, { callbackUrl: "/profile" });
+			}
+			} catch (error) {
+				console.error("handleLinkProvider -->", error);
+				window.alert(t.linkError);
+		}
+	}
+
+	async function handleUnlinkProvider(provider: "google" | "42-school") {
+		try {
+			const response = await fetch("/api/auth/oauth/unlink", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ provider }),
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to unlink provider");
+			}
+
+			setProfileUser((currentUser) =>
+				currentUser
+					? {
+						...currentUser,
+						//filter --> garder un element lorsque true
+						//on veut supp provider(param)
+						providers: currentUser.providers.filter(
+							(currentProvider) => currentProvider !== provider
+						),
+					}
+					: currentUser
+			);
+		} catch (error) {
+			console.error("handleUnlinkProvider --> ", error);
+			window.alert(t.unlinkError);
+		}
+	}
 
 	// ===================== cas: n'a encore connecté ou charge =====================
 	if (status === "loading") {
@@ -105,7 +143,6 @@ export default function Profile() {
 		name: profileUser?.username ?? session?.user?.name ?? t.defaultUser,
 		email: profileUser?.email ?? session?.user?.email ?? t.noEmail,
 		image: profileUser?.image ?? session?.user?.image,
-		//! besoin de données réelles pour le profil
 		bio: profileUser?.bio ?? "",
 		accuracy: `${profileUser?.accuracy ?? 0}%`,
 		learningLevel: `${t.levelPrefix} ${profileUser?.learningLevel ?? 1}`,
@@ -192,11 +229,15 @@ export default function Profile() {
 					<Button
 						type="button"
 						variant="secondary"
-						disabled={user.googleLinked}
-						onClick={() => handleLinkProvider("google")}
+						onClick={() =>
+							user.googleLinked
+								? handleUnlinkProvider("google")
+								: handleLinkProvider("google")
+						}
 					>
-						{user.googleLinked ? t.connected : t.bindGoogle}
+						{user.googleLinked ? t.unlinkGoogle : t.bindGoogle}
 					</Button>
+
 					</div>
 
 					<div className={styles.connectedRow}>
@@ -210,10 +251,13 @@ export default function Profile() {
 					<Button
 						type="button"
 						variant="secondary"
-						disabled={user.fortyTwoLinked}
-						onClick={() => handleLinkProvider("42-school")}
+						onClick={() =>
+							user.fortyTwoLinked
+								? handleUnlinkProvider("42-school")
+								: handleLinkProvider("42-school")
+						}
 					>
-						{user.fortyTwoLinked ? t.connected : t.bindFortyTwo}
+						{user.fortyTwoLinked ? t.unlinkFortyTwo : t.bindFortyTwo}
 					</Button>
 					</div>
 				</div>

@@ -1,19 +1,11 @@
 const fr = {
 	profile: {
-		//------------------ phrases ------------------
 		loading: "Chargement du profil...",
 		loginRequired: "Veuillez vous connecter pour voir votre profil.",
-		editLoginRequired: "Veuillez vous connecter pour modifier votre profil.",
-		loadingCurrentProfile: "Chargement du profil actuel...",
-		saving: "Enregistrement...",
-		failedToLoadProfile: "Impossible de charger le profil.",
-		loadProfileError: "Une erreur est survenue pendant le chargement du profil.",
-		missingUserId: "Identifiant utilisateur manquant.",
-		//------------------ mots ------------------
-		changeAvatar: "Changer d'avatar",
+		noEmail: "Aucun email",
 		editProfile: "Modifier le profil",
 		defaultUser: "Utilisateur",
-		//------- informations personnelles -------
+		//------- statistique------- 
 		bio: "Bio",
 		stats: "Statistiques",
 		accuracy: "Précision",
@@ -21,16 +13,27 @@ const fr = {
 		levelPrefix: "Niveau",
 		friends: "Amis",
 		joined: "Inscription",
-		connectedAccounts: "Comptes liés",
-		notConnected: "Non lié",
-		connected: "Lié",
-		bindGoogle: "Lier Google",
-		bindFortyTwo: "Lier 42",
-		noEmail: "Aucun email",
-		//------------------ profil amis ------------------
+		//------- oauth ------- 
+		connectedAccounts: "Comptes associés",
+		notConnected: "Non associé",
+		connected: "Associé",
+		bindGoogle: "Associer Google",
+		bindFortyTwo: "Associer 42",
+		unlinkGoogle: "Dissocier Google",
+		unlinkFortyTwo: "Dissocier 42",
+		unlinkError: "Impossible de dissocier le compte. Veuillez réessayer plus tard.",
+		linkError: "Impossible d'associer le compte. Veuillez réessayer plus tard.",
+		//------------------ profil friends ------------------
 		userNotFound: "Utilisateur introuvable",
 		avatarAlt: "Photo de profil de {displayName}",
-		//------------------ modification du profil ------------------
+		//------------------ profil edit ------------------
+		loadingCurrentProfile: "Chargement du profil actuel...",
+		editLoginRequired: "Veuillez vous connecter pour modifier votre profil.",
+		saving: "Enregistrement...",
+		failedToLoadProfile: "Impossible de charger le profil.",
+		loadProfileError: "Une erreur est survenue pendant le chargement du profil.",
+		missingUserId: "Identifiant utilisateur manquant.",
+		changeAvatar: "Changer d'avatar",
 		username: "Nom d'utilisateur",
 		usernamePlaceholder: "Entrez votre nom d'utilisateur",
 		bioPlaceholder: "Parlez un peu de vous",

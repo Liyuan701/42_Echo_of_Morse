@@ -1,19 +1,11 @@
 const zh = {
 	profile: {
-		//------------------ 句子 ------------------
 		loading: "正在加载个人资料...",
 		loginRequired: "请先登录以查看个人资料。",
-		editLoginRequired: "请先登录以编辑个人资料。",
-		loadingCurrentProfile: "正在加载当前资料...",
-		saving: "保存中...",
-		failedToLoadProfile: "加载个人资料失败。",
-		loadProfileError: "加载个人资料时出现错误。",
-		missingUserId: "缺少用户 ID。",
-		//------------------ 词 ------------------
-		changeAvatar: "更换头像",
+		noEmail: "无邮箱",
 		editProfile: "编辑资料",
 		defaultUser: "用户",
-		//------- 个人信息/------- 
+		//------- statistique------- 
 		bio: "个人签名",
 		stats: "统计数据",
 		accuracy: "准确率",
@@ -21,16 +13,27 @@ const zh = {
 		levelPrefix: "等级",
 		friends: "好友",
 		joined: "注册时间",
+		//------- oauth ------- 
 		connectedAccounts: "绑定账号",
 		notConnected: "未绑定",
 		connected: "已绑定",
 		bindGoogle: "绑定 Google",
 		bindFortyTwo: "绑定 42",
-		noEmail: "无邮箱",
+		unlinkGoogle: "解绑 Google",
+		unlinkFortyTwo: "解绑 42",
+		unlinkError: "解绑失败，请稍后再试。",
+		linkError: "绑定失败，请稍后再试。",
 		//------------------ profil friends ------------------
 		userNotFound: "未找到用户",
 		avatarAlt: "{displayName} 的头像",
 		//------------------ profil edit ------------------
+		loadingCurrentProfile: "正在加载当前资料...",
+		editLoginRequired: "请先登录以编辑个人资料。",
+		saving: "保存中...",
+		failedToLoadProfile: "加载个人资料失败。",
+		loadProfileError: "加载个人资料时出现错误。",
+		missingUserId: "缺少用户 ID。",
+		changeAvatar: "更换头像",
 		username: "用户名",
 		usernamePlaceholder: "请输入用户名",
 		bioPlaceholder: "介绍一下你自己",
