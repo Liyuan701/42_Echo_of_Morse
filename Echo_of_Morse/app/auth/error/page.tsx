@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button, Card } from "@/components/ui";
 import PageShell from "@/components/layout/page-shell";
 import { useI18n } from "@/lib/i18n";
+import styles from "./auth-error.module.css";
 
 export default function AuthErrorPage() {
 	//----------- obtenir erreur -----------
@@ -29,12 +30,17 @@ export default function AuthErrorPage() {
 	return (
 		<PageShell>
 			<Card size="narrow">
-				<h1>{t.title}</h1>
-				<p>{message}</p>
+				<div className={styles.content}>
+					<h1 className={styles.title}>{t.title}</h1>
 
-				<Button type="button" onClick={() => router.push("/login")} fullWidth>
-					{t.backToLogin}
-				</Button>
+					<p className={styles.message}>{message}</p>
+
+					<div className={styles.actions}>
+						<Button type="button" onClick={() => router.push("/login")} fullWidth>
+							{t.backToLogin}
+						</Button>
+					</div>
+				</div>
 			</Card>
 		</PageShell>
 	);
