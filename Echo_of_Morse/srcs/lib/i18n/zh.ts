@@ -262,7 +262,7 @@ const zh = {
 		//------------------ srcs/components/learning/LevelCard.tsx ------------------
 		newCharacters: "新字符",
 		questions: "题目",
-		pass: "通过",
+		pass: "通过条件",
 		locked: "未解锁",
 		startPractice: "开始练习",
 

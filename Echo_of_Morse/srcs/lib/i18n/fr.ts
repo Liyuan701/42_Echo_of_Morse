@@ -260,7 +260,7 @@ const fr = {
 		//------------------ srcs/components/learning/LevelCard.tsx ------------------
 		newCharacters: "Nouveaux caractères",
 		questions: "Questions",
-		pass: "Réussite",
+		pass: "Condition de réussite",
 		locked: "Verrouillé",
 		startPractice: "Commencer",
 

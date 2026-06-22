@@ -15,7 +15,7 @@ const en = {
 		defaultUser: "User",
 		//------- personal info -------
 		bio: "Bio",
-		stats: "Stats",
+		stats: "Statistics",
 		accuracy: "Accuracy",
 		learningLevel: "Learning level",
 		levelPrefix: "Level",
@@ -261,7 +261,7 @@ const en = {
 		//------------------ srcs/components/learning/LevelCard.tsx ------------------
 		newCharacters: "New characters",
 		questions: "Questions",
-		pass: "Pass",
+		pass: "Pass requirement",
 		locked: "Locked",
 		startPractice: "Start practice",
 
