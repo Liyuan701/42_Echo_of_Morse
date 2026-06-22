@@ -7,6 +7,15 @@ mkdir -p /vault/data
 
 KEYS_FILE=/vault/data/init-keys.txt
 
+# Si une tentative précédente a échoué après la création du fichier (ex: permission
+# denied lors du init), le fichier existe mais est vide ou incomplet. Dans ce cas
+# on le supprime pour forcer une réinitialisation propre, sinon le script croit
+# Vault déjà initialisé et tente un unseal avec des clés vides -> boucle infinie.
+if [ -f "$KEYS_FILE" ] && ! grep -q "Initial Root Token" "$KEYS_FILE"; then
+  echo "[vault-unseal] $KEYS_FILE existe mais est invalide/incomplet — suppression"
+  rm -f "$KEYS_FILE"
+fi
+
 # Attend que Vault soit prêt à recevoir des requêtes
 echo "[vault-unseal] Attente du démarrage de Vault..."
 until vault status -address=http://vault:8200 2>&1 | grep -q "Initialized"; do
@@ -15,9 +24,24 @@ done
 echo "[vault-unseal] Vault est prêt"
 
 if [ ! -f "$KEYS_FILE" ]; then
-  # Première fois — initialise Vault et sauvegarde les clés sur disque
+  # Vault peut déjà être initialisé même sans fichier de clés local (ex: volume
+  # partagé réinitialisé par un autre essai) — dans ce cas on ne peut pas générer
+  # de nouvelles clés, donc on ne tente init que si Vault n'est pas déjà initialisé.
+  if vault status -address=http://vault:8200 2>&1 | grep -q "Initialized.*true"; then
+    echo "[vault-unseal] ERREUR: Vault est déjà initialisé mais $KEYS_FILE est absent."
+    echo "[vault-unseal] Impossible de descender sans les clés. Il faut effacer le volume vault_data (vault operator init perdu) et tout redémarrer de zéro."
+    exit 1
+  fi
   echo "[vault-unseal] Première initialisation..."
-  vault operator init -address=http://vault:8200 > "$KEYS_FILE"
+  # Écrit dans un fichier temporaire et ne déplace vers KEYS_FILE qu'en cas de succès,
+  # pour ne jamais laisser un fichier vide/partiel si la commande échoue (ex: permission denied).
+  TMP_FILE="${KEYS_FILE}.tmp"
+  if ! vault operator init -address=http://vault:8200 > "$TMP_FILE"; then
+    rm -f "$TMP_FILE"
+    echo "[vault-unseal] ERREUR: échec de 'vault operator init' — voir les logs ci-dessus"
+    exit 1
+  fi
+  mv "$TMP_FILE" "$KEYS_FILE"
   echo "[vault-unseal] Clés sauvegardées dans $KEYS_FILE"
 else
   echo "[vault-unseal] Vault déjà initialisé — utilisation des clés existantes"
@@ -27,6 +51,16 @@ fi
 UNSEAL_KEY_1=$(grep "Unseal Key 1" "$KEYS_FILE" | awk '{print $NF}')
 UNSEAL_KEY_2=$(grep "Unseal Key 2" "$KEYS_FILE" | awk '{print $NF}')
 UNSEAL_KEY_3=$(grep "Unseal Key 3" "$KEYS_FILE" | awk '{print $NF}')
+
+# Sans cette vérification, une clé vide fait basculer "vault operator unseal" en
+# mode interactif (prompt stdin), qui échoue silencieusement hors tty ("file
+# descriptor 0 is not a terminal") au lieu de signaler clairement le vrai problème.
+if [ -z "$UNSEAL_KEY_1" ] || [ -z "$UNSEAL_KEY_2" ] || [ -z "$UNSEAL_KEY_3" ]; then
+  echo "[vault-unseal] ERREUR: clés de descellement vides — $KEYS_FILE est corrompu."
+  echo "[vault-unseal] Supprimez le volume vault_data et redémarrez de zéro."
+  rm -f "$KEYS_FILE"
+  exit 1
+fi
 
 vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_1"
 vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_2"
