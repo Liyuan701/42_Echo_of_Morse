@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button, Card } from "@/components/ui";
 import PageShell from "@/components/layout/page-shell";
@@ -7,6 +8,14 @@ import { useI18n } from "@/lib/i18n";
 import styles from "./auth-error.module.css";
 
 export default function AuthErrorPage() {
+	return (
+		<Suspense>
+			<AuthErrorContent />
+		</Suspense>
+	);
+}
+
+function AuthErrorContent() {
 	//----------- obtenir erreur -----------
 	//nextauth donne les info erreur dans url, donc
 	//lire les param dans url, puis obtenir type d'erreur: 

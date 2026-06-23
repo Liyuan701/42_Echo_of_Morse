@@ -36,9 +36,27 @@ if [ ! -f "$KEYS_FILE" ]; then
   # Écrit dans un fichier temporaire et ne déplace vers KEYS_FILE qu'en cas de succès,
   # pour ne jamais laisser un fichier vide/partiel si la commande échoue (ex: permission denied).
   TMP_FILE="${KEYS_FILE}.tmp"
-  if ! vault operator init -address=http://vault:8200 > "$TMP_FILE"; then
+  # Au tout premier démarrage, le chown de /vault/data fait par le service "vault"
+  # peut ne pas être encore effectif au moment où "vault status" répond déjà
+  # (race condition) -> le premier init échoue avec "permission denied". On
+  # retente plusieurs fois avant d'abandonner.
+  # Ce conteneur monte aussi /vault/data en root — on réapplique le chown
+  # nous-mêmes à chaque tentative, car celui fait par le service "vault" au
+  # démarrage ne suffit pas toujours (le volume nommé semble se réinitialiser
+  # à root:root après coup, observé en pratique malgré le chown initial).
+  INIT_OK=0
+  for attempt in 1 2 3 4 5; do
+    chown -R vault:vault /vault/data 2>/dev/null || true
+    if vault operator init -address=http://vault:8200 > "$TMP_FILE"; then
+      INIT_OK=1
+      break
+    fi
     rm -f "$TMP_FILE"
-    echo "[vault-unseal] ERREUR: échec de 'vault operator init' — voir les logs ci-dessus"
+    echo "[vault-unseal] tentative $attempt/5 de 'vault operator init' échouée, nouvelle tentative dans 3s..."
+    sleep 3
+  done
+  if [ "$INIT_OK" -ne 1 ]; then
+    echo "[vault-unseal] ERREUR: échec de 'vault operator init' après 5 tentatives — voir les logs ci-dessus"
     exit 1
   fi
   mv "$TMP_FILE" "$KEYS_FILE"
