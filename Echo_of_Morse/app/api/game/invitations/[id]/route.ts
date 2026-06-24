@@ -120,6 +120,8 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         },
       });
 
+      // the first message is for the receiver, the second is for the sender.
+      // Sysmultilangue: refuse key
       await transaction.systemMessage.createMany({
         data: [
           {
@@ -134,6 +136,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
             fromUserId: updated.fromUserId,
             radioId: updated.radioRoom?.radioId ?? null,
             actionStatus: "declined",
+            i18nKey: "gameInvitation.declined.receiver",
+            i18nParams: {
+              username: updated.fromUser.username,
+            },
           },
           {
             userId: updated.fromUserId,
@@ -147,6 +153,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
             fromUserId: updated.toUserId,
             radioId: updated.radioRoom?.radioId ?? null,
             actionStatus: "declined",
+            i18nKey: "gameInvitation.declined.sender",
+            i18nParams: {
+              username: updated.toUser.username,
+            },
           },
         ],
       });
@@ -302,8 +312,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         },
       });
 
+      // the first message is for the receiver, the second is for the sender.
       await transaction.systemMessage.createMany({
         data: [
+          // Sysmultilangue: accept key
           {
             userId: updated.toUserId,
             title: "Game invitation accepted",
@@ -316,6 +328,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
             fromUserId: updated.fromUserId,
             radioId: updated.radioRoom?.radioId ?? null,
             actionStatus: "accepted",
+            i18nKey: "gameInvitation.accepted.receiver",
+            i18nParams: {
+              username: updated.fromUser.username,
+            },
           },
           {
             userId: updated.fromUserId,
@@ -329,6 +345,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
             fromUserId: updated.toUserId,
             radioId: updated.radioRoom?.radioId ?? null,
             actionStatus: "idle",
+            i18nKey: "gameInvitation.accepted.sender",
+            i18nParams: {
+              username: updated.toUser.username,
+            },
           },
         ],
       });

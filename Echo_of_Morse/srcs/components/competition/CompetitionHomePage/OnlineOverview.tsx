@@ -43,12 +43,47 @@ export default function OnlineOverview({ overview }: OnlineOverviewProps) {
 
     socket.on("users-count", handleUsersCount);
     socket.on("radio-users-update", handleRadioUpdate);
+    socket.emit("get-users-count");
 
     return () => {
       socket.off("users-count", handleUsersCount);
       socket.off("radio-users-update", handleRadioUpdate);
     };
   }, [socket]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function refreshOverview() {
+      const response = await fetch("/api/competition/overview", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = (await response.json()) as {
+        totalOnlineUsers: number;
+        radioUsers: Record<string, number>;
+      };
+
+      if (!cancelled) {
+        setOnlineNow(data.totalOnlineUsers);
+        setRadioUsers(data.radioUsers);
+      }
+    }
+
+    void refreshOverview().catch(() => undefined);
+    const intervalId = window.setInterval(() => {
+      void refreshOverview().catch(() => undefined);
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   return (
     <Card className={styles.overviewCard} aria-labelledby="online-overview">

@@ -440,7 +440,8 @@ export default function SystemMessageWindow({
 
               const isAnswered =
                 message.actionStatus === "accepted" ||
-                message.actionStatus === "declined";
+                message.actionStatus === "declined" ||
+                message.actionStatus === "expired";
 
               const requiresSwitch =
                 message.actionStatus === "switch-required";
@@ -474,6 +475,12 @@ export default function SystemMessageWindow({
                         {message.actionStatus === "declined" ? (
                           <span className={styles.declinedBadge}>
                             {t.declined}
+                          </span>
+                        ) : null}
+
+                        {message.actionStatus === "expired" ? (
+                          <span className={styles.declinedBadge}>
+                            {t.expired}
                           </span>
                         ) : null}
 

@@ -1,4 +1,8 @@
-import type { GameSessionData, LoadGameSessionParams } from "./gameSessionType";
+import type {
+	GameSessionData,
+	LoadGameSessionParams,
+	PlayerStatus,
+} from "./gameSessionType";
 
 export async function getGameSessionData({
 	radioId,
@@ -23,16 +27,19 @@ export async function submitGameSessionResult({
 	sessionId,
 	score,
 	timeMs,
+	playerStatus,
 }: LoadGameSessionParams & {
 	score: number;
 	timeMs: number;
+	playerStatus: PlayerStatus;
 }): Promise<GameSessionData> {
 	const response = await fetch(
 		`/api/competition/radio/${radioId}/session/${sessionId}`,
 		{
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ score, timeMs }),
+			//Abandon feature: add playerStatus
+			body: JSON.stringify({ score, timeMs, playerStatus }),
 		}
 	);
 	const data = (await response.json()) as GameSessionData & { error?: string };
@@ -42,4 +49,22 @@ export async function submitGameSessionResult({
 	}
 
 	return data;
+}
+
+export function updateGameSessionProgress({
+	radioId,
+	sessionId,
+	score,
+	timeMs,
+}: LoadGameSessionParams & {
+	score: number;
+	timeMs: number;
+}): Promise<GameSessionData> {
+	return submitGameSessionResult({
+		radioId,
+		sessionId,
+		score,
+		timeMs,
+		playerStatus: "playing",
+	});
 }

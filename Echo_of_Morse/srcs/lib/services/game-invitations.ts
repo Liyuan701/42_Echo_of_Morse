@@ -35,6 +35,7 @@ export function isGameInvitationExpired(createdAt: Date, now = new Date()) {
 }
 
 
+// Sysmultilangue: To frontend i18m key and params.
 // Only the sender receives a persisted expiration message;
 // the receiver simply loses the pending action.
 function buildSenderExpiredMessage(invitation: ExpirableInvitation) {
@@ -50,6 +51,10 @@ function buildSenderExpiredMessage(invitation: ExpirableInvitation) {
     fromUserId: invitation.toUserId,
     radioId: invitation.radioRoom?.radioId ?? null,
     actionStatus: "expired",
+    i18nKey: "gameInvitation.expired.sender",
+    i18nParams: {
+      username: invitation.toUser.username,
+    },
   };
 }
 

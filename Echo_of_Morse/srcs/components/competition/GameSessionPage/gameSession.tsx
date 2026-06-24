@@ -14,6 +14,7 @@ import type { GameSessionData, Player } from "./gameSessionType";
 import {
 	getGameSessionData,
 	submitGameSessionResult,
+	updateGameSessionProgress,
 } from "./gameSessionData";
 
 type GameSessionProps = {
@@ -58,7 +59,10 @@ export default function GameSession({
 	const sequence = sessionData?.sequences ?? [];
 
 	//ranking: 
-	const leaderboard = [...players].sort((a, b) => b.score - a.score);
+	// Abandon Feature: the abandon palyer don't show in ranking.
+	const leaderboard = players
+		.filter((player) => !player.abandoned)
+		.sort((a, b) => b.score - a.score);
 	const highestScore = leaderboard[0]?.score ?? 0;
 	//filter = garder seulement les elements qui respectent une condition
 	const winners = leaderboard.filter((player) => player.score === highestScore);
@@ -81,7 +85,7 @@ export default function GameSession({
 				sessionId,
 				score: currentPlayer.score,
 				timeMs: Date.now() - sessionStartedAtRef.current,
-				// playerStatus: "abandoned",
+				playerStatus: "abandoned",
 			});
 
 			//mettre a jour les donnes pour afficher FinalRanking
@@ -174,6 +178,7 @@ export default function GameSession({
 			sessionId,
 			score: currentPlayer.score,
 			timeMs: Date.now() - sessionStartedAtRef.current,
+			playerStatus: "completed",
 		})
 			.then((data) => {
 				const localPlayer = players.find((player) => player.id === "me");
@@ -197,20 +202,66 @@ export default function GameSession({
 			});
 	}, [isFinished, players, radioId, sessionData, sessionId]);
 
-	// TODO modify after socket notifications are reliable.
-	// Temporary polling fallback. After this player finishes, the page requests
-	// the session every 2 seconds to receive other players' final scores.
-	// Replace this interval with a server-confirmed Socket.IO ranking/session
-	// update event once real-time game synchronization is available.
+	const currentPlayerScore = players.find(
+		(player) => player.id === "me"
+	)?.score;
+
 	useEffect(() => {
-		if (!isFinished || sessionData?.status === "finished") {
+		if (
+			currentPlayerScore === undefined ||
+			isFinished ||
+			sessionData?.status !== "active" ||
+			hasSubmittedResultRef.current
+		) {
+			return;
+		}
+
+		updateGameSessionProgress({
+			radioId,
+			sessionId,
+			score: currentPlayerScore,
+			timeMs: Date.now() - sessionStartedAtRef.current,
+		}).catch((error: unknown) => {
+			console.error(t.failedToSaveGameResult, error);
+		});
+	}, [
+		currentPlayerScore,
+		isFinished,
+		radioId,
+		sessionData?.status,
+		sessionId,
+		t.failedToSaveGameResult,
+	]);
+
+	// TODO modify after socket notifications are reliable.
+	// Temporary polling fallback. While the game is active, it detects an early
+	// finish caused by an abandonment. Afterward, it waits for the remaining
+	// player's final score. Replace this with a Socket.IO session update event.
+	useEffect(() => {
+		const hasPendingEligiblePlayers = sessionData?.players.some(
+			(player) => !player.abandoned && !player.completed
+		);
+
+		if (sessionData?.status === "finished" && !hasPendingEligiblePlayers) {
 			return;
 		}
 
 		const intervalId = window.setInterval(() => {
 			getGameSessionData({ radioId, sessionId })
 				.then((data) => {
-					setSessionData(data);
+					setSessionData((currentData) =>
+						currentData
+							? {
+									...currentData,
+									status: data.status,
+									duration: data.duration,
+									players: data.players,
+							  }
+							: data
+					);
+					if (data.status === "finished") {
+						setSecondsLeft(0);
+					}
 					setPlayers((currentPlayers) => {
 						const localPlayer = currentPlayers.find(
 							(player) => player.id === "me"
@@ -220,6 +271,7 @@ export default function GameSession({
 							player.id === "me" && localPlayer
 								? {
 										...player,
+										score: localPlayer.score,
 										correct: localPlayer.correct,
 										total: localPlayer.total,
 										streak: localPlayer.streak,
@@ -232,7 +284,7 @@ export default function GameSession({
 		}, 2000);
 
 		return () => window.clearInterval(intervalId);
-	}, [isFinished, radioId, sessionData?.status, sessionId]);
+	}, [radioId, sessionData, sessionId]);
 
 	//-------------------- gestion du timer --------------------
 	useEffect(() => {

@@ -42,6 +42,13 @@ type ApiMessage = {
 };
 
 type ApiSystemMessage = {
+  //TODO yren: Add i18nKey and i18nParams returned by /api/system-messages.
+  // Translate every persisted system message here with the current dictionary;
+  // keep title/body as the fallback when i18nKey is null or unknown.
+  // Backend keys: gameInvitation.expired.sender,
+  // gameInvitation.declined.receiver, gameInvitation.declined.sender,
+  // gameInvitation.accepted.receiver, gameInvitation.accepted.sender.
+  // i18nParams contains { username }; use radioId for the localized radio name.
   id: string;
   title: string;
   body: string;
@@ -173,6 +180,8 @@ export default function ChatLayout() {
 
     setSystemMessages(
       data.map((message) => ({
+        //TODO yren: Resolve message.i18nKey + message.i18nParams into localized
+        // title/body here. radioId should use the localized radio name.
         id: message.id,
         title: message.title,
         body: message.body,

@@ -67,6 +67,7 @@ export type SystemMessage = {
     | "updating"
     | "accepted"
     | "declined"
+    | "expired"
     | "error"
     | "switch-required";
 };

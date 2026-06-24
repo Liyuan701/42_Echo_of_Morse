@@ -31,6 +31,9 @@ export async function GET() {
     });
   });
 
+
+  // Sysmultilangue: add i18nKey and Params.
+  // old title and body (only in English) are used as fallback.
   return NextResponse.json(
     messages.map((message) => ({
       id: message.id,
@@ -43,6 +46,8 @@ export async function GET() {
       fromUserId: message.fromUserId,
       radioId: message.radioId,
       actionStatus: message.actionStatus,
+      i18nKey: message.i18nKey,
+      i18nParams: message.i18nParams,
     }))
   );
 }
