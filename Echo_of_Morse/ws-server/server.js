@@ -499,13 +499,7 @@ socket.on("game-invitation:send", (payload, ack) => {
 
     emitUserCount();
 
-    console.log(
-      "❌ DISCONNECT",
-      userId,
-      socket.id,
-      "reason:",
-      reason
-    );
+    console.log("❌ DISCONNECT", { userId, socketId: socket.id, "reason": reason });
   });
 });
 
