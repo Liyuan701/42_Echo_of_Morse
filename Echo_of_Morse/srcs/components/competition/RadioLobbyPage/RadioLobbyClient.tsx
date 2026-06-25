@@ -54,15 +54,17 @@ export default function RadioLobbyClient({
   const memberIdsRef = useRef(
     initialUsers.map((user) => user.id).sort().join(",")
   );
+
+  const sendLeaveRequest = useCallback(() => {
+    void fetch(`/api/competition/radio/${radio.radioId}`, {
+      method: "DELETE",
+      keepalive: true,
+    }).catch(() => undefined);
+  }, [radio.radioId]);
+
   const leaveScheduler = useMemo(
-    () =>
-      createLobbyLeaveScheduler(() => {
-        fetch(`/api/competition/radio/${radio.radioId}`, {
-          method: "DELETE",
-          keepalive: true,
-        }).catch(() => undefined);
-      }),
-    [radio.radioId]
+    () => createLobbyLeaveScheduler(sendLeaveRequest),
+    [sendLeaveRequest]
   );
 
   const currentUser = users.find((u) => u.isCurrentUser);
@@ -155,6 +157,19 @@ export default function RadioLobbyClient({
       leaveScheduler.scheduleLeave();
     };
   }, [applyLobbyResponse, leaveScheduler, radio.radioId]);
+
+  useEffect(() => {
+    function handlePageHide() {
+      leaveScheduler.cancelLeave();
+      sendLeaveRequest();
+    }
+
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+    };
+  }, [leaveScheduler, sendLeaveRequest]);
 
   /**
    * =========================================================

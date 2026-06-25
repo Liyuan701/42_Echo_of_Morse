@@ -56,17 +56,32 @@ export async function GET(
 
     // we can get a friend by receving and sending the invitation.
     // so count the sender and receiver.
-    const friendCount = await prisma.friendship.count({
-      where: {
-        status: "ACCEPTED",
-        OR: [
-          { senderId: id },
-          { receiverId: id },
-        ],
-      },
-    });
+    // Update the accuracy : correct / all practice * 100
+    const [friendCount, letterStats] = await Promise.all([
+      prisma.friendship.count({
+        where: {
+          status: "ACCEPTED",
+          OR: [{ senderId: id }, { receiverId: id }],
+        },
+      }),
+      prisma.userLetterProgress.aggregate({
+        where: { userId: id },
+        _sum: {
+          correctCount: true,
+          totalSeen: true,
+        },
+      }),
+    ]);
 
-    return NextResponse.json(toUserDTO(user, friendCount));
+    const totalSeen = letterStats._sum.totalSeen ?? 0;
+    const totalCorrect = letterStats._sum.correctCount ?? 0;
+    const accuracy =
+      totalSeen === 0 ? null : Math.round((totalCorrect / totalSeen) * 100);
+
+    return NextResponse.json({
+      ...toUserDTO(user, friendCount),
+      accuracy,
+    });
   } catch (error) {
     console.error(error);
 

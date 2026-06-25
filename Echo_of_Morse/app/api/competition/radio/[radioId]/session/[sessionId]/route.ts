@@ -79,6 +79,7 @@ function formatSession(
       total: 0,
       streak: 0,
       completed: player.completed,
+      abandoned: player.abandoned,
     })),
   };
 }
@@ -113,13 +114,14 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
+  // Abandon feature: verify playerStatus - set abandon or complete
   const body = (await request.json()) as {
     score?: number;
     timeMs?: number;
+    playerStatus?: "playing" | "completed" | "abandoned";
   };
 
-  const { score, timeMs } = body;
+  const { score, timeMs, playerStatus } = body;
 
   if (
     typeof score !== "number" ||
@@ -127,10 +129,16 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     score < 0 ||
     typeof timeMs !== "number" ||
     !Number.isInteger(timeMs) ||
-    timeMs < 0
+    timeMs < 0 ||
+    (playerStatus !== "playing" &&
+      playerStatus !== "completed" &&
+      playerStatus !== "abandoned")
   ) {
     return NextResponse.json(
-      { error: "score and timeMs must be non-negative integers" },
+      {
+        error:
+          "score and timeMs must be non-negative integers and playerStatus must be playing, completed or abandoned",
+      },
       { status: 400 }
     );
   }
@@ -149,13 +157,44 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await prisma.radioSessionPlayer.update({
-    where: { id: currentPlayer.id },
-    data: {
-      score,
-      timeMs,
-      completed: true,
-    },
+  if (currentPlayer.completed) {
+    return NextResponse.json(formatSession(gameSession, userId));
+  }
+
+  if (playerStatus === "playing") {
+    await prisma.radioSessionPlayer.updateMany({
+      where: {
+        id: currentPlayer.id,
+        completed: false,
+        OR: [{ score: null }, { score: { lt: score } }],
+      },
+      data: { score, timeMs },
+    });
+
+    const updatedSession = await findSession(params.radioId, params.sessionId);
+    return NextResponse.json(formatSession(updatedSession!, userId));
+  }
+
+  await prisma.$transaction(async (transaction) => {
+    await transaction.radioSessionPlayer.update({
+      where: { id: currentPlayer.id },
+      data: {
+        score,
+        timeMs,
+        completed: true,
+        abandoned: playerStatus === "abandoned",
+      },
+    });
+
+    if (playerStatus === "abandoned") {
+      await transaction.radioLobbyPresence.updateMany({
+        where: {
+          roomId: gameSession.roomId,
+          userId,
+        },
+        data: { status: "IDLE" },
+      });
+    }
   });
 
   const remainingPlayers = await prisma.radioSessionPlayer.count({
@@ -165,7 +204,13 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     },
   });
 
-  if (remainingPlayers === 0) {
+  // Abandon feature: if only one left, finish the session
+  // But the left one keep his score.
+  const shouldFinishSession =
+    remainingPlayers === 0 ||
+    (playerStatus === "abandoned" && remainingPlayers === 1);
+
+  if (shouldFinishSession) {
     await prisma.$transaction([
       prisma.radioGameSession.update({
         where: { id: gameSession.id },

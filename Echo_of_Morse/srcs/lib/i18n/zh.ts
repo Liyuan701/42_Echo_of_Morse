@@ -347,6 +347,28 @@ const zh = {
 		
 		//--------- SystemMessage ---------
 		systemDescription: "关于好友请求、分享联系人和聊天操作的通知。",
+		systemMessageTemplates: {
+			"gameInvitation.accepted.receiver": {
+				title: "游戏邀请已接受",
+				body: "你接受了 {username} 的 {radioName} 邀请。",
+			},
+			"gameInvitation.accepted.sender": {
+				title: "游戏邀请已接受",
+				body: "{username} 已接受你的 {radioName} 邀请，准备好后可以加入大厅。",
+			},
+			"gameInvitation.declined.receiver": {
+				title: "游戏邀请已拒绝",
+				body: "你拒绝了 {username} 的 {radioName} 邀请。",
+			},
+			"gameInvitation.declined.sender": {
+				title: "游戏邀请已拒绝",
+				body: "{username} 拒绝了你的 {radioName} 邀请。",
+			},
+			"gameInvitation.expired.sender": {
+				title: "游戏邀请已过期",
+				body: "{username} 没有在 1 分钟内回应，你的 {radioName} 邀请已取消。",
+			},
+		},
 
 		//--------- SystemMessageWindow ---------
 		systemWindowDescription: "游戏邀请、好友请求和系统通知。",

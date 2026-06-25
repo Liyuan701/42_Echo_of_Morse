@@ -199,6 +199,10 @@ model SystemMessage {
   fromUserId   String?
   radioId      String?
   actionStatus String?
+  // Sysmultilangue: Stable translation identifier and interpolation values for frontend i18n.
+  // title/body remain as fallbacks for old clients and historical messages.
+  i18nKey      String?
+  i18nParams   Json?
 
   createdAt DateTime @default(now())
 }
@@ -418,8 +422,11 @@ model RadioSessionPlayer {
   score Int?
   // Time taken to complete the decoding, in milliseconds; used for tie-breaking.
   timeMs Int?
-  // False if the player disconnected or timed out before finishing.
+  // True once the player completes or abandons the session.
   completed Boolean @default(false)
+  // True when the player explicitly leaves before the session ends.
+  // Abandon feature: add abandoned boolean.
+  abandoned Boolean @default(false)
 
   joinedAt DateTime @default(now())
 

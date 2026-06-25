@@ -52,6 +52,8 @@ type ApiSystemMessage = {
   fromUserId?: string | null;
   radioId?: string | null;
   actionStatus?: SystemMessage["actionStatus"] | null;
+  i18nKey?: string | null;
+  i18nParams?: Record<string, string> | null;
 };
 
 type InvitationActionStatus = NonNullable<SystemMessage["actionStatus"]>;
@@ -183,6 +185,8 @@ export default function ChatLayout() {
         fromUserId: message.fromUserId ?? undefined,
         radioId: message.radioId ?? undefined,
         actionStatus: message.actionStatus ?? undefined,
+        i18nKey: message.i18nKey ?? undefined,
+        i18nParams: message.i18nParams ?? undefined,
       }))
     );
   }, [userId]);

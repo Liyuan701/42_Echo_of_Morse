@@ -110,9 +110,11 @@ export async function getRadioLobby(radioId: string, currentUserId: string) {
     isCurrentUser: presence.user.id === currentUserId,
   }));
 
+  // Abandon feature: so completed or abandoned player won't go back to old game.
   const activePlayer = await prisma.radioSessionPlayer.findFirst({
     where: {
       userId: currentUserId,
+      completed: false,
       session: {
         roomId: room.id,
         status: { in: ["WAITING", "ACTIVE"] },

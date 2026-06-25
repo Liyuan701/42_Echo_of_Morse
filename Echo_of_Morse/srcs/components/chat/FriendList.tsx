@@ -229,6 +229,7 @@ import type { ChangeEvent } from "react";
 import type { Friend, SearchableUser, SystemMessage } from "@/types/chat";
 import { Button, Input } from "@/components/ui";
 import FriendListItem from "./FriendListItem";
+import { getSystemMessageText } from "./getSystemMessageText";
 import styles from "./css/FriendList.module.css";
 import { useI18n } from "@/lib/i18n";
 
@@ -291,6 +292,7 @@ export default function FriendList({
 }: FriendListProps) {
   const { dictionary } = useI18n();
   const t = dictionary.chat;
+  const radioT = dictionary.competitionRadio;
 
   const latestSystemMessage = systemMessages[0] ?? null;
 
@@ -404,7 +406,7 @@ export default function FriendList({
 
             <p className={styles.systemPreview}>
               {latestSystemMessage
-                ? latestSystemMessage.body
+                ? getSystemMessageText(latestSystemMessage, t, radioT).body
                 : t.noSystemMessages}
             </p>
           </div>
