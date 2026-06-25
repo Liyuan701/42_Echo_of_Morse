@@ -10,7 +10,7 @@ services:
   # Filtre tout le trafic avant qu'il atteigne l'application
   # ============================================================
   waf:
-    image: owasp/modsecurity-crs:nginx
+    image: docker.io/owasp/modsecurity-crs:nginx
     container_name: transcendence_waf
     restart: always
     # L'image tourne par défaut en utilisateur "nginx" (UID 101), mais
@@ -62,7 +62,7 @@ services:
   # Base de données PostgreSQL — interne uniquement
   # ============================================================
   db:
-    image: postgres:15
+    image: docker.io/library/postgres:15
     container_name: transcendence_db
     restart: always
     environment:
@@ -109,7 +109,7 @@ services:
   # Stocke les credentials chiffrés sur disque (server mode, pas dev mode)
   # ============================================================
   vault:
-    image: hashicorp/vault:latest
+    image: docker.io/hashicorp/vault:latest
     container_name: transcendence_vault
     restart: unless-stopped
     # root dans le conteneur (pas sur l'hôte) — l'entrypoint de l'image fait
@@ -141,7 +141,7 @@ services:
   # Redémarrages: relit les clés et descelle automatiquement
   # ============================================================
   vault-unseal:
-    image: hashicorp/vault:latest
+    image: docker.io/hashicorp/vault:latest
     container_name: transcendence_vault_unseal
     user: root
     environment:
@@ -161,7 +161,7 @@ services:
   # secret/app      → NEXTAUTH_SECRET, NEXTAUTH_URL, OAuth keys
   # ============================================================
   vault-init:
-    image: hashicorp/vault:latest
+    image: docker.io/hashicorp/vault:latest
     container_name: transcendence_vault_init
     environment:
       - VAULT_ADDR=http://vault:8200

@@ -108,8 +108,12 @@ re:
 # =========================
 
 fclean:
-	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml down -v --remove-orphans || true
-	$(COMPOSE) --env-file .env.prod down -v --remove-orphans || true
+	@$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml down -v --remove-orphans 2>/dev/null || true
+	@$(COMPOSE) --env-file .env.prod down -v --remove-orphans 2>/dev/null || true
+	@-podman pod rm -f --all >/dev/null 2>&1 || true
+	@-podman rm -af >/dev/null 2>&1 || true
+	@-podman volume rm -f echo_of_morse_postgres_data echo_of_morse_vault_data >/dev/null 2>&1 || true
+	-podman volume ls --filter label=io.podman.compose.project=echo_of_morse -q | xargs -r podman volume rm -f || true
 	@echo "Clean done"
 
 # =========================
