@@ -346,6 +346,28 @@ const en = {
 		
 		//--------- SystemMessage ---------
 		systemDescription: "Notifications about friend requests, shared contacts, and local chat actions.",
+		systemMessageTemplates: {
+			"gameInvitation.accepted.receiver": {
+				title: "Game invitation accepted",
+				body: "You accepted {username}'s invitation to {radioName}.",
+			},
+			"gameInvitation.accepted.sender": {
+				title: "Game invitation accepted",
+				body: "{username} accepted your invitation to {radioName}. Join the lobby when you are ready.",
+			},
+			"gameInvitation.declined.receiver": {
+				title: "Game invitation declined",
+				body: "You declined {username}'s invitation to {radioName}.",
+			},
+			"gameInvitation.declined.sender": {
+				title: "Game invitation declined",
+				body: "{username} declined your invitation to {radioName}.",
+			},
+			"gameInvitation.expired.sender": {
+				title: "Game invitation expired",
+				body: "{username} did not reply within 1 minute. Your invitation to {radioName} has been cancelled.",
+			},
+		},
 
 		//--------- SystemMessageWindow ---------
 		systemWindowDescription: "Game invitations, friend requests, and system notifications.",

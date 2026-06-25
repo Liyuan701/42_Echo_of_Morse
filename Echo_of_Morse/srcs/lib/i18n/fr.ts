@@ -344,6 +344,28 @@ const fr = {
 		
 		//--------- SystemMessage ---------
 		systemDescription: "Notifications sur les demandes d'ami, les contacts partagés et les actions du chat.",
+		systemMessageTemplates: {
+			"gameInvitation.accepted.receiver": {
+				title: "Invitation de jeu acceptée",
+				body: "Vous avez accepté l'invitation de {username} à rejoindre {radioName}.",
+			},
+			"gameInvitation.accepted.sender": {
+				title: "Invitation de jeu acceptée",
+				body: "{username} a accepté votre invitation à rejoindre {radioName}. Rejoignez le lobby quand vous êtes prêt.",
+			},
+			"gameInvitation.declined.receiver": {
+				title: "Invitation de jeu refusée",
+				body: "Vous avez refusé l'invitation de {username} à rejoindre {radioName}.",
+			},
+			"gameInvitation.declined.sender": {
+				title: "Invitation de jeu refusée",
+				body: "{username} a refusé votre invitation à rejoindre {radioName}.",
+			},
+			"gameInvitation.expired.sender": {
+				title: "Invitation de jeu expirée",
+				body: "{username} n'a pas répondu dans la minute. Votre invitation à rejoindre {radioName} a été annulée.",
+			},
+		},
 
 		//--------- SystemMessageWindow ---------
 		systemWindowDescription: "Invitations de jeu, demandes d'ami et notifications système.",

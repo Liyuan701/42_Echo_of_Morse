@@ -350,6 +350,7 @@
 
 import { useI18n } from "@/lib/i18n";
 import type { SystemMessage } from "@/types/chat";
+import { getSystemMessageText } from "./getSystemMessageText";
 import styles from "./css/SystemMessageWindow.module.css";
 
 type GameInvitationAction = "accept" | "decline";
@@ -376,6 +377,7 @@ export default function SystemMessageWindow({
 }: SystemMessageWindowProps) {
   const { dictionary } = useI18n();
   const t = dictionary.chat;
+  const radioT = dictionary.competitionRadio;
 
   async function handleAnswerInvitation(
     message: SystemMessage,
@@ -446,6 +448,8 @@ export default function SystemMessageWindow({
               const requiresSwitch =
                 message.actionStatus === "switch-required";
 
+              const translatedMessage = getSystemMessageText(message, t, radioT);
+
               return (
                 <li
                   key={message.id}
@@ -456,13 +460,13 @@ export default function SystemMessageWindow({
                   <div className={styles.itemMain}>
                     <div className={styles.itemHeader}>
                       <strong className={styles.itemTitle}>
-                        {message.title}
+                        {translatedMessage.title}
                       </strong>
 
                       <span className={styles.time}>{message.createdAt}</span>
                     </div>
 
-                    <p className={styles.messageBody}>{message.body}</p>
+                    <p className={styles.messageBody}>{translatedMessage.body}</p>
 
                     {isGameInvitation ? (
                       <div className={styles.invitationArea}>
