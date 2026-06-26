@@ -52,6 +52,9 @@ services:
       # Ces 2 lignes remplacent le certificat auto-généré de l'image par le nôtre (certs/)
       - ./certs/cert.pem:/etc/nginx/conf/server.crt:z
       - ./certs/key.pem:/etc/nginx/conf/server.key:z
+
+
+      - ./docker/nginx/map_upgrade.conf.template:/etc/nginx/templates/includes/map_upgrade.conf.template:ro
     depends_on:
       - web
       - ws

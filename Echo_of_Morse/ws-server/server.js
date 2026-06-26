@@ -20,7 +20,7 @@
 // only after the corresponding database write succeeds.
 
 
-
+const jwt = require("jsonwebtoken");
 
 const { Server } = require("socket.io");
 const express = require("express");
@@ -28,6 +28,8 @@ const http = require("http");
 
 const app = express();
 const httpServer = http.createServer(app);
+
+
 
 const io = new Server(httpServer, {
   path: "/socket.io/",
@@ -40,7 +42,7 @@ const io = new Server(httpServer, {
 // const io = new Server(httpServer, {
 //   path: "/socket.io/",
 //   cors: {
-//     origin: ["https://echoesofmorse"],
+//     origin: ["https://echoesofmorse.com"],
 //     credentials: true,
 //   },
 //   transports: ["websocket", "polling"],
@@ -91,8 +93,32 @@ function emitUserCount() {
   );
 }
 
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+
+    if (!token) {
+      return next(new Error("Missing token"));
+    }
+
+    const payload = jwt.verify(
+      token,
+      process.env.WS_SHARED_SECRET
+    );
+
+    socket.data.userId = payload.userId;
+
+    console.log("👉 HANDSHAKE AUTH:", socket.handshake.auth);
+
+    next();
+  } catch (err) {
+    return next(new Error("Unauthorized"));
+  }
+});
+
 io.on("connection", async (socket) => {
-  const userId = socket.handshake.auth.userId;
+  // const userId = socket.handshake.auth.userId;
+  const userId = socket.data.userId;
 
   if (!userId) {
     console.log("❌ NO USER ID");
@@ -105,7 +131,8 @@ io.on("connection", async (socket) => {
     {
       socketId: socket.id,
       userId,
-      auth: socket.handshake.auth,
+      // auth: socket.handshake.auth,
+      auth: socket.data.userId,
     }
   );
 
