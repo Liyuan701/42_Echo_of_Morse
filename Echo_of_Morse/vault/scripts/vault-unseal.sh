@@ -89,3 +89,21 @@ echo "[vault-unseal] Vault déscellé avec succès"
 # Sauvegarde le root token pour que vault-init puisse le lire
 grep "Initial Root Token" "$KEYS_FILE" | awk '{print $NF}' > /vault/data/root-token.txt
 echo "[vault-unseal] Root token sauvegardé dans /vault/data/root-token.txt"
+
+# Boucle de surveillance — si Vault redémarre (crash + restart: unless-stopped),
+# il se reselle automatiquement. Ce loop détecte l'état sealed et le redescelle
+# sans intervention manuelle. set +e pour que les erreurs réseau transitoires
+# (Vault temporairement indisponible) ne tuent pas le script.
+set +e
+echo "[vault-unseal] Démarrage de la surveillance (vérification toutes les 30s)..."
+while true; do
+  sleep 30
+  SEALED=$(vault status -address=http://vault:8200 -format=json 2>/dev/null | grep '"sealed"' | grep -o 'true\|false')
+  if [ "$SEALED" = "true" ]; then
+    echo "[vault-unseal] Vault scellé détecté — redescellement en cours..."
+    vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_1" 2>/dev/null || true
+    vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_2" 2>/dev/null || true
+    vault operator unseal -address=http://vault:8200 "$UNSEAL_KEY_3" 2>/dev/null || true
+    echo "[vault-unseal] Redescellement terminé"
+  fi
+done
