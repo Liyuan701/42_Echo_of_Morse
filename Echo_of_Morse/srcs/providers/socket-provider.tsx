@@ -148,7 +148,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     const socketInstance = getSocket();
     if (!socketInstance) return;
-    socketInstance.disconnect();
 
     if (status === "loading") return;
 
@@ -176,16 +175,15 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           token: data.token,
         };
 
-        if (!socketInstance.connected) {
-          socketInstance.connect();
-        }
+        console.log("AUTH SET", socketInstance.auth);
+
+        socketInstance.connect();
 
         console.log(
           "CONNECTING",
           session.user.id,
           socketInstance.connected,
-          socketInstance.id,
-          socketInstance.auth
+          socketInstance.id
         );
 
         setSocket(socketInstance);

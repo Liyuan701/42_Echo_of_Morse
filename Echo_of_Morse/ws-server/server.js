@@ -34,10 +34,35 @@ const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   path: "/socket.io/",
   cors: { origin: "*" },
+  transports: ["polling", "websocket"],
   pingInterval: 25000,
   pingTimeout: 20000,
 });
 
+
+io.engine.on("connection_error", (err) => {
+  console.log("ENGINE CONNECTION ERROR");
+  console.log(err.code);
+  console.log(err.message);
+  console.log(err.context);
+});
+
+io.engine.on("initial_headers", () => {
+  console.log("ENGINE INITIAL HEADERS");
+});
+
+io.engine.on("headers", () => {
+  console.log("ENGINE HEADERS");
+});
+
+
+io.engine.on("upgrade", () => {
+  console.log("🔥 UPGRADE SUCCESS");
+});
+
+io.engine.on("connection_error", (err) => {
+  console.log("🔥 ENGINE ERROR", err.code, err.message, err.context);
+});
 
 // const io = new Server(httpServer, {
 //   path: "/socket.io/",
@@ -180,227 +205,108 @@ io.on("connection", async (socket) => {
     socket.emit("users-count", onlineUsers.size);
   });
 
+  socket.on("chat:message:send", (payload, ack) => {
+    if (
+      !payload ||
+      typeof payload.toUserId !== "string" ||
+      typeof payload.message?.id !== "string"
+    ) {
+      return ack?.({
+        ok: false,
+        code: "INVALID_PAYLOAD",
+        message: "Invalid chat message payload",
+      });
+    }
 
+    const room = `user:${payload.toUserId}`;
+    const deliveredTo = io.sockets.adapter.rooms.get(room)?.size || 0;
 
-  // socket.on("chat:message:send", (payload) => {
-  //   if (
-  //     !payload ||
-  //     payload.senderId !== userId ||
-  //     typeof payload.toUserId !== "string" ||
-  //     typeof payload.message?.id !== "string"
-  //   ) {
-  //     return;
-  //   }
-
-  //   console.log(
-  //     "CHAT SEND",
-  //     {
-  //       from: userId,
-  //       to: payload?.toUserId,
-  //       socketId: socket.id,
-  //       messageId: payload?.message?.id,
-  //     }
-  //   );
-
-  //   const room = `user:${payload.toUserId}`;
-  //   const roomObj = io.sockets.adapter.rooms.get(room);
-  //   if (!roomObj || roomObj.size === 0) {
-  //     console.log("❌ ROOM EMPTY", room);
-  //   }
-  //   console.log(
-  //     "CHAT TARGET",
-  //     room,
-  //     "members:",
-  //     io.sockets.adapter.rooms.get(room)?.size || 0
-  //   );
-
-  //   io.to(room).emit("chat:message:new", {
-  //     ...payload.message,
-  //     senderId: userId,
-  //   });
-  // });
-
-
-socket.on("chat:message:send", (payload, ack) => {
-  if (
-    !payload ||
-    typeof payload.toUserId !== "string" ||
-    typeof payload.message?.id !== "string"
-  ) {
-    return ack?.({
-      ok: false,
-      code: "INVALID_PAYLOAD",
-      message: "Invalid chat message payload",
-    });
-  }
-
-  const room = `user:${payload.toUserId}`;
-  const deliveredTo = io.sockets.adapter.rooms.get(room)?.size || 0;
-
-  console.log("CHAT SEND", {
-    from: userId,
-    to: payload.toUserId,
-    socketId: socket.id,
-    messageId: payload.message.id,
-    deliveredTo,
-  });
-
-  if (deliveredTo === 0) {
-    console.log("❌ ROOM EMPTY", room);
-  }
-
-  try {
-    io.to(room).emit("chat:message:new", {
-      ...payload.message,
-      senderId: userId, 
-    });
-
-    return ack?.({
-      ok: true,
+    console.log("CHAT SEND", {
+      from: userId,
+      to: payload.toUserId,
+      socketId: socket.id,
+      messageId: payload.message.id,
       deliveredTo,
-      delivered: deliveredTo > 0,
     });
 
-  } catch (err) {
-    console.error(err);
+    if (deliveredTo === 0) {
+      console.log("❌ ROOM EMPTY", room);
+    }
 
-    return ack?.({
-      ok: false,
-      code: "INTERNAL_ERROR",
-      message: "Failed to emit message",
-    });
-  }
-});
+    try {
+      io.to(room).emit("chat:message:new", {
+        ...payload.message,
+        senderId: userId, 
+      });
 
-  // socket.on("game-invitation:send", (payload) => {
-  //   if (
-  //     !payload ||
-  //     typeof payload.toUserId !== "string" ||
-  //     typeof payload.invitationId !== "string"
-  //   ) {
-  //     return;
-  //   }
+      return ack?.({
+        ok: true,
+        deliveredTo,
+        delivered: deliveredTo > 0,
+      });
 
-  //   console.log(
-  //     "INVITE SEND",
-  //     {
-  //       from: userId,
-  //       to: payload?.toUserId,
-  //       invitationId: payload?.invitationId,
-  //     }
-  //   );
+    } catch (err) {
+      console.error(err);
 
-  //   const room = `user:${payload.toUserId}`;
-  //   const roomObj = io.sockets.adapter.rooms.get(room);
-  //   if (!roomObj || roomObj.size === 0) {
-  //     console.log("❌ ROOM EMPTY", room);
-  //   }
-  //   console.log(
-  //     "INVITE TARGET",
-  //     room,
-  //     "members:",
-  //     io.sockets.adapter.rooms.get(room)?.size || 0
-  //   );
-
-  //   io.to(room).emit("game-invitation:new", {
-  //     invitationId: payload.invitationId,
-  //     fromUserId: userId,
-  //   });
-  // });
-
-socket.on("game-invitation:send", (payload, ack) => {
-  if (
-    !payload ||
-    typeof payload.toUserId !== "string" ||
-    typeof payload.invitationId !== "string"
-  ) {
-    return ackError(
-      ack,
-      "INVALID_PAYLOAD",
-      "Invalid invitation payload"
-    );
-  }
-
-  console.log("INVITE SEND", {
-    from: userId,
-    to: payload.toUserId,
-    invitationId: payload.invitationId,
+      return ack?.({
+        ok: false,
+        code: "INTERNAL_ERROR",
+        message: "Failed to emit message",
+      });
+    }
   });
 
-  const room = `user:${payload.toUserId}`;
+  socket.on("game-invitation:send", (payload, ack) => {
+    if (
+      !payload ||
+      typeof payload.toUserId !== "string" ||
+      typeof payload.invitationId !== "string"
+    ) {
+      return ackError(
+        ack,
+        "INVALID_PAYLOAD",
+        "Invalid invitation payload"
+      );
+    }
 
-  const deliveredTo = io.sockets.adapter.rooms.get(room)?.size || 0;
-
-  if (deliveredTo === 0) {
-    console.log("❌ ROOM EMPTY", room);
-  }
-
-  console.log(
-    "INVITE TARGET",
-    room,
-    "members:",
-    deliveredTo
-  );
-
-  try {
-    io.to(room).emit("game-invitation:new", {
+    console.log("INVITE SEND", {
+      from: userId,
+      to: payload.toUserId,
       invitationId: payload.invitationId,
-      fromUserId: userId,
     });
 
-    ackSuccess(ack, deliveredTo);
-  } catch (err) {
-    console.error(err);
+    const room = `user:${payload.toUserId}`;
 
-    ackError(
-      ack,
-      "INTERNAL_ERROR",
-      "Failed to emit invitation update"
+    const deliveredTo = io.sockets.adapter.rooms.get(room)?.size || 0;
+
+    if (deliveredTo === 0) {
+      console.log("❌ ROOM EMPTY", room);
+    }
+
+    console.log(
+      "INVITE TARGET",
+      room,
+      "members:",
+      deliveredTo
     );
-  }
-});
 
+    try {
+      io.to(room).emit("game-invitation:new", {
+        invitationId: payload.invitationId,
+        fromUserId: userId,
+      });
 
+      ackSuccess(ack, deliveredTo);
+    } catch (err) {
+      console.error(err);
 
-
-
-
-
-
-
-
-
-
-  // socket.on("game-invitation:answered", (payload) => {
-  //   if (
-  //     !payload ||
-  //     typeof payload.toUserId !== "string" ||
-  //     typeof payload.invitationId !== "string" ||
-  //     (payload.status !== "accepted" && payload.status !== "declined")
-  //   ) {
-  //     return;
-  //   }
-
-  //   const room = `user:${payload.toUserId}`;
-  //   const roomObj = io.sockets.adapter.rooms.get(room);
-  //   if (!roomObj || roomObj.size === 0) {
-  //     console.log("❌ ROOM EMPTY", room);
-  //   }
-  //   console.log(
-  //     "INVITE TARGET",
-  //     room,
-  //     "members:",
-  //     io.sockets.adapter.rooms.get(room)?.size || 0
-  //   );
-
-  //   io.to(room).emit("game-invitation:updated", {
-  //     invitationId: payload.invitationId,
-  //     status: payload.status,
-  //     answeredByUserId: userId,
-  //   });
-    
-  // });
-
+      ackError(
+        ack,
+        "INTERNAL_ERROR",
+        "Failed to emit invitation update"
+      );
+    }
+  });
 
 
   socket.on("game-invitation:answered", (payload, ack) => {
@@ -563,7 +469,7 @@ app.post("/internal/notify", (req, res) => {
 httpServer.listen(3001, () => {
   console.log("WS SERVER RUNNING ON 3001");
 });
-
+io.attach(httpServer);
 
 function shutdown() {
   console.log("✅ Shutting down...");
