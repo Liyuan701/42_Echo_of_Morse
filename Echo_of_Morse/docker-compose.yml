@@ -151,6 +151,7 @@ services:
       - ./vault/scripts:/vault/scripts:z  # script vault-unseal.sh
     depends_on:
       - vault
+    restart: unless-stopped
     command: sh /vault/scripts/vault-unseal.sh
     networks:
       - transcendence_network
@@ -182,7 +183,7 @@ services:
       - vault_data:/vault/data:z    # lit root-token.txt généré par vault-unseal
     depends_on:
       vault-unseal:
-        condition: service_completed_successfully
+        condition: service_started
     command: >
       sh -c "
         echo '[vault-init] Attente du root token (écrit par vault-unseal)...' &&
