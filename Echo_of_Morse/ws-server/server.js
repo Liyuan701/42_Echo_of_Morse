@@ -122,21 +122,22 @@ io.use((socket, next) => {
   try {
     const token = socket.handshake.auth?.token;
 
-    if (!token) {
-      return next(new Error("Missing token"));
+    if (!token) return next(new Error("Missing token"));
+
+    console.log("WS_SHARED_SECRET =", process.env.WS_SHARED_SECRET);
+    const payload = jwt.verify(token, process.env.WS_SHARED_SECRET);
+
+    console.log("👉 JWT PAYLOAD:", payload);
+
+    socket.data.userId = payload.userId || payload.sub;
+
+    if (!socket.data.userId) {
+      return next(new Error("Invalid token payload (no userId)"));
     }
-
-    const payload = jwt.verify(
-      token,
-      process.env.WS_SHARED_SECRET
-    );
-
-    socket.data.userId = payload.userId;
-
-    console.log("👉 HANDSHAKE AUTH:", socket.handshake.auth);
 
     next();
   } catch (err) {
+    console.error("JWT ERROR:", err);
     return next(new Error("Unauthorized"));
   }
 });

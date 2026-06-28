@@ -49,6 +49,7 @@ export function getSocket(token?: string) {
       autoConnect: false,
       auth: token ? { token } : undefined,
     });
+    console.log("✅ SOCKET CREATED");
   }
 
   return socket;
