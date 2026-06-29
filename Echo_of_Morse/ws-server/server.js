@@ -124,7 +124,6 @@ io.use((socket, next) => {
 
     if (!token) return next(new Error("Missing token"));
 
-    console.log("WS_SHARED_SECRET =", process.env.WS_SHARED_SECRET);
     const payload = jwt.verify(token, process.env.WS_SHARED_SECRET);
 
     console.log("👉 JWT PAYLOAD:", payload);
@@ -143,7 +142,6 @@ io.use((socket, next) => {
 });
 
 io.on("connection", async (socket) => {
-  // const userId = socket.handshake.auth.userId;
   const userId = socket.data.userId;
 
   if (!userId) {

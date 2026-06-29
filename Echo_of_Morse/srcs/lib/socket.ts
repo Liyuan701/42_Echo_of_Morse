@@ -24,21 +24,6 @@ if (!WS_URL) {
 
 let socket: Socket | null = null;
 
-// export function getSocket() {
-//   if (typeof window === "undefined") return null;
-//   if (!socket) {
-//     socket = io(WS_URL, {
-//       path: "/socket.io/",
-//       transports: ["polling", "websocket"],
-//       // withCredentials: true,
-//       autoConnect: false,
-//     });
-//     console.log("✅ SOCKET CREATED");
-//   }
-
-//   return socket;
-// }
-
 export function getSocket(token?: string) {
   if (typeof window === "undefined") return null;
 
