@@ -216,6 +216,8 @@ services:
       - web
     networks:
       - transcendence_network
+    environment:
+      - WS_SHARED_SECRET=${WS_SHARED_SECRET}
 
 # Volumes nommés — Docker gère les permissions internement (évite les
 # erreurs "permission denied" des bind mounts quand l'UID du conteneur
