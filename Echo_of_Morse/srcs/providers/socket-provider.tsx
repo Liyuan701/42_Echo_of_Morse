@@ -23,9 +23,15 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
 
-    if (status === "unauthenticated") {
-      const socketInstance = getSocket();
-      if (socketInstance?.connected) {
+    const socketInstance = getSocket();
+    if (!socketInstance) return;
+
+    if (status === "loading") return;
+
+    const userId = session?.user?.id;
+
+    if (status !== "authenticated" || !userId) {
+      if (socketInstance.connected) {
         socketInstance.disconnect();
       }
       setSocket(null);
@@ -33,41 +39,35 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const socketInstance = getSocket();
-    if (!socketInstance) {
-      return;
-    }
+    let isMounted = true;
 
-    const userId = session?.user?.id;
+    const initSocket = async () => {
+      try {
+        const res = await fetch("/api/socket/token");
+        const data = await res.json();
 
-    if (status === "loading") {
-      return;
-    }
+        if (!isMounted) return;
 
-    if (status !== "authenticated" || !userId) {
-      socketInstance.disconnect();
-      setSocket(null);
-      setIsConnected(false);
-      return;
-    }
+        socketInstance.auth = {
+          token: data.token,
+        };
 
-    socketInstance.auth = {
-      userId,
+        console.log("AUTH SET", socketInstance.auth);
+
+        socketInstance.connect();
+
+        console.log(
+          "CONNECTING",
+          session.user.id,
+          socketInstance.connected,
+          socketInstance.id
+        );
+
+        setSocket(socketInstance);
+      } catch (err) {
+        console.error("Socket token fetch failed", err);
+      }
     };
-
-    if (!socketInstance.connected && !socketInstance.active) {
-      socketInstance.connect();
-    }
-
-    console.log(
-      "CONNECTING",
-      session.user.id,
-      socketInstance.connected,
-      socketInstance.id
-    );
-
-    setSocket(socketInstance);
-    setIsConnected(socketInstance.connected);
 
     const handleConnect = () => {
       console.log("CONNECTED", socketInstance.id);
@@ -82,12 +82,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     socketInstance.on("connect", handleConnect);
     socketInstance.on("disconnect", handleDisconnect);
 
-    const presenceHeartbeat = window.setInterval(() => {
-      if (!socketInstance.connected) {
-        return;
-      }
+    initSocket();
 
-      void fetch("/api/users/status", {
+    const presenceHeartbeat = window.setInterval(() => {
+      if (!socketInstance.connected) return;
+
+      fetch("/api/users/status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -100,6 +100,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }, 60000);
 
     return () => {
+      isMounted = false;
+
       window.clearInterval(presenceHeartbeat);
       socketInstance.off("connect", handleConnect);
       socketInstance.off("disconnect", handleDisconnect);
