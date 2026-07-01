@@ -48,6 +48,9 @@ services:
       # Monté avant les règles CRS : ctl:ruleRemoveById doit s'appliquer
       # avant que REQUEST-920-PROTOCOL-ENFORCEMENT.conf ne soit évalué.
       - ./docker/modsecurity/socket-io-exception.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-900-SOCKETIO-EXCEPTION.conf:z
+      # Exception ModSecurity pour l'accès par IP LAN (cross-machine) : sans ça,
+      # login/register sont bloqués en 403 dès qu'on accède via https://<IP>:8443.
+      - ./docker/modsecurity/lan-ip-access-exception.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-901-LAN-IP-EXCEPTION.conf:z
       # Certificat SSL auto-signé généré par le Makefile (make prod) via openssl — sans sudo
       # Ces 2 lignes remplacent le certificat auto-généré de l'image par le nôtre (certs/)
       - ./certs/cert.pem:/etc/nginx/conf/server.crt:z

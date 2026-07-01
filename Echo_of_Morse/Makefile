@@ -41,10 +41,19 @@ stop:
 # =========================
 
 prod:
-	@mkdir -p certs
-	@openssl req -x509 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem \
-		-days 365 -nodes -subj "/CN=localhost" \
-		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1" 2>/dev/null || true
+	@if [ "$(UNAME)" = "Darwin" ]; then \
+		HOST_IP=$$(ipconfig getifaddr en0 2>/dev/null || echo "127.0.0.1"); \
+	elif grep -qi microsoft /proc/version 2>/dev/null; then \
+		HOST_IP=$$(ipconfig.exe 2>/dev/null | grep -A4 "Wi-Fi\|Ethernet" | grep "IPv4" | awk '{print $$NF}' | head -1 | tr -d '\r'); \
+		[ -z "$$HOST_IP" ] && HOST_IP="127.0.0.1"; \
+	else \
+		HOST_IP=$$(hostname -I 2>/dev/null | awk '{print $$1}'); \
+		[ -z "$$HOST_IP" ] && HOST_IP="127.0.0.1"; \
+	fi; \
+	mkdir -p certs; \
+	openssl req -x509 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem \
+		-days 365 -nodes -subj "/CN=$$HOST_IP" \
+		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:$$HOST_IP" 2>/dev/null || true
 	@chmod 644 certs/key.pem certs/cert.pem
 	$(COMPOSE) --env-file .env.prod -f docker-compose.yml up -d --build
 
