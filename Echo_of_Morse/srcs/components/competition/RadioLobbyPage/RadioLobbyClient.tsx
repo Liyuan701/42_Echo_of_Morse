@@ -178,6 +178,9 @@ export default function RadioLobbyClient({
    */
   useEffect(() => {
     if (!socket) return;
+    const s = socket;
+
+    s.emit("radio:join", { radioId: radio.radioId });
 
     function handleUserListUpdated(updatedUsers: RadioUser[]) {
       setUsers(updatedUsers);
@@ -196,16 +199,23 @@ export default function RadioLobbyClient({
       );
     }
 
+    function handleSyncRequired() {
+      s.emit("radio:join", { radioId: radio.radioId });
+    }
+
     socket.on("radio:user-list-updated", handleUserListUpdated);
     socket.on("radio:ready-list-updated", handleReadyListUpdated);
     socket.on("radio:game-created", handleGameCreated);
+    socket.on("sync:required", handleSyncRequired);
 
     return () => {
       socket.off("radio:user-list-updated", handleUserListUpdated);
       socket.off("radio:ready-list-updated", handleReadyListUpdated);
       socket.off("radio:game-created", handleGameCreated);
+      socket.off("sync:required", handleSyncRequired);
+      socket.emit("radio:leave", { radioId: radio.radioId });
     };
-  }, [socket, router]);
+  }, [socket, router, radio.radioId]);
 
   /**
    * =========================================================

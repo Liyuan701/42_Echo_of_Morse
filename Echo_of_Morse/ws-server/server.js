@@ -197,6 +197,7 @@ io.on("connection", async (socket) => {
 
   socket.emit("users-count", onlineUsers.size);
   socket.emit("online-users", [...onlineUsers.keys()]);
+  socket.emit("sync:required");
 
   emitUserCount();
 
