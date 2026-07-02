@@ -39,6 +39,7 @@ const en = {
 		bioPlaceholder: "Tell something about yourself",
 		saveChanges: "Save changes",
 		chooseImageFile: "Please choose an image file.",
+		imageTooLarge: "Please choose an image smaller than 500 KB.",
 		readImageError: "Unable to read this image.",
 		failedToUpdateProfile: "Failed to update profile.",
 		updateProfileError: "Something went wrong while updating profile.",
@@ -57,8 +58,10 @@ const en = {
 		notifications: "Notifications",
 		noNewNotifications: "No new notifications.",
 		gameInvitations: "Game invitations",
+		friendRequests: "Friend requests",
 		radioLobbyFallback: "a radio lobby",
 		invitedYouToRadio: "invited you to {radioName}. You have 1 minute to accept.",
+		sentYouFriendRequest: "sent you a friend request.",
 		view: "View",
 		messages: "Messages",
 		system: "System",
@@ -127,6 +130,8 @@ const en = {
 	notification: {
 		newGameInvitationTitle: "New game invitation",
 		gameInvitationToastBody: "{username} invited you to {radioName}.",
+		newFriendRequestTitle: "New friend request",
+		friendRequestToastBody: "{username} sent you a friend request.",
 		newMessageFromTitle: "New message from {username}",
 		radioLobbyFallback: "a radio lobby",
 	},
@@ -421,6 +426,9 @@ const en = {
 		networkError: "Network error. Please try again.",
 		friendRequestSentTitle: "Friend request sent",
 		friendRequestSentBody: "Friend request sent to {displayName}. Waiting for acceptance.",
+		friendRequestReceivedTitle: "Friend request",
+		friendRequestReceivedBody: "{username} sent you a friend request.",
+		failedToUpdateFriendRequest: "Failed to update the friend request.",
 
 		//--------- friend remark ---------
 		friendRemarkEmpty: "Friend remark name cannot be empty.",

@@ -335,6 +335,8 @@ async function main() {
           method: "PATCH",
           body: JSON.stringify({
             score: (index + 1) * 10,
+            correct: index + 1,
+            total: USER_COUNT,
             timeMs: 1000 + index,
             playerStatus: "playing",
           }),
@@ -353,6 +355,8 @@ async function main() {
           method: "PATCH",
           body: JSON.stringify({
             score: (index + 1) * 100,
+            correct: USER_COUNT,
+            total: USER_COUNT,
             timeMs: 5000 + index,
             playerStatus: "completed",
           }),

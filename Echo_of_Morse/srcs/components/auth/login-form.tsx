@@ -62,6 +62,25 @@ export default function LoginForm() {
       setIsSubmitting(true);
 
 	//----------------- yren -----------------
+	const credentialsResponse = await fetch("/api/auth/verify-credentials", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			email: formData.email.trim().toLowerCase(),
+			password: formData.password,
+		}),
+	});
+	const credentials = (await credentialsResponse.json().catch(() => null)) as {
+		ok?: boolean;
+	} | null;
+
+	if (!credentials?.ok) {
+		setError(t.invalidCredentials);
+		return;
+	}
+
 	//envoyer au auth API route pour vérifier les credentials
 	const result = await signIn("credentials", {
 		email: formData.email.trim().toLowerCase(),
@@ -81,7 +100,9 @@ export default function LoginForm() {
 	//----------------- yren -----------------
 
     } catch (submitError) {
-      console.error(submitError);
+      if (process.env.NODE_ENV === "development") {
+        console.error(submitError);
+      }
       setError(t.genericError);
 
     } finally {

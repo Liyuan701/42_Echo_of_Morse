@@ -15,6 +15,7 @@ import { useSocket } from "@/providers/socket-provider";
 import type {
   FriendUnreadCounts,
   NotificationFriendMessage,
+  NotificationFriendRequest,
   NotificationGameInvitation,
   NotificationsSnapshot,
 } from "@/types/notifications";
@@ -30,6 +31,8 @@ type ToastNotification = {
 type NotificationContextType = {
   pendingGameInvitations: NotificationGameInvitation[];
   pendingGameInvitationCount: number;
+  pendingFriendRequests: NotificationFriendRequest[];
+  pendingFriendRequestCount: number;
   recentFriendMessages: NotificationFriendMessage[];
   friendUnreadCounts: FriendUnreadCounts;
   totalFriendUnreadCount: number;
@@ -104,6 +107,9 @@ export function NotificationProvider({
   const [recentFriendMessages, setRecentFriendMessages] = useState<
     NotificationFriendMessage[]
   >([]);
+  const [pendingFriendRequests, setPendingFriendRequests] = useState<
+    NotificationFriendRequest[]
+  >([]);
 
   const [unreadSystemMessagesFromServer, setUnreadSystemMessagesFromServer] =
     useState(0);
@@ -113,6 +119,7 @@ export function NotificationProvider({
 
   const hasLoadedOnce = useRef(false);
   const knownInvitationIds = useRef<Set<string>>(new Set());
+  const knownFriendRequestIds = useRef<Set<number>>(new Set());
   const knownMessageIds = useRef<Set<string>>(new Set());
 
   const friendReadStorageKey = userId
@@ -130,11 +137,13 @@ export function NotificationProvider({
 
   const clearNotificationState = useCallback(() => {
     setPendingGameInvitations([]);
+    setPendingFriendRequests([]);
     setRecentFriendMessages([]);
     setUnreadSystemMessagesFromServer(0);
 
     hasLoadedOnce.current = false;
     knownInvitationIds.current = new Set();
+    knownFriendRequestIds.current = new Set();
     knownMessageIds.current = new Set();
   }, []);
 
@@ -151,6 +160,7 @@ export function NotificationProvider({
 
       if (!response.ok) {
         setPendingGameInvitations([]);
+        setPendingFriendRequests([]);
         setRecentFriendMessages([]);
         setUnreadSystemMessagesFromServer(0);
         return;
@@ -168,6 +178,9 @@ export function NotificationProvider({
       const nextMessageIds = new Set(
         snapshot.recentFriendMessages.map((message) => message.id)
       );
+      const nextFriendRequestIds = new Set(
+        snapshot.pendingFriendRequests.map((request) => request.id)
+      );
 
       if (hasLoadedOnce.current) {
         const newestInvitation = pendingOnlyInvitations.find(
@@ -176,6 +189,9 @@ export function NotificationProvider({
 
         const newestMessage = snapshot.recentFriendMessages.find(
           (message) => !knownMessageIds.current.has(message.id)
+        );
+        const newestFriendRequest = snapshot.pendingFriendRequests.find(
+          (request) => !knownFriendRequestIds.current.has(request.id)
         );
 
         if (newestInvitation) {
@@ -192,6 +208,16 @@ export function NotificationProvider({
 					.replace("{radioName}", radioName),
             href: "/chat?panel=system",
           });
+        } else if (newestFriendRequest) {
+          setToast({
+            id: `friend-request:${newestFriendRequest.id}`,
+            title: t.newFriendRequestTitle,
+            body: t.friendRequestToastBody.replace(
+              "{username}",
+              newestFriendRequest.sender.username
+            ),
+            href: "/chat?panel=system",
+          });
         } else if (newestMessage) {
           setToast({
             id: `message:${newestMessage.id}`,
@@ -204,13 +230,16 @@ export function NotificationProvider({
 
       hasLoadedOnce.current = true;
       knownInvitationIds.current = nextInvitationIds;
+      knownFriendRequestIds.current = nextFriendRequestIds;
       knownMessageIds.current = nextMessageIds;
 
       setPendingGameInvitations(pendingOnlyInvitations);
+      setPendingFriendRequests(snapshot.pendingFriendRequests);
       setRecentFriendMessages(snapshot.recentFriendMessages);
       setUnreadSystemMessagesFromServer(snapshot.unreadSystemMessages);
     } catch {
       setPendingGameInvitations([]);
+      setPendingFriendRequests([]);
       setRecentFriendMessages([]);
       setUnreadSystemMessagesFromServer(0);
     }
@@ -293,13 +322,15 @@ export function NotificationProvider({
   }, [friendUnreadCounts]);
 
   const pendingGameInvitationCount = pendingGameInvitations.length;
+  const pendingFriendRequestCount = pendingFriendRequests.length;
 
   const unreadSystemMessageCount = unreadSystemMessagesFromServer;
 
   const totalGlobalUnreadCount =
     totalFriendUnreadCount +
     unreadSystemMessageCount +
-    pendingGameInvitationCount;
+    pendingGameInvitationCount +
+    pendingFriendRequestCount;
 
   const markFriendAsRead = useCallback(
     (friendId: string) => {
@@ -344,6 +375,8 @@ export function NotificationProvider({
     () => ({
       pendingGameInvitations,
       pendingGameInvitationCount,
+      pendingFriendRequests,
+      pendingFriendRequestCount,
       recentFriendMessages,
       friendUnreadCounts,
       totalFriendUnreadCount,
@@ -357,6 +390,8 @@ export function NotificationProvider({
     [
       pendingGameInvitations,
       pendingGameInvitationCount,
+      pendingFriendRequests,
+      pendingFriendRequestCount,
       recentFriendMessages,
       friendUnreadCounts,
       totalFriendUnreadCount,

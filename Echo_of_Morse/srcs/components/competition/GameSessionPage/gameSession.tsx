@@ -39,6 +39,7 @@ export default function GameSession({
 	//Date.now() ==> obtenir le temps actel en ms
 	const sequenceStartRef = useRef(Date.now());
 	const sequenceStreakRef = useRef(false);
+	const sequenceAttemptedRef = useRef(false);
 	const sessionStartedAtRef = useRef(Date.now());
 	const hasSubmittedResultRef = useRef(false);
 
@@ -86,6 +87,8 @@ export default function GameSession({
 				radioId,
 				sessionId,
 				score: currentPlayer.score,
+				correct: currentPlayer.correct,
+				total: currentPlayer.total,
 				timeMs: Date.now() - sessionStartedAtRef.current,
 				playerStatus: "abandoned",
 			});
@@ -216,6 +219,8 @@ export default function GameSession({
 			radioId,
 			sessionId,
 			score: currentPlayer.score,
+			correct: currentPlayer.correct,
+			total: currentPlayer.total,
 			timeMs: Date.now() - sessionStartedAtRef.current,
 			playerStatus: "completed",
 		})
@@ -228,13 +233,11 @@ export default function GameSession({
 			});
 	}, [applySessionSnapshot, isFinished, players, radioId, sessionData, sessionId]);
 
-	const currentPlayerScore = players.find(
-		(player) => player.id === "me"
-	)?.score;
+	const currentPlayer = players.find((player) => player.id === "me");
 
 	useEffect(() => {
 		if (
-			currentPlayerScore === undefined ||
+			!currentPlayer ||
 			isFinished ||
 			sessionData?.status !== "active" ||
 			hasSubmittedResultRef.current
@@ -245,13 +248,15 @@ export default function GameSession({
 		updateGameSessionProgress({
 			radioId,
 			sessionId,
-			score: currentPlayerScore,
+			score: currentPlayer.score,
+			correct: currentPlayer.correct,
+			total: currentPlayer.total,
 			timeMs: Date.now() - sessionStartedAtRef.current,
 		}).catch((error: unknown) => {
 			console.error(t.failedToSaveGameResult, error);
 		});
 	}, [
-		currentPlayerScore,
+		currentPlayer,
 		isFinished,
 		radioId,
 		sessionData?.status,
@@ -340,6 +345,7 @@ export default function GameSession({
 				setAnswer("");
 				setIsAnswerCorrect(false);
 				setIsAnswerLocked(false);
+				sequenceAttemptedRef.current = false;
 
 				nextSequence(getSequenceDuration(nextMorse, speedWpm));
 			}, delay);
@@ -370,6 +376,8 @@ export default function GameSession({
 			setIsAnswerCorrect(true);
 			setIsAnswerLocked(true);
 			sequenceStreakRef.current = true;
+			const shouldCountAttempt = !sequenceAttemptedRef.current;
+			sequenceAttemptedRef.current = true;
 
 			setPlayers((currentPlayers) => currentPlayers.map((player) => {
 				// mettre à jour seulement le joueur actuel
@@ -387,7 +395,7 @@ export default function GameSession({
 
 				return {
 					...player,
-					total: player.total + 1,
+					total: player.total + (shouldCountAttempt ? 1 : 0),
 					correct: player.correct + 1,
 					streak: nextStreak,
 					score: player.score + sequencePoints + speedBonus + nextStreak,
@@ -397,6 +405,30 @@ export default function GameSession({
 		}
 
 		setIsAnswerCorrect(false);
+
+		const hasWrongCharacter = answerForCheck
+			.split("")
+			.some((character, index) =>
+				index >= currentText.length ||
+				character !== currentText.toUpperCase()[index]
+			);
+
+		// Count a sequence once when the player makes a clear wrong attempt.
+		// Empty input and still-correct prefixes are not treated as mistakes.
+		if (hasWrongCharacter && !sequenceAttemptedRef.current) {
+			sequenceAttemptedRef.current = true;
+			setPlayers((currentPlayers) => currentPlayers.map((player) => {
+				if (player.id !== "me") {
+					return player;
+				}
+
+				return {
+					...player,
+					total: player.total + 1,
+					streak: 0,
+				};
+			}));
+		}
 	}
 
 	if (loadError) {

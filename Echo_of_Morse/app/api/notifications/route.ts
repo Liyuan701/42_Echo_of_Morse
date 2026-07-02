@@ -20,7 +20,12 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [unreadSystemMessages, pendingGameInvitations, recentMessages] =
+  const [
+    unreadSystemMessages,
+    pendingGameInvitations,
+    pendingFriendRequests,
+    recentMessages,
+  ] =
     await prisma.$transaction(async (transaction) => {
       // Notification polling is 
       // also the fallback that turns timed-out invites into expired records.
@@ -66,6 +71,25 @@ export async function GET() {
           },
         }),
 
+        transaction.friendship.findMany({
+          where: {
+            receiverId: userId,
+            status: "PENDING",
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                username: true,
+                image: true,
+              },
+            },
+          },
+        }),
+
         transaction.message.findMany({
           where: {
             senderId: {
@@ -103,6 +127,12 @@ export async function GET() {
       fromUser: invitation.fromUser,
       toUser: invitation.toUser,
       radio: invitation.radioRoom,
+    })),
+
+    pendingFriendRequests: pendingFriendRequests.map((request) => ({
+      id: request.id,
+      createdAt: request.createdAt,
+      sender: request.sender,
     })),
 
     recentFriendMessages: recentMessages.map((message) => ({

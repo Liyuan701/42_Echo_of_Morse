@@ -39,6 +39,7 @@ const fr = {
 		bioPlaceholder: "Parlez un peu de vous",
 		saveChanges: "Enregistrer les modifications",
 		chooseImageFile: "Veuillez choisir un fichier image.",
+		imageTooLarge: "Veuillez choisir une image de moins de 500 Ko.",
 		readImageError: "Impossible de lire cette image.",
 		failedToUpdateProfile: "Impossible de mettre à jour le profil.",
 		updateProfileError: "Une erreur est survenue pendant la mise à jour du profil.",
@@ -57,8 +58,10 @@ const fr = {
 		notifications: "Notifications",
 		noNewNotifications: "Aucune nouvelle notification.",
 		gameInvitations: "Invitations de jeu",
+		friendRequests: "Demandes d'ami",
 		radioLobbyFallback: "un lobby radio",
 		invitedYouToRadio: "vous invite à rejoindre {radioName}. Vous avez 1 minute pour accepter.",
+		sentYouFriendRequest: "vous a envoyé une demande d'ami.",
 		view: "Voir",
 		messages: "Messages",
 		system: "Système",
@@ -127,6 +130,8 @@ const fr = {
 	notification: {
 		newGameInvitationTitle: "Nouvelle invitation de jeu",
 		gameInvitationToastBody: "{username} vous invite à rejoindre {radioName}.",
+		newFriendRequestTitle: "Nouvelle demande d'ami",
+		friendRequestToastBody: "{username} vous a envoyé une demande d'ami.",
 		newMessageFromTitle: "Nouveau message de {username}",
 		radioLobbyFallback: "un lobby radio",
 
@@ -419,6 +424,9 @@ const fr = {
 		networkError: "Erreur réseau. Veuillez réessayer.",
 		friendRequestSentTitle: "Demande d'ami envoyée",
 		friendRequestSentBody: "Demande d'ami envoyée à {displayName}. En attente de son acceptation.",
+		friendRequestReceivedTitle: "Demande d'ami",
+		friendRequestReceivedBody: "{username} vous a envoyé une demande d'ami.",
+		failedToUpdateFriendRequest: "Impossible de mettre à jour la demande d'ami.",
 
 		//--------- friend remark ---------
 		friendRemarkEmpty: "La remarque de l'ami ne peut pas être vide.",

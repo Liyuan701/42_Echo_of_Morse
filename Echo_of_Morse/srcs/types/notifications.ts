@@ -31,9 +31,20 @@ export type NotificationGameInvitation = {
   } | null;
 };
 
+export type NotificationFriendRequest = {
+  id: number;
+  createdAt: string;
+  sender: {
+    id: string;
+    username: string;
+    image: string | null;
+  };
+};
+
 export type NotificationsSnapshot = {
   unreadSystemMessages: number;
   pendingGameInvitations: NotificationGameInvitation[];
+  pendingFriendRequests: NotificationFriendRequest[];
   recentFriendMessages: NotificationFriendMessage[];
 };
 

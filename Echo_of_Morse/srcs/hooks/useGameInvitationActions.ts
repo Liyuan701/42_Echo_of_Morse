@@ -14,8 +14,11 @@ type ApiRadio = {
 } | null;
 
 type SendGameInvitationResult = {
+  ok?: boolean;
   id?: string;
   error?: string;
+  code?: string;
+  status?: number;
   radio?: ApiRadio;
   [key: string]: unknown;
 };
@@ -69,6 +72,7 @@ function getActionStatus(action: "accept" | "decline") {
 export function useGameInvitationActions() {
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionRadio;
+  const chatText = dictionary.chatLayout;
 
   const router = useRouter();
   const { data: session } = useSession();
@@ -101,9 +105,20 @@ export function useGameInvitationActions() {
         await readJsonSafely<SendGameInvitationResult>(invitationResponse);
 
       if (!invitationResponse.ok || !invitationBody.id) {
+        const messageByCode: Record<string, string> = {
+          FRIEND_ALREADY_INVITED_YOU: chatText.friendAlreadyInvitedYou,
+          INVITATION_ALREADY_PENDING: chatText.gameInvitationAlreadyPending,
+        };
+        const status =
+          typeof invitationBody.status === "number"
+            ? invitationBody.status
+            : invitationResponse.status;
+
         throw new GameInvitationActionError(
-          invitationBody.error || t.failedToSendInvitation,
-          invitationResponse.status,
+          (invitationBody.code && messageByCode[invitationBody.code]) ||
+            invitationBody.error ||
+            t.failedToSendInvitation,
+          status,
           invitationBody
         );
       }
@@ -123,7 +138,15 @@ export function useGameInvitationActions() {
 
       return invitationBody;
     },
-    [currentUserId, refreshNotifications, router, socket]
+    [
+      chatText.friendAlreadyInvitedYou,
+      chatText.gameInvitationAlreadyPending,
+      currentUserId,
+      refreshNotifications,
+      router,
+      socket,
+      t.failedToSendInvitation,
+    ]
   );
 
   const answerGameInvitation = useCallback(

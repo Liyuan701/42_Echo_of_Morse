@@ -223,6 +223,8 @@ export default function InviteFriendsPanel({
     } catch (error) {
       if (error instanceof GameInvitationActionError && error.status === 409) {
         setPresenceRevision((revision) => revision + 1);
+        window.alert(error.message);
+        return;
       }
 
     	console.error(error);
