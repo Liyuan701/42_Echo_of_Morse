@@ -21,8 +21,6 @@ export async function register() {
     const app = await getSecret('secret/data/app');
     process.env.NEXTAUTH_SECRET        = app.NEXTAUTH_SECRET;
     process.env.NEXTAUTH_URL           = app.NEXTAUTH_URL;
-    process.env.GITHUB_CLIENT_ID       = app.GITHUB_CLIENT_ID;
-    process.env.GITHUB_CLIENT_SECRET   = app.GITHUB_CLIENT_SECRET;
     process.env.GOOGLE_CLIENT_ID       = app.GOOGLE_CLIENT_ID;
     process.env.GOOGLE_CLIENT_SECRET   = app.GOOGLE_CLIENT_SECRET;
     process.env.FORTYTWO_CLIENT_ID     = app.FORTYTWO_CLIENT_ID;
