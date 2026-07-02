@@ -468,7 +468,7 @@ app.post("/internal/notify", (req, res) => {
 httpServer.listen(3001, () => {
   console.log("WS SERVER RUNNING ON 3001");
 });
-io.attach(httpServer);
+// io.attach(httpServer);
 
 function shutdown() {
   console.log("✅ Shutting down...");
