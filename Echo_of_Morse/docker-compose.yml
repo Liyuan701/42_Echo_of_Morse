@@ -48,6 +48,9 @@ services:
       # Monté avant les règles CRS : ctl:ruleRemoveById doit s'appliquer
       # avant que REQUEST-920-PROTOCOL-ENFORCEMENT.conf ne soit évalué.
       - ./docker/modsecurity/socket-io-exception.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-900-SOCKETIO-EXCEPTION.conf:z
+      # Exception ModSecurity pour l'accès par IP LAN (cross-machine) : sans ça,
+      # login/register sont bloqués en 403 dès qu'on accède via https://<IP>:8443.
+      - ./docker/modsecurity/lan-ip-access-exception.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-901-LAN-IP-EXCEPTION.conf:z
       # Certificat SSL auto-signé généré par le Makefile (make prod) via openssl — sans sudo
       # Ces 2 lignes remplacent le certificat auto-généré de l'image par le nôtre (certs/)
       - ./certs/cert.pem:/etc/nginx/conf/server.crt:z
@@ -179,6 +182,7 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - FORTYTWO_CLIENT_ID=${FORTYTWO_CLIENT_ID}
       - FORTYTWO_CLIENT_SECRET=${FORTYTWO_CLIENT_SECRET}
+      - WS_SHARED_SECRET=${WS_SHARED_SECRET}
     volumes:
       - vault_data:/vault/data:z    # lit root-token.txt généré par vault-unseal
     depends_on:
@@ -194,7 +198,7 @@ services:
         echo '[vault-init] Vault prêt — chargement des secrets' &&
         vault secrets enable -path=secret kv-v2 || true &&
         vault kv put secret/database DB_USER=$$DB_USER DB_PASSWORD=$$DB_PASS DB_NAME=$$DB_NAME &&
-        vault kv put secret/app NEXTAUTH_SECRET=$$NEXTAUTH_SECRET NEXTAUTH_URL=$$NEXTAUTH_URL GITHUB_CLIENT_ID=$$GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET=$$GITHUB_CLIENT_SECRET GOOGLE_CLIENT_ID=$$GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET=$$GOOGLE_CLIENT_SECRET FORTYTWO_CLIENT_ID=$$FORTYTWO_CLIENT_ID FORTYTWO_CLIENT_SECRET=$$FORTYTWO_CLIENT_SECRET &&
+        vault kv put secret/app NEXTAUTH_SECRET=$$NEXTAUTH_SECRET NEXTAUTH_URL=$$NEXTAUTH_URL GITHUB_CLIENT_ID=$$GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET=$$GITHUB_CLIENT_SECRET GOOGLE_CLIENT_ID=$$GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET=$$GOOGLE_CLIENT_SECRET FORTYTWO_CLIENT_ID=$$FORTYTWO_CLIENT_ID FORTYTWO_CLIENT_SECRET=$$FORTYTWO_CLIENT_SECRET WS_SHARED_SECRET=$$WS_SHARED_SECRET &&
         echo '[vault-init] Secrets chargés avec succès'
       "
     networks:
@@ -215,6 +219,8 @@ services:
       - web
     networks:
       - transcendence_network
+    environment:
+      - WS_SHARED_SECRET=${WS_SHARED_SECRET}
 
 # Volumes nommés — Docker gère les permissions internement (évite les
 # erreurs "permission denied" des bind mounts quand l'UID du conteneur

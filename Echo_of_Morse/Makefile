@@ -41,16 +41,22 @@ stop:
 # =========================
 
 prod:
-	# Génération du certificat SSL auto-signé pour localhost — aucun sudo requis
-	# Les 3 lignes suivantes créent le dossier certs/ et génèrent cert.pem + key.pem via openssl
-	@mkdir -p certs
-	@openssl req -x509 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem \
-		-days 365 -nodes -subj "/CN=localhost" \
-		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1" 2>/dev/null || true
-	# chmod 644 : nginx dans le conteneur tourne sous un autre utilisateur que le host
-	# Sans ces permissions, nginx ne peut pas lire la clé privée et refuse de démarrer
-	@chmod 644 certs/key.pem certs/cert.pem
-	$(COMPOSE) --env-file .env.prod -f docker-compose.yml up -d --build
+	@if [ "$(UNAME)" = "Darwin" ]; then \
+		HOST_IP=$$(ipconfig getifaddr en0 2>/dev/null || echo "127.0.0.1"); \
+	elif grep -qi microsoft /proc/version 2>/dev/null; then \
+		HOST_IP=$$(ipconfig.exe 2>/dev/null | grep -A4 "Wi-Fi\|Ethernet" | grep "IPv4" | awk '{print $$NF}' | head -1 | tr -d '\r'); \
+		[ -z "$$HOST_IP" ] && HOST_IP="127.0.0.1"; \
+	else \
+		HOST_IP=$$(hostname -I 2>/dev/null | awk '{print $$1}'); \
+		[ -z "$$HOST_IP" ] && HOST_IP="127.0.0.1"; \
+	fi; \
+	echo "Host IP detected: $$HOST_IP"; \
+	mkdir -p certs; \
+	openssl req -x509 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem \
+		-days 365 -nodes -subj "/CN=$$HOST_IP" \
+		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:$$HOST_IP" 2>/dev/null || true; \
+	chmod 644 certs/key.pem certs/cert.pem; \
+	NEXTAUTH_URL=https://$$HOST_IP:8443 $(COMPOSE) --env-file .env.prod -f docker-compose.yml up -d --build
 
 prod-down:
 	$(COMPOSE) --env-file .env.prod -f docker-compose.yml down
