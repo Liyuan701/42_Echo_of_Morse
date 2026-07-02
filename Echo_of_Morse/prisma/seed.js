@@ -1,7 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
-const PASSWORD = "mdp";
+const PASSWORD = "MorseTest123!";
 
 // Default users
 const users = [
@@ -20,6 +20,7 @@ function rand(min, max) {
 }
 
 async function main() {
+  const passwordHash = await bcrypt.hash(PASSWORD, 10);
 
   // creat the three radio rooms in the porject.
   const radioRooms = [
@@ -58,7 +59,20 @@ async function main() {
   // only when the database is empty, to avoid accidentally wiping data.
   const existing = await prisma.user.findFirst();
   if (existing) {
-    console.log("Radio rooms ensured; user data already seeded, skipping.");
+    // Keep existing local data, but update known seed accounts to the current
+    // compliant test password.
+    await prisma.user.updateMany({
+      where: {
+        email: {
+          in: [
+            ...users.map((user) => `${user.username}@test.com`),
+            "learner@test.com",
+          ],
+        },
+      },
+      data: { passwordHash },
+    });
+    console.log("Radio rooms ensured; seed account passwords updated.");
     return;
   }
   console.log("Reset database...");
@@ -73,7 +87,6 @@ async function main() {
   await prisma.user.deleteMany();
 
   // Create users
-  const passwordHash = await bcrypt.hash(PASSWORD, 10);
   console.log("Creating users...");
 
   const created = [];
@@ -98,7 +111,7 @@ async function main() {
   // Create learner user
   console.log("Creating learner user...");
 
-  const learnerPassword = await bcrypt.hash("mdp", 10);
+  const learnerPassword = await bcrypt.hash(PASSWORD, 10);
 
   const learner = await prisma.user.create({
     data: {

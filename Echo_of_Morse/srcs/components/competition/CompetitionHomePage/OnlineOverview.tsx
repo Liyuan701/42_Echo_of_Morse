@@ -75,15 +75,17 @@ export default function OnlineOverview({ overview }: OnlineOverviewProps) {
     }
 
     void refreshOverview().catch(() => undefined);
+    // Socket events keep this live; polling only protects disconnected clients.
+    const intervalMs = isConnected ? 30000 : 5000;
     const intervalId = window.setInterval(() => {
       void refreshOverview().catch(() => undefined);
-    }, 2000);
+    }, intervalMs);
 
     return () => {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [isConnected]);
 
   return (
     <Card className={styles.overviewCard} aria-labelledby="online-overview">
@@ -119,8 +121,3 @@ export default function OnlineOverview({ overview }: OnlineOverviewProps) {
     </Card>
   );
 }
-
-// Liyuan:real data-connected:
-// authenticated online users count
-// real competition overview data:
-// onlineNow, currentlyPlaying, users per radio.

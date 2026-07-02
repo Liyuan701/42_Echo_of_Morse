@@ -1,25 +1,3 @@
-// TODO Marc & Gustav:
-// Real-time chat and game invitations still do not reach the second browser,
-// although refreshing shows the persisted database data. Please debug this
-// Socket.IO delivery path:
-
-// 1. Confirm both users reach this connection handler and userId is the correct
-//    NextAuth user ID, not undefined or the ID of a previously logged-in account.
-// 2. Confirm each socket joins `user:<userId>` and that the recipient room has
-//    at least one socket before io.to(room).emit(...) is called.
-// 3. Confirm the server receives "chat:message:send" and emits
-//    "chat:message:new" to the intended recipient.
-// 4. Confirm the server receives "game-invitation:send" and emits
-//    "game-invitation:new" to the intended recipient.
-// 5. Check the dev URL: docker-compose.dev.yml exposes http://localhost:3001,
-//    while the WAF URL https://localhost:8443 belongs to the production setup.
-// 6. Add temporary logs for socket.id, userId, room membership, event payloads,
-//    and recipient room size to locate where delivery stops.
-
-// REST/Prisma must remain authoritative. Socket events should notify clients
-// only after the corresponding database write succeeds.
-
-
 const jwt = require("jsonwebtoken");
 
 const { Server } = require("socket.io");
@@ -30,7 +8,8 @@ const app = express();
 const httpServer = http.createServer(app);
 
 
-
+// Passing httpServer here already attaches Socket.IO to it.
+// Do not call io.attach(httpServer) again, or WebSocket upgrades crash.
 const io = new Server(httpServer, {
   path: "/socket.io/",
   cors: { origin: "*" },
@@ -98,6 +77,26 @@ function ackError(ack, code, message) {
 
 const onlineUsers = new Map();
 const socketRadioRooms = new Map(); // socketId → Set<radioId>
+const socketGameSessions = new Map(); // socketId → Set<sessionId>
+
+async function updateUserPresence(userId, isOnline) {
+  const res = await fetch("http://web:3000/api/users/status", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      // Internal API auth: browsers cannot set this shared server-side secret.
+      "x-ws-shared-secret": process.env.WS_SHARED_SECRET || "",
+    },
+    body: JSON.stringify({
+      userId,
+      isOnline,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+}
 
 function emitUserCount() {
   io.emit("users-count", onlineUsers.size);
@@ -167,19 +166,7 @@ io.on("connection", async (socket) => {
   onlineUsers.get(userId).add(socket.id);
 
   try {
-    const res = await fetch("http://web:3000/api/users/status", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId,
-        isOnline: true,
-      }),
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
+    await updateUserPresence(userId, true);
   } catch (err) {
     console.error("database update for connection failed", err);
   }
@@ -378,11 +365,38 @@ io.on("connection", async (socket) => {
     if (typeof ack === "function") ack({ ok: true });
   });
 
+  socket.on("game:join", (payload, ack) => {
+    const sessionId = payload?.sessionId;
+    if (!sessionId || typeof sessionId !== "string") {
+      if (typeof ack === "function") ack({ ok: false, code: "INVALID_PAYLOAD" });
+      return;
+    }
+    socket.join(`game:${sessionId}`);
+    if (!socketGameSessions.has(socket.id)) socketGameSessions.set(socket.id, new Set());
+    socketGameSessions.get(socket.id).add(sessionId);
+    if (typeof ack === "function") ack({ ok: true });
+  });
+
+  socket.on("game:leave", (payload, ack) => {
+    const sessionId = payload?.sessionId;
+    if (!sessionId || typeof sessionId !== "string") {
+      if (typeof ack === "function") ack({ ok: false, code: "INVALID_PAYLOAD" });
+      return;
+    }
+    socket.leave(`game:${sessionId}`);
+    socketGameSessions.get(socket.id)?.delete(sessionId);
+    if (typeof ack === "function") ack({ ok: true });
+  });
+
   socket.on("disconnect", async (reason) => {
     for (const radioId of socketRadioRooms.get(socket.id) ?? []) {
       socket.leave(`radio:${radioId}`);
     }
     socketRadioRooms.delete(socket.id);
+    for (const sessionId of socketGameSessions.get(socket.id) ?? []) {
+      socket.leave(`game:${sessionId}`);
+    }
+    socketGameSessions.delete(socket.id);
 
     const sockets = onlineUsers.get(userId);
     
@@ -411,19 +425,7 @@ io.on("connection", async (socket) => {
       console.log("❌ USER OFFLINE:", userId);
 
       try {
-        const res = await fetch("http://web:3000/api/users/status", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId,
-            isOnline: false,
-          }),
-        });
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
+        await updateUserPresence(userId, false);
       } catch (err)
       {
         console.error("database update for disconnection failed", err);
@@ -444,7 +446,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.post("/internal/notify", (req, res) => {
-  const { type, radioId, toUserId, data } = req.body ?? {};
+  const { type, radioId, sessionId, toUserId, data } = req.body ?? {};
   if (!type) return res.status(400).json({ error: "type requis" });
 
   switch (type) {
@@ -454,6 +456,9 @@ app.post("/internal/notify", (req, res) => {
       io.to(`radio:${radioId}`).emit("radio:ready-list-updated", data); break;
     case "radio.game.created":
       io.to(`radio:${radioId}`).emit("radio:game-created", data); break;
+    // for game session updates(completed, abandoned, etc.) -> GET real data.
+    case "game.session.updated":
+      io.to(`game:${sessionId}`).emit("game:session-updated", data); break;
     case "message.created":
       io.to(`user:${toUserId}`).emit("chat:message:new", data); break;
     case "game-invitation.created":
@@ -469,7 +474,6 @@ app.post("/internal/notify", (req, res) => {
 httpServer.listen(3001, () => {
   console.log("WS SERVER RUNNING ON 3001");
 });
-// io.attach(httpServer);
 
 function shutdown() {
   console.log("✅ Shutting down...");

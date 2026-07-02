@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
                 { fromUserId: toUserId, toUserId: fromUserId },
               ],
             },
-            select: { id: true },
+            select: { id: true, fromUserId: true, toUserId: true },
           }),
           transaction.gameInvitation.findFirst({
             where: {
@@ -236,6 +236,13 @@ export async function POST(request: NextRequest) {
 
       if (targetState.presence?.roomId === room.id) {
         throw new Error("TARGET_IN_SAME_ROOM");
+      }
+
+      if (
+        existingInvitation?.fromUserId === toUserId &&
+        existingInvitation.toUserId === fromUserId
+      ) {
+        throw new Error("FRIEND_ALREADY_INVITED_YOU");
       }
 
       if (existingInvitation || targetPending) {
@@ -277,8 +284,12 @@ export async function POST(request: NextRequest) {
 
     if (isUniqueConstraintError(error)) {
       return NextResponse.json(
-        { error: "Invitation already pending" },
-        { status: 409 }
+        {
+          ok: false,
+          error: "Invitation already pending",
+          code: "INVITATION_ALREADY_PENDING",
+          status: 409,
+        }
       );
     }
 
@@ -290,15 +301,23 @@ export async function POST(request: NextRequest) {
       TARGET_PLAYING: "Friend is currently in a game",
       TARGET_READY: "Friend is already ready in a lobby",
       TARGET_IN_SAME_ROOM: "Friend is already in this radio room",
+      FRIEND_ALREADY_INVITED_YOU:
+        "This friend has already invited you. Please accept or decline their invitation first.",
       INVITATION_ALREADY_PENDING: "Invitation already pending",
       ROOM_LACKS_INVITE_CAPACITY:
         "The radio room needs one free place for your friend",
     };
 
     if (errors[message]) {
-      return NextResponse.json({ error: errors[message] }, { status: 409 });
+      return NextResponse.json(
+        { ok: false, error: errors[message], code: message, status: 409 }
+      );
     }
 
-    throw error;
+    console.error("POST /api/game/invitations", error);
+    return NextResponse.json(
+      { error: "Failed to create invitation" },
+      { status: 500 }
+    );
   }
 }

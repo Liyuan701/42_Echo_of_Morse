@@ -1,8 +1,9 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { encode } from "@/lib/morse";
+import { useSocket } from "@/providers/socket-provider";
 
 import styles from "./css/gameSession.module.css";
 import Answer from "./answer";
@@ -31,12 +32,14 @@ export default function GameSession({
 
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionGame;
+	const { socket, isConnected } = useSocket();
 
 	//arder une valeur sans relancer l’affichage de la page
 	const sequenceIndexRef = useRef(1);
 	//Date.now() ==> obtenir le temps actel en ms
 	const sequenceStartRef = useRef(Date.now());
 	const sequenceStreakRef = useRef(false);
+	const sequenceAttemptedRef = useRef(false);
 	const sessionStartedAtRef = useRef(Date.now());
 	const hasSubmittedResultRef = useRef(false);
 
@@ -84,6 +87,8 @@ export default function GameSession({
 				radioId,
 				sessionId,
 				score: currentPlayer.score,
+				correct: currentPlayer.correct,
+				total: currentPlayer.total,
 				timeMs: Date.now() - sessionStartedAtRef.current,
 				playerStatus: "abandoned",
 			});
@@ -112,6 +117,43 @@ export default function GameSession({
 			})
 		);
 	}
+
+	const applySessionSnapshot = useCallback((data: GameSessionData) => {
+		setSessionData((currentData) =>
+			currentData
+				? {
+						...currentData,
+						status: data.status,
+						duration: data.duration,
+						players: data.players,
+				  }
+				: data
+		);
+
+		if (data.status === "finished") {
+			setSecondsLeft(0);
+		}
+
+		setPlayers((currentPlayers) => {
+			const localPlayer = currentPlayers.find((player) => player.id === "me");
+
+			return data.players.map((player) =>
+				player.id === "me" && localPlayer
+					? {
+							...player,
+							score: localPlayer.score,
+							correct: localPlayer.correct,
+							total: localPlayer.total,
+							streak: localPlayer.streak,
+					  }
+					: player
+			);
+		});
+	}, []);
+
+	const refreshSessionSnapshot = useCallback(() => {
+		return getGameSessionData({ radioId, sessionId }).then(applySessionSnapshot);
+	}, [applySessionSnapshot, radioId, sessionId]);
 
 	//-------------------- 1e : obtention des données de la session --------------------
 	useEffect(() => {
@@ -177,38 +219,25 @@ export default function GameSession({
 			radioId,
 			sessionId,
 			score: currentPlayer.score,
+			correct: currentPlayer.correct,
+			total: currentPlayer.total,
 			timeMs: Date.now() - sessionStartedAtRef.current,
 			playerStatus: "completed",
 		})
 			.then((data) => {
-				const localPlayer = players.find((player) => player.id === "me");
-				setSessionData(data);
-				setPlayers(
-					data.players.map((player) =>
-						player.id === "me" && localPlayer
-							? {
-									...player,
-									correct: localPlayer.correct,
-									total: localPlayer.total,
-									streak: localPlayer.streak,
-							  }
-							: player
-					)
-				);
+				applySessionSnapshot(data);
 			})
 			.catch((error: unknown) => {
 				hasSubmittedResultRef.current = false;
 				console.error(t.failedToSaveGameResult, error);
 			});
-	}, [isFinished, players, radioId, sessionData, sessionId]);
+	}, [applySessionSnapshot, isFinished, players, radioId, sessionData, sessionId]);
 
-	const currentPlayerScore = players.find(
-		(player) => player.id === "me"
-	)?.score;
+	const currentPlayer = players.find((player) => player.id === "me");
 
 	useEffect(() => {
 		if (
-			currentPlayerScore === undefined ||
+			!currentPlayer ||
 			isFinished ||
 			sessionData?.status !== "active" ||
 			hasSubmittedResultRef.current
@@ -219,13 +248,15 @@ export default function GameSession({
 		updateGameSessionProgress({
 			radioId,
 			sessionId,
-			score: currentPlayerScore,
+			score: currentPlayer.score,
+			correct: currentPlayer.correct,
+			total: currentPlayer.total,
 			timeMs: Date.now() - sessionStartedAtRef.current,
 		}).catch((error: unknown) => {
 			console.error(t.failedToSaveGameResult, error);
 		});
 	}, [
-		currentPlayerScore,
+		currentPlayer,
 		isFinished,
 		radioId,
 		sessionData?.status,
@@ -233,10 +264,6 @@ export default function GameSession({
 		t.failedToSaveGameResult,
 	]);
 
-	// TODO modify after socket notifications are reliable.
-	// Temporary polling fallback. While the game is active, it detects an early
-	// finish caused by an abandonment. Afterward, it waits for the remaining
-	// player's final score. Replace this with a Socket.IO session update event.
 	useEffect(() => {
 		const hasPendingEligiblePlayers = sessionData?.players.some(
 			(player) => !player.abandoned && !player.completed
@@ -246,45 +273,34 @@ export default function GameSession({
 			return;
 		}
 
+		// Game polling stays more frequent because final scores must converge.
+		const intervalMs = isConnected ? 10000 : 5000;
 		const intervalId = window.setInterval(() => {
-			getGameSessionData({ radioId, sessionId })
-				.then((data) => {
-					setSessionData((currentData) =>
-						currentData
-							? {
-									...currentData,
-									status: data.status,
-									duration: data.duration,
-									players: data.players,
-							  }
-							: data
-					);
-					if (data.status === "finished") {
-						setSecondsLeft(0);
-					}
-					setPlayers((currentPlayers) => {
-						const localPlayer = currentPlayers.find(
-							(player) => player.id === "me"
-						);
-
-						return data.players.map((player) =>
-							player.id === "me" && localPlayer
-								? {
-										...player,
-										score: localPlayer.score,
-										correct: localPlayer.correct,
-										total: localPlayer.total,
-										streak: localPlayer.streak,
-								  }
-								: player
-						);
-					});
-				})
-				.catch(() => undefined);
-		}, 2000);
+			void refreshSessionSnapshot().catch(() => undefined);
+		}, intervalMs);
 
 		return () => window.clearInterval(intervalId);
-	}, [radioId, sessionData, sessionId]);
+	}, [isConnected, refreshSessionSnapshot, sessionData]);
+
+	useEffect(() => {
+		if (!socket) {
+			return;
+		}
+
+		// Join the Socket.IO room for this match; events only signal a refresh.
+		socket.emit("game:join", { sessionId });
+
+		function handleSessionUpdated() {
+			void refreshSessionSnapshot().catch(() => undefined);
+		}
+
+		socket.on("game:session-updated", handleSessionUpdated);
+
+		return () => {
+			socket.emit("game:leave", { sessionId });
+			socket.off("game:session-updated", handleSessionUpdated);
+		};
+	}, [refreshSessionSnapshot, sessionId, socket]);
 
 	//-------------------- gestion du timer --------------------
 	useEffect(() => {
@@ -329,6 +345,7 @@ export default function GameSession({
 				setAnswer("");
 				setIsAnswerCorrect(false);
 				setIsAnswerLocked(false);
+				sequenceAttemptedRef.current = false;
 
 				nextSequence(getSequenceDuration(nextMorse, speedWpm));
 			}, delay);
@@ -359,6 +376,8 @@ export default function GameSession({
 			setIsAnswerCorrect(true);
 			setIsAnswerLocked(true);
 			sequenceStreakRef.current = true;
+			const shouldCountAttempt = !sequenceAttemptedRef.current;
+			sequenceAttemptedRef.current = true;
 
 			setPlayers((currentPlayers) => currentPlayers.map((player) => {
 				// mettre à jour seulement le joueur actuel
@@ -376,7 +395,7 @@ export default function GameSession({
 
 				return {
 					...player,
-					total: player.total + 1,
+					total: player.total + (shouldCountAttempt ? 1 : 0),
 					correct: player.correct + 1,
 					streak: nextStreak,
 					score: player.score + sequencePoints + speedBonus + nextStreak,
@@ -386,6 +405,30 @@ export default function GameSession({
 		}
 
 		setIsAnswerCorrect(false);
+
+		const hasWrongCharacter = answerForCheck
+			.split("")
+			.some((character, index) =>
+				index >= currentText.length ||
+				character !== currentText.toUpperCase()[index]
+			);
+
+		// Count a sequence once when the player makes a clear wrong attempt.
+		// Empty input and still-correct prefixes are not treated as mistakes.
+		if (hasWrongCharacter && !sequenceAttemptedRef.current) {
+			sequenceAttemptedRef.current = true;
+			setPlayers((currentPlayers) => currentPlayers.map((player) => {
+				if (player.id !== "me") {
+					return player;
+				}
+
+				return {
+					...player,
+					total: player.total + 1,
+					streak: 0,
+				};
+			}));
+		}
 	}
 
 	if (loadError) {

@@ -9,6 +9,7 @@ import {
   getSessionDurationSeconds,
 } from "@/lib/services/competition";
 import { getSessionUserId } from "@/lib/session-user";
+import { notifyWs } from "@/lib/notifyWs";
 import { prisma } from "@/server/prisma";
 
 type RouteContext = {
@@ -17,6 +18,15 @@ type RouteContext = {
     sessionId: string;
   };
 };
+
+async function notifyGameSessionChanged(radioId: string, sessionId: string) {
+  // The session response contains current-user fields like id: "me".
+  // Broadcast only a change signal; each browser reloads its own snapshot.
+  await notifyWs("game.session.updated", {
+    sessionId,
+    data: { radioId, sessionId },
+  });
+}
 
 
 // Helper function to find a game session.
@@ -75,8 +85,8 @@ function formatSession(
       username:
         player.userId === currentUserId ? "You" : player.user.username,
       score: player.score ?? 0,
-      correct: 0,
-      total: 0,
+      correct: player.correct,
+      total: player.total,
       streak: 0,
       completed: player.completed,
       abandoned: player.abandoned,
@@ -117,16 +127,25 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   // Abandon feature: verify playerStatus - set abandon or complete
   const body = (await request.json()) as {
     score?: number;
+    correct?: number;
+    total?: number;
     timeMs?: number;
     playerStatus?: "playing" | "completed" | "abandoned";
   };
 
-  const { score, timeMs, playerStatus } = body;
+  const { score, correct, total, timeMs, playerStatus } = body;
 
   if (
     typeof score !== "number" ||
     !Number.isInteger(score) ||
     score < 0 ||
+    typeof correct !== "number" ||
+    !Number.isInteger(correct) ||
+    correct < 0 ||
+    typeof total !== "number" ||
+    !Number.isInteger(total) ||
+    total < 0 ||
+    correct > total ||
     typeof timeMs !== "number" ||
     !Number.isInteger(timeMs) ||
     timeMs < 0 ||
@@ -137,7 +156,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     return NextResponse.json(
       {
         error:
-          "score and timeMs must be non-negative integers and playerStatus must be playing, completed or abandoned",
+          "score, correct, total and timeMs must be valid non-negative integers and playerStatus must be playing, completed or abandoned",
       },
       { status: 400 }
     );
@@ -162,16 +181,24 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   }
 
   if (playerStatus === "playing") {
-    await prisma.radioSessionPlayer.updateMany({
+    const updatedProgress = await prisma.radioSessionPlayer.updateMany({
       where: {
         id: currentPlayer.id,
         completed: false,
-        OR: [{ score: null }, { score: { lt: score } }],
+        OR: [
+          { score: null },
+          { score: { lt: score } },
+          { correct: { lt: correct } },
+          { total: { lt: total } },
+        ],
       },
-      data: { score, timeMs },
+      data: { score, correct, total, timeMs },
     });
 
     const updatedSession = await findSession(params.radioId, params.sessionId);
+    if (updatedProgress.count > 0) {
+      await notifyGameSessionChanged(params.radioId, params.sessionId);
+    }
     return NextResponse.json(formatSession(updatedSession!, userId));
   }
 
@@ -180,6 +207,8 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       where: { id: currentPlayer.id },
       data: {
         score,
+        correct,
+        total,
         timeMs,
         completed: true,
         abandoned: playerStatus === "abandoned",
@@ -232,5 +261,6 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   }
 
   const updatedSession = await findSession(params.radioId, params.sessionId);
+  await notifyGameSessionChanged(params.radioId, params.sessionId);
   return NextResponse.json(formatSession(updatedSession!, userId));
 }

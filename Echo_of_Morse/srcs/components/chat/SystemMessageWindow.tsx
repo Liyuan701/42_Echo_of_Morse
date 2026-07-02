@@ -362,6 +362,10 @@ type SystemMessageWindowProps = {
     message: SystemMessage,
     action: GameInvitationAction
   ) => Promise<void>;
+  onAnswerFriendRequest?: (
+    message: SystemMessage,
+    action: "accept" | "decline"
+  ) => Promise<void>;
   onJoinRadioLobby?: (message: SystemMessage) => Promise<void>;
   onSwitchRadioLobby?: (message: SystemMessage) => Promise<void>;
   onCancelRadioLobbySwitch?: (message: SystemMessage) => void;
@@ -371,6 +375,7 @@ export default function SystemMessageWindow({
   messages,
   onClose,
   onAnswerGameInvitation,
+  onAnswerFriendRequest,
   onJoinRadioLobby,
   onSwitchRadioLobby,
   onCancelRadioLobbySwitch,
@@ -396,6 +401,17 @@ export default function SystemMessageWindow({
     }
 
     await onJoinRadioLobby(message);
+  }
+
+  async function handleAnswerFriendRequest(
+    message: SystemMessage,
+    action: "accept" | "decline"
+  ) {
+    if (!onAnswerFriendRequest) {
+      return;
+    }
+
+    await onAnswerFriendRequest(message, action);
   }
 
   async function handleSwitchRadioLobby(message: SystemMessage) {
@@ -436,6 +452,7 @@ export default function SystemMessageWindow({
           <ul className={styles.list}>
             {messages.map((message) => {
               const isGameInvitation = message.kind === "game-invitation";
+              const isFriendRequest = message.kind === "friend-request";
               const isJoinLobby = message.kind === "join-lobby";
 
               const isUpdating = message.actionStatus === "updating";
@@ -520,6 +537,64 @@ export default function SystemMessageWindow({
                               className={styles.declineButton}
                               onClick={() =>
                                 void handleAnswerInvitation(
+                                  message,
+                                  "decline"
+                                )
+                              }
+                            >
+                              {t.decline}
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {isFriendRequest ? (
+                      <div className={styles.invitationArea}>
+                        {message.actionStatus === "accepted" ? (
+                          <span className={styles.acceptedBadge}>
+                            {t.accepted}
+                          </span>
+                        ) : null}
+
+                        {message.actionStatus === "declined" ? (
+                          <span className={styles.declinedBadge}>
+                            {t.declined}
+                          </span>
+                        ) : null}
+
+                        {message.actionStatus === "error" ? (
+                          <span className={styles.errorBadge}>
+                            {t.actionFailed}
+                          </span>
+                        ) : null}
+
+                        {isUpdating ? (
+                          <span className={styles.pendingBadge}>
+                            {t.updating}
+                          </span>
+                        ) : null}
+
+                        {!isUpdating && !isAnswered ? (
+                          <div className={styles.actions}>
+                            <button
+                              type="button"
+                              className={styles.acceptButton}
+                              onClick={() =>
+                                void handleAnswerFriendRequest(
+                                  message,
+                                  "accept"
+                                )
+                              }
+                            >
+                              {t.accept}
+                            </button>
+
+                            <button
+                              type="button"
+                              className={styles.declineButton}
+                              onClick={() =>
+                                void handleAnswerFriendRequest(
                                   message,
                                   "decline"
                                 )

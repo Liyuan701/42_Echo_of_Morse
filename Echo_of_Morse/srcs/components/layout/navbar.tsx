@@ -332,6 +332,7 @@ export default function Navbar() {
   const {
     totalGlobalUnreadCount,
     pendingGameInvitations,
+    pendingFriendRequests,
     recentFriendMessages,
     friendUnreadCounts,
     unreadSystemMessageCount,
@@ -350,6 +351,7 @@ export default function Navbar() {
 	};
 
   const visibleGameInvitations = pendingGameInvitations.slice(0, 4);
+  const visibleFriendRequests = pendingFriendRequests.slice(0, 4);
 
   const groupedFriendNotifications = groupUnreadFriendMessagesBySender(
     recentFriendMessages,
@@ -358,6 +360,7 @@ export default function Navbar() {
 
   const hasVisibleNotifications =
     visibleGameInvitations.length > 0 ||
+    visibleFriendRequests.length > 0 ||
     groupedFriendNotifications.length > 0 ||
     unreadSystemMessageCount > 0;
 
@@ -452,6 +455,31 @@ export default function Navbar() {
                         </Link>
                       )
 					  })}
+                    </div>
+                  ) : null}
+
+                  {visibleFriendRequests.length > 0 ? (
+                    <div className={styles.notificationSection}>
+                      <p className={styles.notificationSectionTitle}>
+                        {t.friendRequests}
+                      </p>
+
+                      {visibleFriendRequests.map((request) => (
+                        <Link
+                          key={request.id}
+                          href="/chat?panel=system"
+                          className={styles.notificationItem}
+                        >
+                          <span className={styles.notificationItemMain}>
+                            <strong>{request.sender.username}</strong>
+                            <span>{t.sentYouFriendRequest}</span>
+                          </span>
+
+                          <span className={styles.notificationItemAction}>
+                            {t.view}
+                          </span>
+                        </Link>
+                      ))}
                     </div>
                   ) : null}
 

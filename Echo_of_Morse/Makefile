@@ -18,6 +18,17 @@ else
 endif
 
 # =========================
+# Get params from .env.prod
+# Only for the test. 
+# =========================
+
+TEST_BASE_URL ?= $(shell sed -n 's/^TEST_BASE_URL=//p' .env.prod | tail -n 1)
+TEST_RADIO_ID ?= $(shell sed -n 's/^TEST_RADIO_ID=//p' .env.prod | tail -n 1)
+TEST_USER_COUNT ?= $(shell sed -n 's/^TEST_USER_COUNT=//p' .env.prod | tail -n 1)
+TEST_PASSWORD ?= $(shell sed -n 's/^TEST_PASSWORD=//p' .env.prod | tail -n 1)
+TEST_TLS_REJECT_UNAUTHORIZED ?= $(shell sed -n 's/^TEST_TLS_REJECT_UNAUTHORIZED=//p' .env.prod | tail -n 1)
+
+# =========================
 # Core (Dev)
 # =========================
 
@@ -66,7 +77,7 @@ prod-logs:
 
 
 # =========================
-# DB Init (IMPORTANT)
+# DB Init
 # =========================
 
 db-init:
@@ -95,6 +106,35 @@ lint:
 check: typecheck lint
 
 # =========================
+# Tests
+# =========================
+
+test:
+	@$(MAKE) test-clean
+	$(COMPOSE) --env-file .env.prod -f docker-compose.yml cp scripts/dev-concurrent-users-test.js web:/tmp/dev-concurrent-users-test.js
+	@status=0; \
+	$(COMPOSE) --env-file .env.prod -f docker-compose.yml exec \
+		-e NODE_PATH=/app/node_modules \
+		-e TEST_BASE_URL='$(TEST_BASE_URL)' \
+		-e TEST_USER_COUNT='$(TEST_USER_COUNT)' \
+		-e TEST_RADIO_ID='$(TEST_RADIO_ID)' \
+		-e TEST_PASSWORD='$(TEST_PASSWORD)' \
+		-e TEST_TLS_REJECT_UNAUTHORIZED='$(TEST_TLS_REJECT_UNAUTHORIZED)' \
+		web node /tmp/dev-concurrent-users-test.js || status=$$?; \
+	$(MAKE) test-clean; \
+	exit $$status
+
+test-clean:
+	$(COMPOSE) --env-file .env.prod -f docker-compose.yml cp scripts/dev-clear-radio-state.js web:/tmp/dev-clear-radio-state.js
+	$(COMPOSE) --env-file .env.prod -f docker-compose.yml exec \
+		-e NODE_PATH=/app/node_modules \
+		web node /tmp/dev-clear-radio-state.js
+
+clean-test: test-clean
+
+clean: test-clean
+
+# =========================
 # Dev reset
 # =========================
 
@@ -110,7 +150,7 @@ re:
 	$(COMPOSE) --env-file .env.dev -f docker-compose.dev.yml up -d --build
 
 # =========================
-# FULL CLEAN (IMPORTANT)
+# FULL CLEAN
 # =========================
 
 fclean:
@@ -156,4 +196,4 @@ reset:
 	@echo "✨ Done. Environment is clean."
 
 	
-.PHONY: dev dev-logs down up stop ps logs rebuild re fclean kill-port reset-db
+.PHONY: dev dev-logs down up stop ps logs seed typecheck lint check test test-clean clean-test clean rebuild re fclean kill-port reset-db reset

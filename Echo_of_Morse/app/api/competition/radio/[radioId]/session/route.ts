@@ -89,7 +89,15 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
     return created;
   });
 
-  await notifyWs("radio.game.created", { radioId: params.radioId, data: { sessionId: gameSession.id, playerIds } });
+  // Other clients in the radio room need radioId to route to the new session.
+  await notifyWs("radio.game.created", {
+    radioId: params.radioId,
+    data: {
+      radioId: params.radioId,
+      sessionId: gameSession.id,
+      playerIds,
+    },
+  });
   return NextResponse.json(
     {
       radioId: params.radioId,

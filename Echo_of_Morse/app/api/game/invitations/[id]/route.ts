@@ -420,6 +420,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    throw error;
+    console.error("PATCH /api/game/invitations/[id]", error);
+    return NextResponse.json(
+      { error: "Failed to update invitation" },
+      { status: 500 }
+    );
   }
 }
