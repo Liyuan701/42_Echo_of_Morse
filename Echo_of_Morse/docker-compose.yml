@@ -76,6 +76,13 @@ services:
       - "5432:5432"   # utile en développement — à commenter en production
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready is provided by the Postgres image and reports when DB accepts connections.
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     networks:
       - transcendence_network
 
@@ -100,8 +107,17 @@ services:
     volumes:
       - vault_data:/vault/data:z          # accès au root-token.txt généré par vault-unseal
     depends_on:
-      - db
-      - vault-init
+      db:
+        condition: service_healthy
+      vault-init:
+        condition: service_completed_successfully
+    healthcheck:
+      # Node 20 has fetch built in, so no curl/wget is needed in the runtime image.
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     networks:
       - transcendence_network
     env_file:
@@ -216,7 +232,15 @@ services:
     # ports:
     #   - "3001:3001"   # utile en développement — à commenter en production
     depends_on:
-      - web
+      web:
+        condition: service_healthy
+    healthcheck:
+      # The ws-server exposes /health from Express; this checks the real Node process.
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3001/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
     networks:
       - transcendence_network
     environment:

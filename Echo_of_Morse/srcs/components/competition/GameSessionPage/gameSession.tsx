@@ -1,8 +1,9 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { encode } from "@/lib/morse";
+import { useSocket } from "@/providers/socket-provider";
 
 import styles from "./css/gameSession.module.css";
 import Answer from "./answer";
@@ -31,6 +32,7 @@ export default function GameSession({
 
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionGame;
+	const { socket, isConnected } = useSocket();
 
 	//arder une valeur sans relancer l’affichage de la page
 	const sequenceIndexRef = useRef(1);
@@ -113,6 +115,43 @@ export default function GameSession({
 		);
 	}
 
+	const applySessionSnapshot = useCallback((data: GameSessionData) => {
+		setSessionData((currentData) =>
+			currentData
+				? {
+						...currentData,
+						status: data.status,
+						duration: data.duration,
+						players: data.players,
+				  }
+				: data
+		);
+
+		if (data.status === "finished") {
+			setSecondsLeft(0);
+		}
+
+		setPlayers((currentPlayers) => {
+			const localPlayer = currentPlayers.find((player) => player.id === "me");
+
+			return data.players.map((player) =>
+				player.id === "me" && localPlayer
+					? {
+							...player,
+							score: localPlayer.score,
+							correct: localPlayer.correct,
+							total: localPlayer.total,
+							streak: localPlayer.streak,
+					  }
+					: player
+			);
+		});
+	}, []);
+
+	const refreshSessionSnapshot = useCallback(() => {
+		return getGameSessionData({ radioId, sessionId }).then(applySessionSnapshot);
+	}, [applySessionSnapshot, radioId, sessionId]);
+
 	//-------------------- 1e : obtention des données de la session --------------------
 	useEffect(() => {
 		let cancelled = false;
@@ -181,26 +220,13 @@ export default function GameSession({
 			playerStatus: "completed",
 		})
 			.then((data) => {
-				const localPlayer = players.find((player) => player.id === "me");
-				setSessionData(data);
-				setPlayers(
-					data.players.map((player) =>
-						player.id === "me" && localPlayer
-							? {
-									...player,
-									correct: localPlayer.correct,
-									total: localPlayer.total,
-									streak: localPlayer.streak,
-							  }
-							: player
-					)
-				);
+				applySessionSnapshot(data);
 			})
 			.catch((error: unknown) => {
 				hasSubmittedResultRef.current = false;
 				console.error(t.failedToSaveGameResult, error);
 			});
-	}, [isFinished, players, radioId, sessionData, sessionId]);
+	}, [applySessionSnapshot, isFinished, players, radioId, sessionData, sessionId]);
 
 	const currentPlayerScore = players.find(
 		(player) => player.id === "me"
@@ -233,10 +259,6 @@ export default function GameSession({
 		t.failedToSaveGameResult,
 	]);
 
-	// TODO modify after socket notifications are reliable.
-	// Temporary polling fallback. While the game is active, it detects an early
-	// finish caused by an abandonment. Afterward, it waits for the remaining
-	// player's final score. Replace this with a Socket.IO session update event.
 	useEffect(() => {
 		const hasPendingEligiblePlayers = sessionData?.players.some(
 			(player) => !player.abandoned && !player.completed
@@ -246,45 +268,34 @@ export default function GameSession({
 			return;
 		}
 
+		// Game polling stays more frequent because final scores must converge.
+		const intervalMs = isConnected ? 10000 : 5000;
 		const intervalId = window.setInterval(() => {
-			getGameSessionData({ radioId, sessionId })
-				.then((data) => {
-					setSessionData((currentData) =>
-						currentData
-							? {
-									...currentData,
-									status: data.status,
-									duration: data.duration,
-									players: data.players,
-							  }
-							: data
-					);
-					if (data.status === "finished") {
-						setSecondsLeft(0);
-					}
-					setPlayers((currentPlayers) => {
-						const localPlayer = currentPlayers.find(
-							(player) => player.id === "me"
-						);
-
-						return data.players.map((player) =>
-							player.id === "me" && localPlayer
-								? {
-										...player,
-										score: localPlayer.score,
-										correct: localPlayer.correct,
-										total: localPlayer.total,
-										streak: localPlayer.streak,
-								  }
-								: player
-						);
-					});
-				})
-				.catch(() => undefined);
-		}, 2000);
+			void refreshSessionSnapshot().catch(() => undefined);
+		}, intervalMs);
 
 		return () => window.clearInterval(intervalId);
-	}, [radioId, sessionData, sessionId]);
+	}, [isConnected, refreshSessionSnapshot, sessionData]);
+
+	useEffect(() => {
+		if (!socket) {
+			return;
+		}
+
+		// Join the Socket.IO room for this match; events only signal a refresh.
+		socket.emit("game:join", { sessionId });
+
+		function handleSessionUpdated() {
+			void refreshSessionSnapshot().catch(() => undefined);
+		}
+
+		socket.on("game:session-updated", handleSessionUpdated);
+
+		return () => {
+			socket.emit("game:leave", { sessionId });
+			socket.off("game:session-updated", handleSessionUpdated);
+		};
+	}, [refreshSessionSnapshot, sessionId, socket]);
 
 	//-------------------- gestion du timer --------------------
 	useEffect(() => {

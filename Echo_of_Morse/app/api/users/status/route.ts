@@ -1,12 +1,39 @@
-// Get request from the server and update the DB
-// update the isOnline, lastSeen in DB
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/server/prisma";
 
+function isInternalStatusUpdate(request: Request) {
+  const sharedSecret = process.env.WS_SHARED_SECRET;
+  const providedSecret = request.headers.get("x-ws-shared-secret");
 
-import { NextResponse } from 'next/server';
-import { prisma } from '@/server/prisma';
+  // ws-server uses this shared secret because it updates presence server-side.
+  return Boolean(sharedSecret && providedSecret === sharedSecret);
+}
 
 export async function POST(request: Request) {
-  const { userId, isOnline } = await request.json();
+  const { userId, isOnline } = (await request.json()) as {
+    userId?: string;
+    isOnline?: boolean;
+  };
+
+  if (!userId || typeof isOnline !== "boolean") {
+    return NextResponse.json(
+      { error: "userId and isOnline are required" },
+      { status: 400 }
+    );
+  }
+
+  const isInternal = isInternalStatusUpdate(request);
+
+  if (!isInternal) {
+    const session = await getServerSession(authOptions);
+
+    // Browser callers may only update their own presence, never another user.
+    if (session?.user?.id !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
   
   await prisma.user.updateMany({
     where: { id: userId },
@@ -18,16 +45,3 @@ export async function POST(request: Request) {
   
   return NextResponse.json({ ok: true });
 }
-
-// import { prisma } from "@/server/prisma";
-
-// export async function POST(req: Request) {
-//   const { userId, status } = await req.json();
-
-//   await prisma.user.update({
-//     where: { id: userId },
-//     data: { status },
-//   });
-
-//   return Response.json({ success: true });
-// }

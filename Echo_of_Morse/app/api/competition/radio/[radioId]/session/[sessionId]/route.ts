@@ -9,6 +9,7 @@ import {
   getSessionDurationSeconds,
 } from "@/lib/services/competition";
 import { getSessionUserId } from "@/lib/session-user";
+import { notifyWs } from "@/lib/notifyWs";
 import { prisma } from "@/server/prisma";
 
 type RouteContext = {
@@ -17,6 +18,15 @@ type RouteContext = {
     sessionId: string;
   };
 };
+
+async function notifyGameSessionChanged(radioId: string, sessionId: string) {
+  // The session response contains current-user fields like id: "me".
+  // Broadcast only a change signal; each browser reloads its own snapshot.
+  await notifyWs("game.session.updated", {
+    sessionId,
+    data: { radioId, sessionId },
+  });
+}
 
 
 // Helper function to find a game session.
@@ -162,7 +172,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   }
 
   if (playerStatus === "playing") {
-    await prisma.radioSessionPlayer.updateMany({
+    const updatedProgress = await prisma.radioSessionPlayer.updateMany({
       where: {
         id: currentPlayer.id,
         completed: false,
@@ -172,6 +182,9 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     });
 
     const updatedSession = await findSession(params.radioId, params.sessionId);
+    if (updatedProgress.count > 0) {
+      await notifyGameSessionChanged(params.radioId, params.sessionId);
+    }
     return NextResponse.json(formatSession(updatedSession!, userId));
   }
 
@@ -232,5 +245,6 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   }
 
   const updatedSession = await findSession(params.radioId, params.sessionId);
+  await notifyGameSessionChanged(params.radioId, params.sessionId);
   return NextResponse.json(formatSession(updatedSession!, userId));
 }

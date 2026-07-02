@@ -45,7 +45,7 @@ export default function RadioLobbyClient({
 	const radioName = radioNameById[radio.radioId];
 
   const router = useRouter();
-  const { socket } = useSocket();
+  const { socket, isConnected } = useSocket();
 
   const [users, setUsers] = useState<RadioUser[]>(initialUsers);
   const [message, setMessage] = useState("");
@@ -101,17 +101,8 @@ export default function RadioLobbyClient({
     [radio.radioId, router]
   );
 
-  // TODO modify after socket notifications are reliable.
-  // Temporary polling fallback. Lobby users, ready states, and newly created
-  // sessions are refreshed from PostgreSQL every 2 seconds because the radio
-  // Socket.IO events are not implemented/reliable yet. After radio socket
-  // synchronization works, remove the repeated GET interval. Keep the POST
-  // used to join the lobby and the DELETE cleanup used when leaving the page.
-  useEffect(() => {
-    let cancelled = false;
-    leaveScheduler.cancelLeave();
-
-    async function requestLobby(method: "GET" | "POST") {
+  const fetchLobby = useCallback(
+    async (method: "GET" | "POST") => {
       const response = await fetch(
         `/api/competition/radio/${radio.radioId}`,
         {
@@ -124,8 +115,8 @@ export default function RadioLobbyClient({
         const body = (await response.json().catch(() => null)) as
           | { error?: string }
           | null;
-        	console.error(body?.error);
-			throw new Error(t.failedToLoadLobby);
+        console.error(body?.error);
+        throw new Error(t.failedToLoadLobby);
       }
 
       const lobby = (await response.json()) as {
@@ -133,30 +124,61 @@ export default function RadioLobbyClient({
         activeSessionId: string | null;
       };
 
-      if (!cancelled) {
-        applyLobbyResponse(lobby);
-      }
-    }
+      return lobby;
+    },
+    [radio.radioId, t.failedToLoadLobby]
+  );
 
-    requestLobby("POST").catch((error: unknown) => {
-      if (!cancelled) {
-		console.error(error);
-		setMessage(t.failedToJoinLobby);
-      }
-    });
+  const requestLobby = useCallback(
+    async (method: "GET" | "POST") => {
+      applyLobbyResponse(await fetchLobby(method));
+    },
+    [applyLobbyResponse, fetchLobby]
+  );
 
-    const intervalId = window.setInterval(() => {
-      requestLobby("GET").catch(() => {
-        // Keep the last database snapshot during a temporary network failure.
+  useEffect(() => {
+    let cancelled = false;
+    leaveScheduler.cancelLeave();
+
+    fetchLobby("POST")
+      .then((lobby) => {
+        if (!cancelled) {
+          applyLobbyResponse(lobby);
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          console.error(error);
+          setMessage(t.failedToJoinLobby);
+        }
       });
-    }, 2000);
+
+    // Socket events drive normal updates; polling is only a slower safety net.
+    const intervalMs = isConnected ? 30000 : 5000;
+    const intervalId = window.setInterval(() => {
+      fetchLobby("GET")
+        .then((lobby) => {
+          if (!cancelled) {
+            applyLobbyResponse(lobby);
+          }
+        })
+        .catch(() => {
+          // Keep the last database snapshot during a temporary network failure.
+        });
+    }, intervalMs);
 
     return () => {
       cancelled = true;
       window.clearInterval(intervalId);
       leaveScheduler.scheduleLeave();
     };
-  }, [applyLobbyResponse, leaveScheduler, radio.radioId]);
+  }, [
+    applyLobbyResponse,
+    fetchLobby,
+    isConnected,
+    leaveScheduler,
+    t.failedToJoinLobby,
+  ]);
 
   useEffect(() => {
     function handlePageHide() {
@@ -179,20 +201,23 @@ export default function RadioLobbyClient({
   useEffect(() => {
     if (!socket) return;
 
-    function handleUserListUpdated(updatedUsers: RadioUser[]) {
-      setUsers(updatedUsers);
+    // Join the Socket.IO room used by server-side radio lobby broadcasts.
+    socket.emit("radio:join", { radioId: radio.radioId });
+
+    function handleUserListUpdated() {
+      void requestLobby("GET");
     }
 
-    function handleReadyListUpdated(updatedUsers: RadioUser[]) {
-      setUsers(updatedUsers);
+    function handleReadyListUpdated() {
+      void requestLobby("GET");
     }
 
     function handleGameCreated(payload: {
-      radioId: string;
+      radioId?: string;
       sessionId: string;
     }) {
       router.push(
-        `/competition/radio/${payload.radioId}/session/${payload.sessionId}`
+        `/competition/radio/${payload.radioId ?? radio.radioId}/session/${payload.sessionId}`
       );
     }
 
@@ -201,11 +226,12 @@ export default function RadioLobbyClient({
     socket.on("radio:game-created", handleGameCreated);
 
     return () => {
+      socket.emit("radio:leave", { radioId: radio.radioId });
       socket.off("radio:user-list-updated", handleUserListUpdated);
       socket.off("radio:ready-list-updated", handleReadyListUpdated);
       socket.off("radio:game-created", handleGameCreated);
     };
-  }, [socket, router]);
+  }, [radio.radioId, requestLobby, socket, router]);
 
   /**
    * =========================================================
