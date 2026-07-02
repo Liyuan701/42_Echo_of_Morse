@@ -33,6 +33,7 @@ export default function ProfileEditForm() {
 	const [error, setError] = useState("");
 	const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
 	// ========================================== Charger le profil réel ========================================== 
 	// quand la page s'ouvre, on utilise session.user.id pour récupérer le profil à jour.
@@ -66,7 +67,9 @@ export default function ProfileEditForm() {
 						bio: user.bio ?? "",
 					});
 			} catch (error) {
-				console.error(error);
+				if (process.env.NODE_ENV === "development") {
+					console.error(error);
+				}
 				setError(t.loadProfileError);
 			// finally = peu importe le résultat du try/catch, on arrête le message de chargement
 			} finally {
@@ -128,6 +131,13 @@ export default function ProfileEditForm() {
 			return;
 		}
 
+		if (file.size > 500_000) {
+			setError(t.imageTooLarge);
+			return;
+		}
+
+		setAvatarFile(file);
+
 		//FileReader = outil qui permet de lire le contenu d'un fichier
 		const reader = new FileReader();
 
@@ -162,32 +172,34 @@ export default function ProfileEditForm() {
 
 		try {
 			setIsSubmitting(true);
+			const body = new FormData();
+			body.set("username", formData.username);
+			body.set("bio", formData.bio);
+
+			if (avatarFile) {
+				body.set("image", avatarFile);
+			}
 
 			const response = await fetch(`/api/users/${userId}`, {
 				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				//stringify = convertir en json pour l'envoyer à l'API
-				body: JSON.stringify({
-				username: formData.username,
-				image: formData.image,
-				bio: formData.bio,
-			}),
+				body,
 		});
 
-		const data = await response.json();
+		const data = (await response.json().catch(() => null)) as {
+			error?: string;
+		} | null;
 
 		if (!response.ok) {
-			console.error(data.error);
-			setError(t.failedToUpdateProfile);
+			setError(data?.error ?? t.failedToUpdateProfile);
 			return;
 		}
 
 		router.push("/profile");
 		router.refresh();
 	} catch (error) {
-		console.error(error);
+		if (process.env.NODE_ENV === "development") {
+			console.error(error);
+		}
 		setError(t.updateProfileError);
 	} finally {
 		setIsSubmitting(false);

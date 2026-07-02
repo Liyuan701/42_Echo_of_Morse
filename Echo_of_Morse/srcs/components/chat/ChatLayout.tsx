@@ -83,7 +83,7 @@ export default function ChatLayout() {
 	const t = dictionary.chatLayout;
 	const radioT = dictionary.competitionRadio;
 
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const userId = session?.user?.id;
   const { socket } = useSocket();
   const router = useRouter();
@@ -96,6 +96,7 @@ export default function ChatLayout() {
 
   const {
     pendingGameInvitations,
+    pendingFriendRequests,
     friendUnreadCounts,
     unreadSystemMessageCount: globalUnreadSystemMessageCount,
     refreshNotifications,
@@ -135,26 +136,29 @@ export default function ChatLayout() {
   >(null);
   const suppressFriendQuerySelection = useRef(false);
 
-  useEffect(() => {
+  const loadFriends = useCallback(async () => {
     if (!userId) {
       setSystemMessages([]);
+      setFriends([]);
       return;
     }
 
-    const loadFriends = async () => {
-      try {
-        const res = await fetch(`/api/friends?userId=${userId}`);
-        const data = await res.json();
+    try {
+      const res = await fetch(`/api/friends?userId=${userId}`);
+      const data = await res.json();
 
-        setFriends(Array.isArray(data) ? data : []);
-      } catch (err) {
+      setFriends(Array.isArray(data) ? data : []);
+    } catch (err) {
+      if (process.env.NODE_ENV === "development") {
         console.error(err);
-        setFriends([]);
       }
-    };
-
-    void loadFriends();
+      setFriends([]);
+    }
   }, [userId]);
+
+  useEffect(() => {
+    void loadFriends();
+  }, [loadFriends]);
 
   const loadSystemMessages = useCallback(async () => {
     if (!userId) {
@@ -243,7 +247,12 @@ export default function ChatLayout() {
     currentView.type === "friend" ? currentView.friendId : null;
 
   useEffect(() => {
-    if (!conversationId || !selectedFriendId) {
+    if (
+      sessionStatus !== "authenticated" ||
+      !userId ||
+      !conversationId ||
+      !selectedFriendId
+    ) {
       return;
     }
 
@@ -266,13 +275,15 @@ export default function ChatLayout() {
             : []
         );
       } catch (err) {
-        console.error(err);
+        if (process.env.NODE_ENV === "development") {
+          console.error(err);
+        }
         setMessages([]);
       }
     };
 
     void loadMessages();
-  }, [conversationId, selectedFriendId, userId]);
+  }, [conversationId, selectedFriendId, sessionStatus, userId]);
 
   useEffect(() => {
     if (!socket || !userId) {
@@ -397,13 +408,37 @@ export default function ChatLayout() {
     [invitationActionStatuses, pendingGameInvitations, radioT, t]
   );
 
+  const friendRequestMessages = useMemo<SystemMessage[]>(
+    () =>
+      pendingFriendRequests.map((request) => ({
+        id: `friend-request:${request.id}`,
+        title: t.friendRequestReceivedTitle,
+        body: t.friendRequestReceivedBody.replace(
+          "{username}",
+          request.sender.username
+        ),
+        createdAt: new Date(request.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        isRead: false,
+        kind: "friend-request",
+        friendshipId: request.id,
+        fromUserId: request.sender.id,
+        actionStatus: invitationActionStatuses[`friend:${request.id}`] ?? "idle",
+      })),
+    [invitationActionStatuses, pendingFriendRequests, t]
+  );
+
   const visibleSystemMessages = useMemo(
-    () => [...gameInvitationMessages, ...systemMessages],
-    [gameInvitationMessages, systemMessages]
+    () => [...gameInvitationMessages, ...friendRequestMessages, ...systemMessages],
+    [friendRequestMessages, gameInvitationMessages, systemMessages]
   );
 
   const unreadSystemMessageCount =
-    globalUnreadSystemMessageCount + pendingGameInvitations.length;
+    globalUnreadSystemMessageCount +
+    pendingGameInvitations.length +
+    pendingFriendRequests.length;
 
   const incomingPendingInviteFriendIds = useMemo(
     () =>
@@ -547,6 +582,59 @@ export default function ChatLayout() {
 
 	console.error(error);
 	window.alert(t.failedToUpdateInvitation);
+    }
+  }
+
+  async function handleAnswerFriendRequest(
+    message: SystemMessage,
+    action: "accept" | "decline"
+  ) {
+    if (!message.friendshipId) {
+      return;
+    }
+
+    const statusKey = `friend:${message.friendshipId}`;
+
+    setInvitationActionStatuses((current) => ({
+      ...current,
+      [statusKey]: "updating",
+    }));
+
+    try {
+      const response = await fetch(`/api/friends/${message.friendshipId}`, {
+        method: action === "accept" ? "PUT" : "DELETE",
+        headers:
+          action === "accept"
+            ? {
+                "Content-Type": "application/json",
+              }
+            : undefined,
+        body:
+          action === "accept"
+            ? JSON.stringify({ status: "ACCEPTED" })
+            : undefined,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to answer friend request");
+      }
+
+      setInvitationActionStatuses((current) => ({
+        ...current,
+        [statusKey]: action === "accept" ? "accepted" : "declined",
+      }));
+
+      await Promise.all([refreshNotifications(), loadFriends()]);
+    } catch (error) {
+      setInvitationActionStatuses((current) => ({
+        ...current,
+        [statusKey]: "error",
+      }));
+
+      if (process.env.NODE_ENV === "development") {
+        console.error(error);
+      }
+      window.alert(t.failedToUpdateFriendRequest);
     }
   }
 
@@ -1032,6 +1120,8 @@ export default function ChatLayout() {
     } catch (error) {
       if (error instanceof GameInvitationActionError && error.status === 409) {
         markGameInviteFriendAsPending(invited.id);
+        window.alert(error.message);
+        return;
       }
 
 		console.error(error);
@@ -1182,6 +1272,7 @@ export default function ChatLayout() {
           messages={visibleSystemMessages}
           onClose={handleClosePanel}
           onAnswerGameInvitation={handleAnswerGameInvitation}
+          onAnswerFriendRequest={handleAnswerFriendRequest}
           onJoinRadioLobby={handleJoinRadioLobbyFromSystemMessage}
           onSwitchRadioLobby={handleSwitchRadioLobbyFromSystemMessage}
           onCancelRadioLobbySwitch={handleCancelRadioLobbySwitch}

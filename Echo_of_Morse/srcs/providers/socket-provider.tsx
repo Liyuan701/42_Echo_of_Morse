@@ -52,30 +52,40 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           token: data.token,
         };
 
-        console.log("AUTH SET", socketInstance.auth);
+        if (process.env.NODE_ENV === "development") {
+          console.log("AUTH SET", socketInstance.auth);
+        }
 
         socketInstance.connect();
 
-        console.log(
-          "CONNECTING",
-          session.user.id,
-          socketInstance.connected,
-          socketInstance.id
-        );
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            "CONNECTING",
+            session.user.id,
+            socketInstance.connected,
+            socketInstance.id
+          );
+        }
 
         setSocket(socketInstance);
       } catch (err) {
-        console.error("Socket token fetch failed", err);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Socket token fetch failed", err);
+        }
       }
     };
 
     const handleConnect = () => {
-      console.log("CONNECTED", socketInstance.id);
+      if (process.env.NODE_ENV === "development") {
+        console.log("CONNECTED", socketInstance.id);
+      }
       setIsConnected(true);
     };
 
     const handleDisconnect = (reason: string) => {
-      console.log("DISCONNECTED", reason);
+      if (process.env.NODE_ENV === "development") {
+        console.log("DISCONNECTED", reason);
+      }
       setIsConnected(false);
     };
 

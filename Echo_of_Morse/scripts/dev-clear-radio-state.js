@@ -1,3 +1,6 @@
+// Reset only transient radio test state after concurrent-user tests.
+// This does not delete users or finished game history.
+
 const path = require("path");
 const dotenv = require("dotenv");
 const { PrismaClient } = require("@prisma/client");
@@ -13,6 +16,7 @@ function getCandidateUrls() {
 
   const urls = [url];
 
+  // The same script can run inside Docker ("db") or from the host ("localhost").
   if (url.includes("@db:")) {
     urls.push(url.replace("@db:", "@localhost:"));
   }
@@ -31,6 +35,7 @@ async function clearRadioState(databaseUrl) {
 
   try {
     return await prisma.$transaction(async (transaction) => {
+      // Pending invites, ready rows, and lobby presences are live state.
       const pendingInvitations = await transaction.gameInvitation.deleteMany({
         where: {
           status: "PENDING",
@@ -40,6 +45,7 @@ async function clearRadioState(databaseUrl) {
       const readyQueue = await transaction.radioReadyQueue.deleteMany({});
       const lobbyPresences = await transaction.radioLobbyPresence.deleteMany({});
 
+      // Any interrupted active session is closed so the next test starts cleanly.
       const activeSessionPlayers =
         await transaction.radioSessionPlayer.deleteMany({
           where: {

@@ -26,10 +26,14 @@ export async function submitGameSessionResult({
 	radioId,
 	sessionId,
 	score,
+	correct,
+	total,
 	timeMs,
 	playerStatus,
 }: LoadGameSessionParams & {
 	score: number;
+	correct: number;
+	total: number;
 	timeMs: number;
 	playerStatus: PlayerStatus;
 }): Promise<GameSessionData> {
@@ -39,7 +43,7 @@ export async function submitGameSessionResult({
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			//Abandon feature: add playerStatus
-			body: JSON.stringify({ score, timeMs, playerStatus }),
+			body: JSON.stringify({ score, correct, total, timeMs, playerStatus }),
 		}
 	);
 	const data = (await response.json()) as GameSessionData & { error?: string };
@@ -55,15 +59,21 @@ export function updateGameSessionProgress({
 	radioId,
 	sessionId,
 	score,
+	correct,
+	total,
 	timeMs,
 }: LoadGameSessionParams & {
 	score: number;
+	correct: number;
+	total: number;
 	timeMs: number;
 }): Promise<GameSessionData> {
 	return submitGameSessionResult({
 		radioId,
 		sessionId,
 		score,
+		correct,
+		total,
 		timeMs,
 		playerStatus: "playing",
 	});

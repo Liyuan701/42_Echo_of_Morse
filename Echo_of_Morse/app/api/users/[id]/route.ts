@@ -10,6 +10,8 @@ import { prisma } from "@/server/prisma";
 import { authOptions } from "@/lib/auth";
 import { toUserDTO } from "@/lib/mappers/user";
 
+const MAX_PROFILE_IMAGE_SIZE = 500_000;
+
 // GET /api/users/[id] - Get user information.
 export async function GET(
   request: NextRequest,
@@ -117,22 +119,94 @@ export async function PUT(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await request.json();
-    const { username, email, image, bio } = body as {
+    const contentType = request.headers.get("content-type") ?? "";
+    let body: {
       username?: string;
       email?: string;
       image?: string;
-      bio?:string;
-    };
+      bio?: string;
+    } = {};
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      const imageFile = formData.get("image");
+
+      body = {
+        username: formData.get("username")?.toString(),
+        email: formData.get("email")?.toString(),
+        bio: formData.get("bio")?.toString(),
+      };
+
+      // The browser sends the selected avatar as multipart data to avoid WAF
+      // false positives on large base64 strings inside JSON.
+      if (imageFile instanceof File && imageFile.size > 0) {
+        if (!imageFile.type.startsWith("image/")) {
+          return NextResponse.json(
+            { error: "Profile image must be an image file" },
+            { status: 400 }
+          );
+        }
+
+        if (imageFile.size > MAX_PROFILE_IMAGE_SIZE) {
+          return NextResponse.json(
+            { error: "Profile image is too large" },
+            { status: 413 }
+          );
+        }
+
+        const buffer = Buffer.from(await imageFile.arrayBuffer());
+        body.image = `data:${imageFile.type};base64,${buffer.toString("base64")}`;
+      }
+    } else {
+      body = (await request.json()) as {
+        username?: string;
+        email?: string;
+        image?: string;
+        bio?: string;
+      };
+    }
+
+    const { username, email, image, bio } = body;
+
+    const nextUsername =
+      typeof username === "string" ? username.trim() : undefined;
+    const nextEmail = typeof email === "string" ? email.trim().toLowerCase() : undefined;
+    const nextImage = typeof image === "string" ? image : undefined;
+    const nextBio = typeof bio === "string" ? bio : undefined;
+
+    if (nextUsername !== undefined && nextUsername.length === 0) {
+      return NextResponse.json(
+        { error: "Username cannot be empty" },
+        { status: 400 }
+      );
+    }
+
+    if (nextEmail !== undefined) {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailPattern.test(nextEmail)) {
+        return NextResponse.json(
+          { error: "Invalid email format" },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (nextImage && nextImage.length > MAX_PROFILE_IMAGE_SIZE * 2) {
+      return NextResponse.json(
+        { error: "Profile image is too large" },
+        { status: 413 }
+      );
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
-        ...(username && { username }),
-        ...(email && { email }),
-        ...(image && { image }),
+        ...(nextUsername !== undefined && { username: nextUsername }),
+        ...(nextEmail !== undefined && { email: nextEmail }),
+        ...(nextImage !== undefined && { image: nextImage }),
         //allow blank bio.
-        ...(bio !== undefined && { bio }), 
+        ...(nextBio !== undefined && { bio: nextBio }),
       },
       select: {
         id: true,
@@ -150,6 +224,18 @@ export async function PUT(
 
     return NextResponse.json(updatedUser);
   } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Username or email already in use" },
+        { status: 409 }
+      );
+    }
+
     console.error(error);
 
     return NextResponse.json(

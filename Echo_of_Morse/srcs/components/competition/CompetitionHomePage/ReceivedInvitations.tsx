@@ -199,7 +199,7 @@ export default function ReceivedInvitations() {
 	const t = dictionary.competitionHome;
 	
   const { status } = useSession();
-  const { socket } = useSocket();
+  const { socket, isConnected } = useSocket();
   const { answerGameInvitation } = useGameInvitationActions();
 
   const [invitations, setInvitations] = useState<GameInvitation[]>([]);
@@ -222,20 +222,17 @@ export default function ReceivedInvitations() {
     setInvitations((await response.json()) as GameInvitation[]);
   }, [status]);
 
-  // TODO Modify after socket notifications are reliable.
-  // Temporary polling fallback. The Competition page checks PostgreSQL every
-  // 5 seconds because game invitation socket notifications are not reliable.
-  // Once "game-invitation:new" works consistently, remove this interval and
-  // keep only the initial load plus the socket listener below.
   useEffect(() => {
     void loadInvitations();
 
+    // Socket events refresh immediately; polling is the disconnected fallback.
+    const intervalMs = isConnected ? 30000 : 5000;
     const intervalId = window.setInterval(() => {
       void loadInvitations();
-    }, 5000);
+    }, intervalMs);
 
     return () => window.clearInterval(intervalId);
-  }, [loadInvitations]);
+  }, [isConnected, loadInvitations]);
 
   useEffect(() => {
     if (!socket) {

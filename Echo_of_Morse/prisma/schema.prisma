@@ -420,6 +420,9 @@ model RadioSessionPlayer {
 
   // Decoding score; null while the game is still in progress.
   score Int?
+  // Live accuracy counters shown in the multiplayer ranking.
+  correct Int @default(0)
+  total   Int @default(0)
   // Time taken to complete the decoding, in milliseconds; used for tie-breaking.
   timeMs Int?
   // True once the player completes or abandons the session.

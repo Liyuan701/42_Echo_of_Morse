@@ -346,7 +346,9 @@ These credentials are for local development only.
 
 ### Test Accounts
 
-All seeded accounts use the password `mdp`.
+All seeded accounts use the password `MorseTest123!`. If the database already
+contains seed data, running the seed again updates these known test accounts to
+that password without deleting existing local data.
 
 | Username | Email | Level | Purpose |
 | --- | --- | ---: | --- |
@@ -358,6 +360,66 @@ All seeded accounts use the password `mdp`.
 | `nobody` | `nobody@test.com` | 1 | Account outside the seeded friend group |
 | `top_student` | `top_student@test.com` | 12 | Advanced progress testing |
 | `learner` | `learner@test.com` | 1 | Learning and review testing |
+
+### Competition Test Set
+
+The seed creates three radio rooms for competition testing:
+
+| Radio | Name | Speed | Purpose |
+| --- | --- | ---: | --- |
+| `01` | `Radio Wave 01` | 5 WPM | Slower multiplayer decoding |
+| `02` | `Radio Wave 02` | 10 WPM | Intermediate multiplayer decoding |
+| `03` | `Radio Wave 03` | 15 WPM | Faster multiplayer decoding |
+
+Game sessions use a deterministic shuffle of the following word bank. Each
+session selects 12 words from this list based on the session id, so the order
+can change between sessions but the valid answers are always from this set.
+
+| Answer | Morse prompt |
+| --- | --- |
+| `HELLO` | `.... . .-.. .-.. ---` |
+| `WORLD` | `.-- --- .-. .-.. -..` |
+| `MORSE` | `-- --- .-. ... .` |
+| `CODE` | `-.-. --- -.. .` |
+| `RADIO` | `.-. .- -.. .. ---` |
+| `SIGNAL` | `... .. --. -. .- .-..` |
+| `READY` | `.-. . .- -.. -.--` |
+| `WAVE` | `.-- .- ...- .` |
+| `LEARN` | `.-.. . .- .-. -.` |
+| `LISTEN` | `.-.. .. ... - . -.` |
+| `DECODE` | `-.. . -.-. --- -.. .` |
+| `MESSAGE` | `-- . ... ... .- --. .` |
+| `FRIEND` | `..-. .-. .. . -. -..` |
+| `QUICK` | `--.- ..- .. -.-. -.-` |
+| `FOCUS` | `..-. --- -.-. ..- ...` |
+| `TRANSMIT` | `- .-. .- -. ... -- .. -` |
+
+### Test Scripts
+
+The repository includes a concurrent-user regression test for the competition
+flow:
+
+```bash
+cd Echo_of_Morse
+make test
+```
+
+It creates independent temporary users, logs them in, opens real WebSocket
+connections through the WAF, joins the same radio lobby, marks all users ready,
+creates a game session, submits concurrent score updates, completes the
+session, and checks that socket events were received.
+
+To clear only transient radio test state:
+
+```bash
+make test-clean
+```
+
+Equivalent clean test sequence:
+
+```bash
+make clean test
+```
 
 ### Seeded Content
 
@@ -372,13 +434,6 @@ All seeded accounts use the password `mdp`.
 The seed is designed to avoid duplicate users. Randomized learning counters may
 change after a database reset.
 
-## Known Limitations
-
-- Some chat, invitation, and lobby updates currently use database polling as a
-  temporary fallback while Socket.IO delivery is being stabilized.
-- Polling is for integration testing and should be removed after the related
-  real-time events are reliable.
-- The production certificate is self-signed for local evaluation.
 
 ## Resources
 

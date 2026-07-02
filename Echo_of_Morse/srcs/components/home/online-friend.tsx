@@ -169,6 +169,8 @@ export default function OnlineFriendsPreview() {
     } catch (error) {
       if (error instanceof GameInvitationActionError && error.status === 409) {
         markFriendAsPending(invited.id);
+        window.alert(error.message);
+        return;
       }
 
 		console.error(error);

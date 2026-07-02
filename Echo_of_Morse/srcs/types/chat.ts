@@ -53,8 +53,9 @@ export type SystemMessage = {
   body: string;
   createdAt: string;
   isRead: boolean;
-  kind?: "info" | "game-invitation" | "join-lobby";
+  kind?: "info" | "game-invitation" | "join-lobby" | "friend-request";
   invitationId?: string;
+  friendshipId?: number;
   fromUserId?: string;
   radioId?: string;
   i18nKey?: string;
