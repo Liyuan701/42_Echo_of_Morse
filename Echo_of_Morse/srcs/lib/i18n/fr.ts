@@ -45,7 +45,7 @@ const fr = {
 		updateProfileError: "Une erreur est survenue pendant la mise à jour du profil.",
 		usernameRequired: "Le nom d'utilisateur est requis.",
 		usernameTooLong: "Le nom d'utilisateur ne peut pas depasser 20 caracteres.",
-		bioTooLong: "La bio ne peut pas depasser 150 caracteres.",
+		bioTooLong: "La bio ne peut pas depasser 120 caracteres.",
 	},
 
 	layout: {

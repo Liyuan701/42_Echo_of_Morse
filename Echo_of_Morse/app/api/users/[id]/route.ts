@@ -188,9 +188,9 @@ export async function PUT(
 		);
 	}
 
-	if (nextBio !== undefined && nextBio.length > 150) {
+	if (nextBio !== undefined && nextBio.length > 120) {
 		return NextResponse.json(
-			{ error: "Bio cannot be longer than 150 characters" },
+			{ error: "Bio cannot be longer than 120 characters" },
 			{ status: 400 }
 		);
 	}

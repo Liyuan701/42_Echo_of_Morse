@@ -180,7 +180,7 @@ export default function ProfileEditForm() {
 			return;
 		}
 
-		if (bio.length > 150) {
+		if (bio.length > 120) {
 			setError(t.bioTooLong);
 			return;
 		}
