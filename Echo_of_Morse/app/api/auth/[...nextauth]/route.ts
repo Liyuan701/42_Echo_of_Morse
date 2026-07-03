@@ -5,6 +5,3 @@ import { authOptions } from "@/lib/auth"; //Importer la configuration lib/auth
 const handler = NextAuth(authOptions);
 //donne 2 nom pour cette fonction
 export { handler as GET, handler as POST };
-// ｜｜
-// export const GET = handler;
-// export const POST = handler;

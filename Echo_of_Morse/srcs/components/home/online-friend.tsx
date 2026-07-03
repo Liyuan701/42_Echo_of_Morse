@@ -83,7 +83,9 @@ export default function OnlineFriendsPreview() {
           !sentInvitationsResponse.ok ||
           !receivedInvitationsResponse.ok
         ) {
-          throw new Error("Failed to fetch friends.");
+          setOnlineFriends([]);
+          setPendingGameInviteFriendIds([]);
+          return;
         }
 
         const friends = (await friendsResponse.json()) as ApiFriend[];
@@ -104,7 +106,6 @@ export default function OnlineFriendsPreview() {
           ]),
         ]);
       } catch (error) {
-        console.error(error);
         setOnlineFriends([]);
       } finally {
         setIsLoadingFriends(false);
@@ -172,8 +173,6 @@ export default function OnlineFriendsPreview() {
         window.alert(error.message);
         return;
       }
-
-		console.error(error);
 		window.alert(t.failedToSendInvitation);
     }
   }

@@ -66,10 +66,7 @@ export default function ProfileEditForm() {
 						image: user.image ?? "",
 						bio: user.bio ?? "",
 					});
-			} catch (error) {
-				if (process.env.NODE_ENV === "development") {
-					console.error(error);
-				}
+			} catch {
 				setError(t.loadProfileError);
 			// finally = peu importe le résultat du try/catch, on arrête le message de chargement
 			} finally {
@@ -196,10 +193,7 @@ export default function ProfileEditForm() {
 
 		router.push("/profile");
 		router.refresh();
-	} catch (error) {
-		if (process.env.NODE_ENV === "development") {
-			console.error(error);
-		}
+	} catch {
 		setError(t.updateProfileError);
 	} finally {
 		setIsSubmitting(false);

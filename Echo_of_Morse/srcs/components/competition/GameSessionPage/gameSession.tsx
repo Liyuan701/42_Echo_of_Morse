@@ -99,7 +99,6 @@ export default function GameSession({
 			setSecondsLeft(0);
 		} catch (error) {
 			hasSubmittedResultRef.current = false;
-			console.error(t.failedToSaveGameResult, error);
 		}
 	}
 
@@ -229,7 +228,6 @@ export default function GameSession({
 			})
 			.catch((error: unknown) => {
 				hasSubmittedResultRef.current = false;
-				console.error(t.failedToSaveGameResult, error);
 			});
 	}, [applySessionSnapshot, isFinished, players, radioId, sessionData, sessionId]);
 
@@ -253,7 +251,6 @@ export default function GameSession({
 			total: currentPlayer.total,
 			timeMs: Date.now() - sessionStartedAtRef.current,
 		}).catch((error: unknown) => {
-			console.error(t.failedToSaveGameResult, error);
 		});
 	}, [
 		currentPlayer,

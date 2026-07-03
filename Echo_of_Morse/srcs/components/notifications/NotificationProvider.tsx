@@ -355,9 +355,16 @@ export function NotificationProvider({
       return;
     }
 
-    const response = await fetch("/api/system-messages/read-all", {
-      method: "PATCH",
-    });
+    let response: Response;
+
+    try {
+      response = await fetch("/api/system-messages/read-all", {
+        method: "PATCH",
+      });
+    } catch {
+      await refreshNotifications();
+      return;
+    }
 
     if (!response.ok) {
       await refreshNotifications();

@@ -1,5 +1,3 @@
-// import type { LoginFormData, RegisterFormData } from "@/components/types/auth";
-//?
 import type { LoginFormData, RegisterFormData } from "@/types/auth";
 
 export async function loginUser(formData: LoginFormData) {

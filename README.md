@@ -2,7 +2,23 @@
 
 # ft_transcendence: Echo of Morse
 
-## Description
+## 🧭 Table of Contents
+
+- [📌 Description](#-description)
+- [👥 Team Information](#-team-information)
+- [🗂️ Project Management](#️-project-management)
+- [🧰 Technical Stack](#-technical-stack)
+- [🏗️ Architecture](#️-architecture)
+- [🗄️ Database Schema](#️-database-schema)
+- [✨ Features List](#-features-list)
+- [🔁 Feature Flow Summary](#-feature-flow-summary)
+- [🧮 Modules](#-modules)
+- [🙋 Individual Contributions](#-individual-contributions)
+- [🚀 Instructions](#-instructions)
+- [🧪 Initial Test Data](#-initial-test-data)
+- [📚 Resources](#-resources)
+
+## 📌 Description
 
 **Echo of Morse** is a full-stack web application for learning, practising,
 and competing using Morse code. It combines individual training with social
@@ -19,7 +35,7 @@ features and real-time multiplayer games.
 - English, French, and Chinese interfaces
 - WAF protection and centralized secret management
 
-## Team Information
+## 👥 Team Information
 
 | Member | Assigned roles | Responsibilities |
 | --- | --- | --- |
@@ -29,7 +45,7 @@ features and real-time multiplayer games.
 | `yren` | Project Manager, Frontend Developer | Meetings, task coordination, frontend development, authentication, and internationalization |
 | `gustgonz` | Security Lead, DevSecOps | WAF, Vault, Docker infrastructure, security testing, and Socket.IO support |
 
-## Project Management
+## 🗂️ Project Management
 
 - **Work organization:** The team first held weekly meetings, then formed
   smaller groups around frontend, backend, database, security, and real-time
@@ -41,7 +57,7 @@ features and real-time multiplayer games.
 - **Communication:** Discord and WeChat were used for daily discussion,
   technical questions, and meeting organization.
 
-## Technical Stack
+## 🧰 Technical Stack
 
 | Area | Technologies | Reason |
 | --- | --- | --- |
@@ -60,7 +76,7 @@ users, friendships, conversations, messages, learning progress, invitations,
 rooms, and game sessions. Foreign keys, unique constraints, and transactions
 help keep this data consistent.
 
-## Architecture
+## 🏗️ Architecture
 
 ### Development
 
@@ -90,8 +106,9 @@ Next.js ----------------+-------> PostgreSQL
 
 The WAF is the public production entry point. Vault initializes and stores the
 database, authentication, and OAuth secrets.
+See [CYBERSECURITY.md](CYBERSECURITY.md) for the security module architecture.
 
-## Database Schema
+## 🗄️ Database Schema
 
 The database schema is defined with Prisma in
 [`Echo_of_Morse/prisma/schema.prisma`](Echo_of_Morse/prisma/schema.prisma).
@@ -115,36 +132,79 @@ User
  |-- RadioSessionPlayer --> RadioGameSession
 ```
 
-### Main Tables and Fields
+### Models, Keys, and Relations
 
-| Table | Key fields and types | Relationships |
-| --- | --- | --- |
-| `User` | `id String`, `username String`, `email String`, `passwordHash String`, `learningLevel Int`, `isOnline Boolean` | Central relation for authentication, social, learning, and game data |
-| `Account` | `id String`, `userId String`, `provider String`, `providerAccountId String` | Many accounts belong to one user |
-| `Session` | `id String`, `sessionToken String`, `userId String`, `expires DateTime` | Many sessions belong to one user |
-| `VerificationToken` | `identifier String`, `token String`, `expires DateTime` | Stores short-lived authentication tokens |
-| `Friendship` | `id Int`, `senderId String`, `receiverId String`, `status FriendshipStatus` | Connects two users; each directed pair is unique |
-| `Conversation` | `id String`, `userAId String`, `userBId String`, `createdAt DateTime` | Unique one-to-one conversation between two users |
-| `Message` | `id String`, `conversationId String`, `senderId String`, `rawText String`, `mode MessageMode` | Belongs to one conversation and one sender |
-| `SystemMessage` | `id String`, `userId String`, `title String`, `body String`, `isRead Boolean` | Notification belonging to one user |
-| `Letter` | `id Int`, `char String` | One Morse character with many progress records |
-| `UserLetterProgress` | `id Int`, `userId String`, `letterId Int`, `mastery Int`, `nextReviewAt DateTime`, `easeFactor Float` | Unique progress record for one user and one letter |
-| `GameInvitation` | `id String`, `fromUserId String`, `toUserId String`, `radioRoomId String?`, `status GameInviteStatus` | Connects sender, receiver, and optional radio room |
-| `RadioRoom` | `id String`, `radioId String`, `name String`, `wpm Int`, `maxUsers Int` | Owns lobby, queue, invitation, and session data |
-| `RadioLobbyPresence` | `id String`, `roomId String`, `userId String`, `status RadioUserStatus`, `joinedAt DateTime` | Records a user's current lobby state |
-| `RadioReadyQueue` | `id String`, `roomId String`, `userId String`, `readyAt DateTime` | Records users waiting for matchmaking |
-| `RadioGameSession` | `id String`, `roomId String`, `status RadioSessionStatus`, `startedAt DateTime?`, `endedAt DateTime?` | Represents one multiplayer game |
-| `RadioSessionPlayer` | `id String`, `sessionId String`, `userId String`, `score Int?`, `timeMs Int?`, `completed Boolean` | Connects users to a game session |
+**User and Auth**
+
+- `User`: columns `id`, `username`, `email`, `passwordHash`, `image`, `bio`,
+  `learningLevel`, `isOnline`, `lastSeen`, timestamps, `practiceSessions`.
+  PK `id`; unique `username`, `email`; relation hub, 1 to N with auth, social,
+  chat, learning, and game tables.
+- `Account`: columns `id`, `userId`, provider data, OAuth tokens. PK `id`;
+  FK `userId -> User.id`; unique `(provider, providerAccountId)`; `User` 1 to N
+  `Account`.
+- `Session`: columns `id`, `sessionToken`, `userId`, `expires`. PK `id`;
+  FK `userId -> User.id`; unique `sessionToken`; `User` 1 to N `Session`.
+- `VerificationToken`: columns `identifier`, `token`, `expires`; unique
+  `token`, `(identifier, token)`; no FK.
+
+**Social and Chat**
+
+- `Friendship`: columns `id`, `status`, `createdAt`, `senderId`, `receiverId`.
+  PK `id`; FKs `senderId/receiverId -> User.id`; unique `(senderId,
+  receiverId)`; users N to N via friendship rows.
+- `Conversation`: columns `id`, `userAId`, `userBId`, `createdAt`. PK `id`;
+  FKs `userAId/userBId -> User.id`; unique `(userAId, userBId)`; user pair
+  1 to 1 `Conversation`; `Conversation` 1 to N `Message`.
+- `Message`: columns `id`, `conversationId`, `senderId`, `rawText`,
+  `translatedText`, `mode`, `createdAt`. PK `id`; FKs
+  `conversationId -> Conversation.id`, `senderId -> User.id`;
+  `Conversation` 1 to N `Message`, `User` 1 to N sent `Message`.
+- `SystemMessage`: columns `id`, `userId`, `title`, `body`, `isRead`, `kind`,
+  invite/radio/action/i18n metadata, `createdAt`. PK `id`;
+  FK `userId -> User.id`; `User` 1 to N `SystemMessage`.
+
+**Learning**
+
+- `Letter`: columns `id`, `char`. PK `id`; unique `char`; `Letter` 1 to N
+  `UserLetterProgress`.
+- `UserLetterProgress`: columns `id`, `userId`, `letterId`, `mastery`,
+  counters, `nextReviewAt`, `interval`, `easeFactor`, `lastReviewed`.
+  PK `id`; FKs `userId -> User.id`, `letterId -> Letter.id`; unique
+  `(userId, letterId)`; users N to N letters via progress rows.
+
+**Competition**
+
+- `GameInvitation`: columns `id`, `fromUserId`, `toUserId`, `status`,
+  `radioRoomId`, `createdAt`. PK `id`; FKs `fromUserId/toUserId -> User.id`,
+  `radioRoomId -> RadioRoom.id`; `User` 1 to N sent/received invitations,
+  `RadioRoom` 1 to N invitations.
+- `RadioRoom`: columns `id`, `radioId`, `name`, `wpm`, `description`,
+  `maxUsers`, timestamps. PK `id`; unique `radioId`; `RadioRoom` 1 to N
+  presences, queue rows, sessions, invitations.
+- `RadioLobbyPresence`: columns `id`, `userId`, `roomId`, `status`, timestamps.
+  PK `id`; FKs `userId -> User.id`, `roomId -> RadioRoom.id`; unique
+  `(userId, roomId)`; users N to N rooms via lobby presence.
+- `RadioReadyQueue`: columns `id`, `userId`, `roomId`, `readyAt`. PK `id`;
+  FKs `userId -> User.id`, `roomId -> RadioRoom.id`; unique `(userId, roomId)`;
+  users N to N rooms via ready queue.
+- `RadioGameSession`: columns `id`, `roomId`, `status`, timestamps. PK `id`;
+  FK `roomId -> RadioRoom.id`; `RadioRoom` 1 to N sessions; session 1 to N
+  players.
+- `RadioSessionPlayer`: columns `id`, `sessionId`, `userId`, `score`,
+  `correct`, `total`, `timeMs`, `completed`, `abandoned`, `joinedAt`. PK `id`;
+  FKs `sessionId -> RadioGameSession.id`, `userId -> User.id`; unique
+  `(sessionId, userId)`; users N to N sessions via player rows.
 
 ### Enums
 
 - `FriendshipStatus`: `PENDING`, `ACCEPTED`, `BLOCKED`
 - `MessageMode`: `LANGUAGE_TO_MORSE`, `MORSE_TO_LANGUAGE`, `LANGUAGE_ONLY`
-- `GameInviteStatus`: `PENDING`, `ACCEPTED`, `DECLINED`
+- `GameInviteStatus`: `PENDING`, `ACCEPTED`, `DECLINED`, `EXPIRED`
 - `RadioUserStatus`: `IDLE`, `READY`, `PLAYING`
 - `RadioSessionStatus`: `WAITING`, `ACTIVE`, `FINISHED`
 
-## Features List
+## ✨ Features List
 
 | Feature | Functionality | Main contributors |
 | --- | --- | --- |
@@ -160,49 +220,103 @@ User
 | Security | WAF filtering, HTTPS, Vault secrets, and security tests | `gustgonz` |
 | Containerized execution | Development and production Compose environments | `gustgonz`, `mlaurent` |
 
-## Modules
+## 🔁 Feature Flow Summary
 
-The subject defines Major modules as 2 points and Minor modules as 1 point.
-The first table lists modules that are already implemented or close enough to
-be defended with the current repository. The second table focuses the final
-week on Socket.IO stabilization, because finishing that layer can unlock
-several Major modules at once instead of splitting the team across many small
-Minor modules.
+This section summarizes the main runtime flows. The common pattern is:
+frontend action -> authenticated Next.js API -> Prisma/PostgreSQL write ->
+optional Socket.IO signal -> frontend GETs latest authorized state.
+
+### 1. Profile and Login
+
+- Register: form -> validation -> bcrypt hash -> `User`.
+- Credentials login: form -> NextAuth -> DB lookup -> bcrypt compare ->
+  JWT session with `user.id`.
+- OAuth: Google/42 -> NextAuth callback -> account check/link -> `Account`.
+- Profile read: `/api/users/[id]` -> session check -> user/stats/friends.
+- Profile update: edit form -> owner check -> validation -> `User` update.
+- Online state: Socket.IO JWT from NextAuth session -> ws-server verifies ->
+  status API -> `isOnline`, `lastSeen`.
+
+
+### 2. Learning
+
+- Level practice: level config -> mixed encode/decode questions -> answers ->
+  `/api/learning/practice-result`.
+- Pass rule: `correctCount >= passCount` -> `learningLevel + 1`,
+  `practiceSessions + 1`.
+- SRS correct: `mastery + 1`, larger `interval`, higher `easeFactor`,
+  new `nextReviewAt`.
+- SRS wrong: `mastery - 1`, `interval = 1 day`, lower `easeFactor`,
+  new `nextReviewAt`.
+- Review selection: seen chars -> due first -> low mastery -> low accuracy ->
+  older `nextReviewAt` -> 20 questions.
+- Review saving: raw answers -> server-side Morse check -> group by char ->
+  counters per answer, SRS once per char.
+- Progress display: aggregate `correctCount / totalSeen` -> accuracy card,
+  weak chars, level board, per-letter bar chart.
+
+### 3. Chat
+
+- Friend request: search -> POST `/api/friends` -> `PENDING` -> accept/reject
+  -> `ACCEPTED` or delete.
+- Conversation load: `/api/conversations` + `/api/messages` -> membership
+  check -> ordered history.
+- Message transform: mode -> text/Morse helpers -> invalid Morse rejected.
+- Message send: POST `/api/messages` -> membership check -> `Message` ->
+  `chat:message:new`.
+- Notifications: socket signal -> GET `/api/notifications` or messages -> DB
+  truth.
+- Chat game invite: friend/lobby/state checks -> `GameInvitation` +
+  `SystemMessage` -> Socket.IO target notify.
+
+### 4. Competition
+
+- Overview: `RadioRoom` + lobby counts + online users -> live counts.
+- Join lobby: POST radio -> session/capacity/state checks ->
+  `RadioLobbyPresence` -> `radio:user-list-updated`.
+- Ready: PATCH ready -> presence status + ready queue transaction ->
+  `radio:ready-list-updated`.
+- Start match: FIFO ready players -> session + player rows -> `PLAYING` ->
+  clear queue -> `radio:game-created`.
+- Session GET: participant check -> deterministic word list -> current user as
+  `id: "me"`.
+- Score correct: one attempt per sequence -> `correct + 1`, `total + 1`,
+  answer-length points + speed bonus + streak.
+- Score wrong: first clear mistake -> `total + 1`, streak reset, no score loss.
+- Accuracy: `correct / total`; empty input and valid prefixes do not count.
+- Live ranking: PATCH monotonic progress -> `RadioSessionPlayer` ->
+  `game:session-updated` -> GET latest state.
+- Finish/abandon: final PATCH -> completed/abandoned flags -> all done or one
+  active left -> `FINISHED`, lobby back to `IDLE`.
+
+## 🧮 Modules
 
 ### Confirmed Modules
 
 | Module | Type | Points | Status | Justification | Implementation | Contributors |
 | --- | --- | ---: | --- | --- | --- | --- |
 | Use a framework for both the frontend and backend | Major | 2 | Confirmed | Build the application with a structured full-stack framework | Next.js is used for the React frontend and for backend Route Handlers/API routes | all |
+| Implement real-time features using WebSockets or similar technology | Major | 2 | Confirmed | Provide real-time updates across connected clients | Socket.IO handles authenticated connections, online presence, chat delivery, game invitations, lobby updates, ready-state updates, game creation, and game-session refresh events | `mlaurent`, `gustgonz`, all |
 | Allow users to interact with other users | Major | 2 | Confirmed | Provide the required social features: chat, profiles, and friends | Users can view profiles, manage friends, and send private chat messages persisted in PostgreSQL | all |
 | Standard user management and authentication | Major | 2 | Confirmed | Support user accounts, profile editing, avatars, friends, and online status | NextAuth handles sessions; users can register, log in, edit profile data, upload an avatar, add friends, and see online state | `mlaurent`, `yren`, `lifan`, `gustgonz` |
 | Implement a complete web-based game | Major | 2 | Confirmed | Add a playable multiplayer browser game with rules, scoring, and results | Radio sessions let at least two users join a Morse decoding match, play timed rounds, submit scores, and view rankings | all |
+| Remote players | Major | 2 | Confirmed | Allow two players on separate clients to play the same game in real time | Independent authenticated users can join the same radio lobby, enter the same game session, receive Socket.IO update signals, submit scores, and see synchronized final results | all |
+| Multiplayer game with more than two players | Major | 2 | Confirmed | Support three or more simultaneous players in one game | Radio rooms support multiple lobby users; the ready queue creates a shared session for all ready players up to room capacity; the concurrent-user test runs with 5 users by default | all |
 | WAF and HashiCorp Vault | Major | 2 | Confirmed | Protect traffic and keep secrets outside the application code | ModSecurity with OWASP CRS filters production traffic; Vault initializes and injects database, authentication, and OAuth secrets | `gustgonz` |
 | Use an ORM for the database | Minor | 1 | Confirmed | Keep database access typed and maintainable | Prisma models, migrations, seed data, and Prisma Client are used across the backend | `lifan` |
 | Support multiple languages | Minor | 1 | Confirmed | Provide at least three interface languages | The app includes an i18n provider, language switcher, and English, French, and Chinese dictionaries | `yren` |
 | Implement remote authentication with OAuth 2.0 | Minor | 1 | Confirmed | Allow users to connect through external identity providers | NextAuth supports Google OAuth and a custom 42 OAuth provider, with account linking | `yren` |
 | Server-side rendering for improved performance and SEO | Minor | 1 | Confirmed | Render data-backed pages on the server where appropriate | Next.js App Router server components load data for learning, profile, competition, lobby, and game session pages | all |
 
-**Confirmed total: 14 points.**
+**Implemented raw total: 20 points.**
 
-### Final Week Socket.IO Modules To Finish
+### Candidate Evidence, Not Counted Conservatively
 
-| Module | Type | Points | Current status | Why this is realistic in one week | Work needed before evaluation |
-| --- | --- | ---: | --- | --- | --- |
-| Implement real-time features using WebSockets or similar technology | Major | 2 | In progress | Socket.IO server, client provider, and event hooks already exist | Stabilize real-time delivery for chat, game invitations, lobby presence, ready state, and game updates; reduce or clearly justify polling fallbacks |
-| Remote players | Major | 2 | In progress | The radio game already supports separate users and shared session data | Make two users reliably join from different browsers, receive live state updates, play the same session, and handle disconnect/reconnect cases cleanly |
-| Multiplayer game with more than two players | Major | 2 | In progress | The radio session and ready queue models already support multiple players | Test and demonstrate 3+ simultaneous players in one radio session with synchronized start, progress, scoring, and final ranking |
+| Possible module | Evidence | Why not added to confirmed total |
+| --- | --- | --- |
+| Advanced analytics dashboard with data visualization | Learning dashboard: global accuracy, practice sessions, level progression board, weak-character detection, per-letter accuracy bar chart sorted from weakest to strongest | Strong visual analytics for learning, but not counted unless evaluators accept it as a full advanced analytics dashboard |
 
-**Final-week target additional raw total: 6 points.**
-
-**Target raw total: 20 points** = 14 confirmed points + 6 Socket.IO-focused
-final-week points. If the evaluation caps extra modules beyond the required 14
-points at 5 bonus points, the practical evaluated target remains **19 points**.
-
-See [CYBERSECURITY.md](CYBERSECURITY.md) for the security module architecture,
-configuration, and test commands.
-
-## Individual Contributions
+## 🙋 Individual Contributions
 
 ### `mlaurent`
 
@@ -249,7 +363,7 @@ configuration, and test commands.
 | Protecting production traffic and secrets | Routed traffic through ModSecurity and loaded secrets from Vault |
 | Maintaining three interface languages | Centralized translated content and language selection |
 
-## Instructions
+## 🚀 Instructions
 
 ### Prerequisites
 
@@ -338,7 +452,7 @@ Production entry point: `https://localhost:8443`
 
 See [MAKEGUIDE.md](MAKEGUIDE.md) for the complete command reference.
 
-## Initial Test Data
+## 🧪 Initial Test Data
 
 The development initialization runs `prisma/seed.js`. It creates test data so
 that the main user, learning, chat, and competition flows can be tested immediately.
@@ -435,7 +549,7 @@ The seed is designed to avoid duplicate users. Randomized learning counters may
 change after a database reset.
 
 
-## Resources
+## 📚 Resources
 
 ### References
 
@@ -457,8 +571,10 @@ AI tools were used as development support for:
 
 - explaining unfamiliar TypeScript, Prisma, Docker, Socket.IO, and database
   concepts;
-- drafting and reviewing selected code;
+- reviewing selected code;
 - suggesting debugging steps and test cases for chat and game invitations;
+- generating and refining the concurrent-user regression test script;
+- drafting, restructuring, and improving README and technical documentation;
 - improving English and French technical documentation;
 
 All AI-assisted output was read, adapted, and tested by team members before

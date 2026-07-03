@@ -22,10 +22,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([]);
     }
 
-    // const userId = session.user?.id as string;
-
     if (!session?.user?.id) {
-      throw new Error("Unauthorized");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const users = await prisma.user.findMany({
