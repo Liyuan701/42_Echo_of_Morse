@@ -373,6 +373,22 @@ const fr = {
 				title: "Invitation de jeu expirée",
 				body: "{username} n'a pas répondu dans la minute. Votre invitation à rejoindre {radioName} a été annulée.",
 			},
+			"friendRequest.received": {
+				title: "Demande d'ami",
+				body: "{username} vous a envoyé une demande d'ami.",
+			},
+			"friendRequest.accepted.sender": {
+				title: "Demande d'ami acceptée",
+				body: "{username} a accepté votre demande d'ami.",
+			},
+			"friendRequest.accepted.receiver": {
+				title: "Ami ajouté",
+				body: "{username} a été ajouté à votre liste d'amis.",
+			},
+			"friend.removed": {
+				title: "Ami supprimé",
+				body: "{username} a été supprimé de votre liste d'amis.",
+			},
 		},
 
 		//--------- SystemMessageWindow ---------

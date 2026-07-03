@@ -164,12 +164,14 @@ export default function InviteFriendsPanel({
     socket.on("game-invitation:new", handleStateChange);
     socket.on("game-invitation:updated", handleStateChange);
     socket.on("game-invitation:answered", handleStateChange);
+    socket.on("friend:presence-updated", handleStateChange);
 
     return () => {
       socket.off("online-users", handleStateChange);
       socket.off("game-invitation:new", handleStateChange);
       socket.off("game-invitation:updated", handleStateChange);
       socket.off("game-invitation:answered", handleStateChange);
+      socket.off("friend:presence-updated", handleStateChange);
     };
   }, [socket]);
 

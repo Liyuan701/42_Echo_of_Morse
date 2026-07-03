@@ -127,6 +127,8 @@ model Friendship {
   id        Int              @id @default(autoincrement())
   status    FriendshipStatus @default(PENDING)
   createdAt DateTime         @default(now())
+  senderRemark   String?
+  receiverRemark String?
 
   senderId String
   sender   User   @relation("SentRequests", fields: [senderId], references: [id])

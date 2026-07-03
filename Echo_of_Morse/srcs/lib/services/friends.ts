@@ -95,13 +95,30 @@ export async function getFriends(userId: string) {
   });
 
   type FriendListUser = (typeof relations)[number]["sender"];
-  const map = new Map<string, FriendListUser>();
+  type FriendListRelation = (typeof relations)[number] & {
+    senderRemark: string | null;
+    receiverRemark: string | null;
+  };
+  const map = new Map<
+    string,
+    {
+      user: FriendListUser;
+      displayName: string;
+      friendshipId: number;
+    }
+  >();
 
-  for (const f of relations) {
+  for (const f of relations as FriendListRelation[]) {
     const user =
       f.senderId === userId ? f.receiver : f.sender;
+    const remark =
+      f.senderId === userId ? f.senderRemark : f.receiverRemark;
 
-    map.set(user.id, user);
+    map.set(user.id, {
+      user,
+      displayName: remark?.trim() || user.username,
+      friendshipId: f.id,
+    });
   }
 
   return Array.from(map.values());

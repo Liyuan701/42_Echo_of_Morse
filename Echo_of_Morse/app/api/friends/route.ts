@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { notifyWs } from "@/lib/notifyWs";
 import { prisma } from "@/server/prisma";
 import { getFriends } from "@/lib/services/friends";
  
@@ -37,7 +38,8 @@ export async function GET(request: NextRequest) {
   const friends = await getFriends(userId);
  
   // give frontend game session info of my friend.
-  const formatted = friends.map((user) => {
+  const formatted = friends.map((friend) => {
+    const user = friend.user;
     const activeSession = user.radioSessionPlayers[0] ?? null;
     const lobbyPresence = user.radioLobbyPresences[0] ?? null;
     const isPlaying =
@@ -46,8 +48,9 @@ export async function GET(request: NextRequest) {
 
     return {
       id: user.id,
+      friendshipId: friend.friendshipId,
       username: user.username,
-      displayName: user.username,
+      displayName: friend.displayName,
       avatarUrl: user.image,
       image: user.image,
       isOnline: user.isOnline,
@@ -118,11 +121,48 @@ export async function POST(request: NextRequest) {
     }
  
     // create friendship with status PENDING
-    const friendship = await prisma.friendship.create({
+    const friendship = await prisma.$transaction(async (transaction) => {
+      const createdFriendship = await transaction.friendship.create({
+        data: {
+          senderId,
+          receiverId,
+          status: "PENDING",
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+        },
+      });
+
+      await transaction.systemMessage.create({
+        data: {
+          userId: receiverId,
+          title: "Friend request",
+          body: `${createdFriendship.sender.username} sent you a friend request.`,
+          isRead: false,
+          kind: "friend-request",
+          fromUserId: senderId,
+          actionStatus: "idle",
+          i18nKey: "friendRequest.received",
+          i18nParams: {
+            username: createdFriendship.sender.username,
+          },
+        },
+      });
+
+      return createdFriendship;
+    });
+
+    await notifyWs("friend.request.created", {
+      toUserId: receiverId,
       data: {
-        senderId,
-        receiverId,
-        status: "PENDING",
+        friendshipId: friendship.id,
+        fromUserId: senderId,
+        username: friendship.sender.username,
       },
     });
  

@@ -1,12 +1,12 @@
 // 显示当前好友头像、名称、状态和关闭按钮
 
 import Link from "next/link";
-import type { UserDTO } from "@/types/user";
+import type { Friend } from "@/types/chat";
 import styles from "./css/ChatHeader.module.css";
 import { useI18n } from "@/lib/i18n";
 
 type ChatHeaderProps = {
-  friend: UserDTO;
+  friend: Friend;
   onCloseChat: () => void;
 };
 
@@ -15,7 +15,7 @@ export default function ChatHeader({ friend, onCloseChat }: ChatHeaderProps) {
 	const t = dictionary.chat;
 
   const profileHref = `/users/${friend.id}`;
-  const displayName = friend.username;
+  const displayName = friend.displayName || friend.username;
   const avatarLetter = displayName.charAt(0).toUpperCase();
   const statusText = friend.isOnline ? t.online : t.offline;
 

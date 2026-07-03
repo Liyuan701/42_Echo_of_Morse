@@ -28,6 +28,36 @@ async function notifyRadioLobbyChanged(type: string, radioId: string) {
   });
 }
 
+async function notifyFriendsAboutRadioState(userId: string, radioId: string) {
+  const friendships = await prisma.friendship.findMany({
+    where: {
+      status: "ACCEPTED",
+      OR: [{ senderId: userId }, { receiverId: userId }],
+    },
+    select: {
+      senderId: true,
+      receiverId: true,
+    },
+  });
+
+  await Promise.all(
+    friendships.map((friendship) => {
+      const toUserId =
+        friendship.senderId === userId
+          ? friendship.receiverId
+          : friendship.senderId;
+
+      return notifyWs("friend.presence.updated", {
+        toUserId,
+        data: {
+          userId,
+          radioId,
+        },
+      });
+    })
+  );
+}
+
 // GET: get the current lobby state
 export async function GET(_request: NextRequest, { params }: RouteContext) {
   const userId = await getSessionUserId();
@@ -123,7 +153,10 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
   });
 
   const lobby = await getRadioLobby(params.radioId, userId);
-  await notifyRadioLobbyChanged("radio.users.updated", params.radioId);
+  await Promise.all([
+    notifyRadioLobbyChanged("radio.users.updated", params.radioId),
+    notifyFriendsAboutRadioState(userId, params.radioId),
+  ]);
 
   return NextResponse.json(lobby, { status: 201 });
 }
@@ -216,7 +249,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   }
 
   const lobby = await getRadioLobby(params.radioId, userId);
-  await notifyRadioLobbyChanged("radio.ready.updated", params.radioId);
+  await Promise.all([
+    notifyRadioLobbyChanged("radio.ready.updated", params.radioId),
+    notifyFriendsAboutRadioState(userId, params.radioId),
+  ]);
 
   return NextResponse.json(lobby);
 }
@@ -254,7 +290,10 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     }),
   ]);
 
-  await notifyRadioLobbyChanged("radio.users.updated", params.radioId);
+  await Promise.all([
+    notifyRadioLobbyChanged("radio.users.updated", params.radioId),
+    notifyFriendsAboutRadioState(userId, params.radioId),
+  ]);
 
   return NextResponse.json({ ok: true });
 }

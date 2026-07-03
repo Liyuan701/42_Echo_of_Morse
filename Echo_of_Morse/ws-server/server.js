@@ -594,6 +594,8 @@ app.post("/internal/notify", (req, res) => {
       io.to(`user:${toUserId}`).emit("friend:request:accepted", data); break;
     case "friend.removed":
       io.to(`user:${toUserId}`).emit("friend:removed", data); break;
+    case "friend.presence.updated":
+      io.to(`user:${toUserId}`).emit("friend:presence-updated", data); break;
 
     default:
       return res.status(400).json({ error: "Type inconnu" });

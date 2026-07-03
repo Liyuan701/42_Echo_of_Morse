@@ -15,6 +15,7 @@ export type ChatMode =
 
 export type Friend = {
   id: string;
+  friendshipId?: number;
   username: string;
   displayName: string;
   avatarInitial: string;

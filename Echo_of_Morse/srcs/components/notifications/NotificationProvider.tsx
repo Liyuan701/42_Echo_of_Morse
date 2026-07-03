@@ -276,12 +276,18 @@ export function NotificationProvider({
     socket.on("game-invitation:new", handleNotificationEvent);
     socket.on("game-invitation:updated", handleNotificationEvent);
     socket.on("game-invitation:answered", handleNotificationEvent);
+    socket.on("friend:request:new", handleNotificationEvent);
+    socket.on("friend:request:accepted", handleNotificationEvent);
+    socket.on("friend:removed", handleNotificationEvent);
 
     return () => {
       socket.off("chat:message:new", handleNotificationEvent);
       socket.off("game-invitation:new", handleNotificationEvent);
       socket.off("game-invitation:updated", handleNotificationEvent);
       socket.off("game-invitation:answered", handleNotificationEvent);
+      socket.off("friend:request:new", handleNotificationEvent);
+      socket.off("friend:request:accepted", handleNotificationEvent);
+      socket.off("friend:removed", handleNotificationEvent);
     };
   }, [refreshNotifications, socket]);
 

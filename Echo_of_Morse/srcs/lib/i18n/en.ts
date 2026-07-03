@@ -375,6 +375,22 @@ const en = {
 				title: "Game invitation expired",
 				body: "{username} did not reply within 1 minute. Your invitation to {radioName} has been cancelled.",
 			},
+			"friendRequest.received": {
+				title: "Friend request",
+				body: "{username} sent you a friend request.",
+			},
+			"friendRequest.accepted.sender": {
+				title: "Friend request accepted",
+				body: "{username} accepted your friend request.",
+			},
+			"friendRequest.accepted.receiver": {
+				title: "Friend added",
+				body: "{username} was added to your friend list.",
+			},
+			"friend.removed": {
+				title: "Friend removed",
+				body: "{username} was removed from your friend list.",
+			},
 		},
 
 		//--------- SystemMessageWindow ---------

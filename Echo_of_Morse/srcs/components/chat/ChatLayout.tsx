@@ -222,10 +222,16 @@ export default function ChatLayout() {
 
     socket.on("game-invitation:answered", handleInvitationAnswered);
     socket.on("game-invitation:updated", handleInvitationAnswered);
+    socket.on("friend:request:new", handleInvitationAnswered);
+    socket.on("friend:request:accepted", handleInvitationAnswered);
+    socket.on("friend:removed", handleInvitationAnswered);
 
     return () => {
       socket.off("game-invitation:answered", handleInvitationAnswered);
       socket.off("game-invitation:updated", handleInvitationAnswered);
+      socket.off("friend:request:new", handleInvitationAnswered);
+      socket.off("friend:request:accepted", handleInvitationAnswered);
+      socket.off("friend:removed", handleInvitationAnswered);
     };
   }, [loadSystemMessages, socket]);
 
@@ -246,11 +252,17 @@ export default function ChatLayout() {
     };
 
     socket.on("online-users", handleOnlineUsers);
+    socket.on("friend:presence-updated", loadFriends);
+    socket.on("friend:request:accepted", loadFriends);
+    socket.on("friend:removed", loadFriends);
 
     return () => {
       socket.off("online-users", handleOnlineUsers);
+      socket.off("friend:presence-updated", loadFriends);
+      socket.off("friend:request:accepted", loadFriends);
+      socket.off("friend:removed", loadFriends);
     };
-  }, [socket]);
+  }, [loadFriends, socket]);
 
   const selectedFriendId =
     currentView.type === "friend" ? currentView.friendId : null;
@@ -992,7 +1004,7 @@ export default function ChatLayout() {
     return true;
   }
 
-  function handleRenameFriend(friendId: string, nextDisplayName: string) {
+  async function handleRenameFriend(friendId: string, nextDisplayName: string) {
     const trimmed = nextDisplayName.trim();
 
     if (!trimmed) {
@@ -1007,6 +1019,28 @@ export default function ChatLayout() {
 
     const target = friends.find((friend) => friend.id === friendId);
 
+    if (!target) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/friends/${friendId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ displayName: trimmed }),
+      });
+
+      if (!response.ok) {
+        window.alert(t.failedToUpdateFriendRequest);
+        return;
+      }
+    } catch {
+      window.alert(t.networkError);
+      return;
+    }
+
     setFriends((prev) =>
       prev.map((friend) =>
         friend.id === friendId
@@ -1018,18 +1052,34 @@ export default function ChatLayout() {
       )
     );
 
-    if (target) {
-      addSystemMessage(
-        t.friendRemarkUpdatedTitle,
-		t.friendRemarkUpdatedBody
-			.replace("{oldName}", target.displayName)
-			.replace("{newName}", trimmed)
-      );
-    }
+    addSystemMessage(
+      t.friendRemarkUpdatedTitle,
+      t.friendRemarkUpdatedBody
+        .replace("{oldName}", target.displayName)
+        .replace("{newName}", trimmed)
+    );
   }
 
-  function handleDeleteFriend(friendId: string) {
+  async function handleDeleteFriend(friendId: string) {
     const target = friends.find((friend) => friend.id === friendId);
+
+    if (!target) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/friends/${friendId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        window.alert(t.failedToUpdateFriendRequest);
+        return;
+      }
+    } catch {
+      window.alert(t.networkError);
+      return;
+    }
 
     setFriends((prev) => prev.filter((friend) => friend.id !== friendId));
     setMessages((prev) =>
@@ -1045,12 +1095,10 @@ export default function ChatLayout() {
       });
     }
 
-    if (target) {
-      addSystemMessage(
-        t.friendRemovedTitle,
-		t.friendRemovedBody.replace("{displayName}", target.displayName)
-      );
-    }
+    addSystemMessage(
+      t.friendRemovedTitle,
+      t.friendRemovedBody.replace("{displayName}", target.displayName)
+    );
   }
 
   function handleShareFriend(friendId: string) {

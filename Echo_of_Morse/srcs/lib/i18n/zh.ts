@@ -376,6 +376,22 @@ const zh = {
 				title: "游戏邀请已过期",
 				body: "{username} 没有在 1 分钟内回应，你的 {radioName} 邀请已取消。",
 			},
+			"friendRequest.received": {
+				title: "好友请求",
+				body: "{username} 向你发送了好友请求。",
+			},
+			"friendRequest.accepted.sender": {
+				title: "好友请求已接受",
+				body: "{username} 接受了你的好友请求。",
+			},
+			"friendRequest.accepted.receiver": {
+				title: "好友已添加",
+				body: "{username} 已添加到你的好友列表。",
+			},
+			"friend.removed": {
+				title: "好友已删除",
+				body: "{username} 已从你的好友列表中删除。",
+			},
 		},
 
 		//--------- SystemMessageWindow ---------
