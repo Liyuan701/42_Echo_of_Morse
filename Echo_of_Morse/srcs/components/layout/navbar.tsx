@@ -128,7 +128,7 @@ export default function Navbar() {
             <button
               type="button"
               className={styles.navButton}
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={() => signOut()}
             >
               {t.logout}
             </button>
