@@ -172,7 +172,7 @@ export async function PUT(
       typeof username === "string" ? username.trim() : undefined;
     const nextEmail = typeof email === "string" ? email.trim().toLowerCase() : undefined;
     const nextImage = typeof image === "string" ? image : undefined;
-    const nextBio = typeof bio === "string" ? bio : undefined;
+    const nextBio = typeof bio === "string" ? bio.trim() : undefined;
 
     if (nextUsername !== undefined && nextUsername.length === 0) {
       return NextResponse.json(
@@ -181,6 +181,20 @@ export async function PUT(
       );
     }
 
+	if (nextUsername !== undefined && nextUsername.length > 20) {
+		return NextResponse.json(
+			{ error: "Username cannot be longer than 20 characters" },
+			{ status: 400 }
+		);
+	}
+
+	if (nextBio !== undefined && nextBio.length > 150) {
+		return NextResponse.json(
+			{ error: "Bio cannot be longer than 150 characters" },
+			{ status: 400 }
+		);
+	}
+	
     if (nextEmail !== undefined) {
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

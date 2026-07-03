@@ -167,11 +167,29 @@ export default function ProfileEditForm() {
 			return;
 		}
 
+		const username = formData.username.trim();
+		const bio = formData.bio.trim();
+
+		if (!username) {
+			setError(t.usernameRequired);
+			return;
+		}
+
+		if (username.length > 20) {
+			setError(t.usernameTooLong);
+			return;
+		}
+
+		if (bio.length > 150) {
+			setError(t.bioTooLong);
+			return;
+		}
+
 		try {
 			setIsSubmitting(true);
 			const body = new FormData();
-			body.set("username", formData.username);
-			body.set("bio", formData.bio);
+			body.set("username", username);
+			body.set("bio", bio);
 
 			if (avatarFile) {
 				body.set("image", avatarFile);

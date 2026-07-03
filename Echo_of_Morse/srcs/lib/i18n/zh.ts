@@ -43,6 +43,9 @@ const zh = {
 		readImageError: "无法读取这张图片。",
 		failedToUpdateProfile: "更新个人资料失败。",
 		updateProfileError: "更新个人资料时出现错误。",
+		usernameRequired: "用户名不能为空。",
+		usernameTooLong: "用户名不能超过 20 个字符。",
+		bioTooLong: "个人签名不能超过 150 个字符。",
 	},
 
 	layout: {

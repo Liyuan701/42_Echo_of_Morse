@@ -43,6 +43,9 @@ const en = {
 		readImageError: "Unable to read this image.",
 		failedToUpdateProfile: "Failed to update profile.",
 		updateProfileError: "Something went wrong while updating profile.",
+		usernameRequired: "Username is required.",
+		usernameTooLong: "Username cannot be longer than 20 characters.",
+		bioTooLong: "Bio cannot be longer than 150 characters.",
 	},
 
 	layout: {
