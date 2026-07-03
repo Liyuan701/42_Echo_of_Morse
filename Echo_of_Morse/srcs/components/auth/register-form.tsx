@@ -39,6 +39,12 @@ export default function RegisterForm() {
       return t.nameRequired;
     }
 
+	const username = formData.username.trim();
+
+	if (username.length > 20) {
+		return t.nameTooLong;
+	}
+
     if (!formData.email.trim()) {
       return t.emailRequired;
     }

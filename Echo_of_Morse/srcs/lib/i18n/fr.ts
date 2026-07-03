@@ -503,6 +503,7 @@ const fr = {
 		success: "Compte créé avec succès. Redirection vers la connexion...",
 		genericError: "Une erreur est survenue lors de l'inscription.",
 		usernameOrEmailInUse: "Le nom d'utilisateur ou l'email est déjà utilisé.",
+		nameTooLong: "Le nom ne peut pas depasser 20 caracteres.",
 
 		showPassword: "Afficher",
 		hidePassword: "Masquer",
