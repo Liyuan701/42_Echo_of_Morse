@@ -126,7 +126,6 @@ export default function PracticeSession({ levelId }: { levelId: number }) {
 						answers: fullAnswers,
 					});
 				} catch (error) {
-					console.error("Failed to save practice result", error);
 				}
 
 				setIsFinished(true);

@@ -99,10 +99,7 @@ export default function LoginForm() {
 	router.refresh();
 	//----------------- yren -----------------
 
-    } catch (submitError) {
-      if (process.env.NODE_ENV === "development") {
-        console.error(submitError);
-      }
+    } catch {
       setError(t.genericError);
 
     } finally {

@@ -3,6 +3,11 @@ import { getServerSession } from 'next-auth'
 import { prisma } from '@/server/prisma'
 import { authOptions } from '@/lib/auth'
 
+function parseFriendshipId(id: string) {
+	const friendshipId = Number(id)
+
+	return Number.isInteger(friendshipId) ? friendshipId : null
+}
 
 // PUT /api/friends/[id] - Accept or reject a friend request
 export async function PUT(
@@ -24,6 +29,11 @@ export async function PUT(
 		//? -----
 
 		const { id } = await params
+		const friendshipId = parseFriendshipId(id)
+		if (friendshipId === null) {
+			return NextResponse.json({ error: 'Invalid friendship id' }, { status: 400 })
+		}
+
 		const body = await request.json()
 		const { status } = body
 
@@ -35,18 +45,23 @@ export async function PUT(
 		}
 
 		const friendship = await prisma.friendship.findUnique({
-			where: { id: parseInt(id) }
+			where: { id: friendshipId }
 		})
+
+		if (!friendship) {
+			return NextResponse.json({ error: 'Friendship not found' }, { status: 404 })
+		}
+
 		//? -----
 		// if (friendship?.receiverId !== session.user.id) {
-		if (friendship?.receiverId !== userId) {
+		if (friendship.receiverId !== userId) {
 		//?
 			return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 		}
 
 	//? -----
 		const updatedFriendship = await prisma.friendship.update({
-			where: { id: parseInt(id) },
+			where: { id: friendshipId },
 			data: { status: status }
 		})
 	//? -----
@@ -81,19 +96,28 @@ export async function DELETE(
 		//? -----
 
 		const { id } = await params
+		const friendshipId = parseFriendshipId(id)
+		if (friendshipId === null) {
+			return NextResponse.json({ error: 'Invalid friendship id' }, { status: 400 })
+		}
+
 		const friendship = await prisma.friendship.findUnique({
-			where: { id: parseInt(id) }
+			where: { id: friendshipId }
 		})
 
+		if (!friendship) {
+			return NextResponse.json({ error: 'Friendship not found' }, { status: 404 })
+		}
+
 		//?-----
-		if (friendship?.senderId !== userId && friendship?.receiverId !== userId) {
+		if (friendship.senderId !== userId && friendship.receiverId !== userId) {
 		// if (friendship?.senderId !== session.user.id && friendship?.receiverId !== session.user.id) {
 		//? ----
 			return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 		}
 
 		await prisma.friendship.delete({
-			where: { id: parseInt(id) }
+			where: { id: friendshipId }
 		})
 
 		return NextResponse.json(

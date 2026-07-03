@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 		const existingUsername = await prisma.user.findUnique({ where: { username }, });
 		const existing = await prisma.user.findUnique({ where: { email } });
 		if (existing || existingUsername) {
-			return NextResponse.json({ errorCode: "USERNAME_OR_EMAIL_IN_USE" }, { status: 409 });
+			return NextResponse.json({ ok: false, errorCode: "USERNAME_OR_EMAIL_IN_USE" });
 		}
 
 		//----------------------------- creer -----------------------------
@@ -47,12 +47,19 @@ export async function POST(req: NextRequest) {
 		const hashed = await bcrypt.hash(password, 12);
 		const user = await prisma.user.create({data: { username: username, email: email, passwordHash: hashed,},});
 
-		return NextResponse.json({ id: user.id, email: user.email, username: user.username }, { status: 201 });
+		return NextResponse.json({ ok: true, id: user.id, email: user.email, username: user.username }, { status: 201 });
 	} 
 	catch (e) 
 	{
-		// affiche l’erreur dans la console du serveur
-		console.error("Error form API registe: ", e);
+		if (
+			typeof e === "object" &&
+			e !== null &&
+			"code" in e &&
+			e.code === "P2002"
+		) {
+			return NextResponse.json({ ok: false, errorCode: "USERNAME_OR_EMAIL_IN_USE" });
+		}
+
 		return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 	}
 }

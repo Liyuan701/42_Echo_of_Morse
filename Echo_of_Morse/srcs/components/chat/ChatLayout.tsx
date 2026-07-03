@@ -145,13 +145,15 @@ export default function ChatLayout() {
 
     try {
       const res = await fetch(`/api/friends?userId=${userId}`);
+      if (!res.ok) {
+        setFriends([]);
+        return;
+      }
+
       const data = await res.json();
 
       setFriends(Array.isArray(data) ? data : []);
-    } catch (err) {
-      if (process.env.NODE_ENV === "development") {
-        console.error(err);
-      }
+    } catch {
       setFriends([]);
     }
   }, [userId]);
@@ -166,16 +168,23 @@ export default function ChatLayout() {
       return;
     }
 
-    const response = await fetch("/api/system-messages", {
-      cache: "no-store",
-    });
+    let response: Response;
+
+    try {
+      response = await fetch("/api/system-messages", {
+        cache: "no-store",
+      });
+    } catch {
+      setSystemMessages([]);
+      return;
+    }
 
     if (!response.ok) {
       setSystemMessages([]);
       return;
     }
 
-    const data = (await response.json()) as ApiSystemMessage[];
+    const data = (await response.json().catch(() => [])) as ApiSystemMessage[];
 
     setSystemMessages(
       data.map((message) => ({
@@ -259,6 +268,11 @@ export default function ChatLayout() {
     const loadMessages = async () => {
       try {
         const res = await fetch(`/api/messages?conversationId=${conversationId}`);
+        if (!res.ok) {
+          setMessages([]);
+          return;
+        }
+
         const data = await res.json();
 
         setMessages(
@@ -274,10 +288,7 @@ export default function ChatLayout() {
               }))
             : []
         );
-      } catch (err) {
-        if (process.env.NODE_ENV === "development") {
-          console.error(err);
-        }
+      } catch {
         setMessages([]);
       }
     };
@@ -574,13 +585,12 @@ export default function ChatLayout() {
       }));
 
       await loadSystemMessages();
-    } catch (error) {
+    } catch {
       setInvitationActionStatuses((current) => ({
         ...current,
         [message.invitationId as string]: "error",
       }));
 
-	console.error(error);
 	window.alert(t.failedToUpdateInvitation);
     }
   }
@@ -616,7 +626,12 @@ export default function ChatLayout() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to answer friend request");
+        setInvitationActionStatuses((current) => ({
+          ...current,
+          [statusKey]: "error",
+        }));
+        window.alert(t.failedToUpdateFriendRequest);
+        return;
       }
 
       setInvitationActionStatuses((current) => ({
@@ -625,15 +640,12 @@ export default function ChatLayout() {
       }));
 
       await Promise.all([refreshNotifications(), loadFriends()]);
-    } catch (error) {
+    } catch {
       setInvitationActionStatuses((current) => ({
         ...current,
         [statusKey]: "error",
       }));
 
-      if (process.env.NODE_ENV === "development") {
-        console.error(error);
-      }
       window.alert(t.failedToUpdateFriendRequest);
     }
   }
@@ -655,10 +667,9 @@ export default function ChatLayout() {
       response = await fetch(`/api/competition/radio/${message.radioId}`, {
         method: "POST",
       });
-    } catch (error) {
+    } catch {
       updateSystemMessage(message.id, { actionStatus: "error" });
 
-      console.error(error);
       window.alert(t.failedToJoinRadioLobby);
       return;
     }
@@ -694,7 +705,6 @@ export default function ChatLayout() {
 
       updateSystemMessage(message.id, { actionStatus: "error" });
 
-      console.error(body.error);
 	  window.alert(t.failedToJoinRadioLobby);
       return;
     }
@@ -721,7 +731,9 @@ export default function ChatLayout() {
       );
 
       if (!leaveResponse.ok) {
-        throw new Error("Failed to leave current radio lobby");
+        updateSystemMessage(message.id, { actionStatus: "error" });
+        window.alert(t.failedToJoinRadioLobby);
+        return;
       }
 
       const joinResponse = await fetch(
@@ -736,14 +748,15 @@ export default function ChatLayout() {
           .json()
           .catch(() => ({}))) as JoinRadioLobbyErrorResponse;
 
-        throw new Error(body.error ?? "Failed to join target radio lobby");
+        updateSystemMessage(message.id, { actionStatus: "error" });
+        window.alert(body.error ?? t.failedToJoinRadioLobby);
+        return;
       }
 
       router.push(`/competition/radio/${message.radioId}`);
-    } catch (error) {
+    } catch {
       updateSystemMessage(message.id, { actionStatus: "error" });
 
-      console.error(error);
       window.alert(t.failedToJoinRadioLobby);
     }
   }
@@ -793,8 +806,8 @@ export default function ChatLayout() {
 
     try {
       await Promise.all([refreshNotifications(), loadSystemMessages()]);
-    } catch (error) {
-      console.error(error);
+    } catch {
+      setSystemMessages([]);
     }
   }
 
@@ -826,20 +839,26 @@ export default function ChatLayout() {
       });
       setConversationId(null);
 
-      const res = await fetch("/api/conversations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userBId: friendId,
-        }),
-      });
+      let res: Response;
 
-      const data = await res.json();
+      try {
+        res = await fetch("/api/conversations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userBId: friendId,
+          }),
+        });
+      } catch {
+        setComposerError(t.failedToOpenConversation);
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data.id) {
-        console.error(data.error);
 		setComposerError(t.failedToOpenConversation);
 
         return;
@@ -896,11 +915,15 @@ export default function ChatLayout() {
     const fetchUsers = async () => {
       try {
         const res = await fetch(`/api/users/search?query=${trimmed}`);
+        if (!res.ok) {
+          setUserSearchResults([]);
+          return;
+        }
+
         const data = await res.json();
 
         setUserSearchResults(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Search failed:", err);
+      } catch {
         setUserSearchResults([]);
       }
     };
@@ -943,7 +966,9 @@ export default function ChatLayout() {
         }),
       });
 
-      if (res.status === 409) {
+      const body = await res.json().catch(() => null);
+
+      if (res.status === 409 || body?.code === "FRIENDSHIP_ALREADY_EXISTS") {
         window.alert(t.friendRequestAlreadyExists);
         return false;
       }
@@ -1123,8 +1148,6 @@ export default function ChatLayout() {
         window.alert(error.message);
         return;
       }
-
-		console.error(error);
 		window.alert(t.failedToSendInvitation);
     }
   }
@@ -1159,27 +1182,33 @@ export default function ChatLayout() {
       return false;
     }
 
-    const response = await fetch("/api/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        conversationId,
-        rawText: transformed.rawText,
-        translatedText: transformed.translatedText,
-        mode: dbMode,
-      }),
-    });
+    let response: Response;
 
-    const result = (await response.json()) as {
+    try {
+      response = await fetch("/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversationId,
+          rawText: transformed.rawText,
+          translatedText: transformed.translatedText,
+          mode: dbMode,
+        }),
+      });
+    } catch {
+      setComposerError(t.failedToSendMessage);
+      return false;
+    }
+
+    const result = (await response.json().catch(() => ({}))) as {
       message?: ApiMessage;
       recipientId?: string;
       error?: string;
     };
 
     if (!response.ok || !result.message || !result.recipientId) {
-      	console.error(result.error);
 		setComposerError(t.failedToSendMessage);
       return false;
     }

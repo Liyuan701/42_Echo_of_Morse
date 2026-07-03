@@ -88,7 +88,6 @@ export default function ReviewSession() {
       setAnswers([]);
       isAdvancingRef.current = false;
     } catch (loadError) {
-    	console.error(loadError);
 		setError(reviewText.loadError);
     } finally {
       setIsLoading(false);
@@ -136,7 +135,6 @@ export default function ReviewSession() {
         try {
           setResult(await submitReviewSession(completedAnswers));
         } catch (submitError) {
-        	console.error(submitError);
 			setError(reviewText.saveError);
         } finally {
           setIsSubmitting(false);

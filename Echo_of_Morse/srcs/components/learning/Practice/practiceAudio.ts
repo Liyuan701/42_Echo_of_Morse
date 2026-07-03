@@ -30,7 +30,6 @@ async function createAudioContext(audioEnabled: boolean) {
 		return context;
 
 	} catch (error) {
-		console.error("Failed to create audio context", error);
 
 		if (context) {
 			await context.close().catch(() => {});
@@ -155,7 +154,6 @@ export function PracticeAudio({
 				}
 			}
 		} catch (error) {
-			console.error("Failed to play morse", error);
 		} finally {
 			//nettoie l'etat a la fin de la lecture
 			if (context) {

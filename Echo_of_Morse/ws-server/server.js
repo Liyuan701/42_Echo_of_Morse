@@ -43,18 +43,6 @@ io.engine.on("connection_error", (err) => {
   console.log("🔥 ENGINE ERROR", err.code, err.message, err.context);
 });
 
-// const io = new Server(httpServer, {
-//   path: "/socket.io/",
-//   cors: {
-//     origin: ["https://echoesofmorse.com"],
-//     credentials: true,
-//   },
-//   transports: ["websocket", "polling"],
-//   pingInterval: 25000,
-//   pingTimeout: 20000,
-// });
-
-
 function ackSuccess(ack, deliveredTo = 0) {
   if (typeof ack === "function") {
     ack({

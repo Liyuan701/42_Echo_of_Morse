@@ -53,12 +53,9 @@ export default function Profile() {
 				const data = await response.json();
 				setProfileUser(data);
 			} catch (error) {
-				console.error("loadProfile", error);
 			}
 		}
-		void fetch("/api/auth/oauth/link", { method: "DELETE" }).catch((error) => {
-			console.error("loadProfile --> failed to clear OAuth cookies", error);
-		});
+		void fetch("/api/auth/oauth/link", { method: "DELETE" }).catch(() => {});
 		loadProfile();
 	}, [session, status]);//si session ou status change, on recharge le profil
 
@@ -84,7 +81,6 @@ export default function Profile() {
 				signIn(provider, { callbackUrl: "/profile" });
 			}
 			} catch (error) {
-				console.error("handleLinkProvider -->", error);
 				window.alert(t.linkError);
 		}
 	}
@@ -100,7 +96,8 @@ export default function Profile() {
 			});
 
 			if (!response.ok) {
-				throw new Error("Failed to unlink provider");
+				window.alert(t.unlinkError);
+				return;
 			}
 
 			setProfileUser((currentUser) =>
@@ -116,7 +113,6 @@ export default function Profile() {
 					: currentUser
 			);
 		} catch (error) {
-			console.error("handleUnlinkProvider --> ", error);
 			window.alert(t.unlinkError);
 		}
 	}

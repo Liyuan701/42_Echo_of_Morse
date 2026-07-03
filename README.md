@@ -106,6 +106,7 @@ Next.js ----------------+-------> PostgreSQL
 
 The WAF is the public production entry point. Vault initializes and stores the
 database, authentication, and OAuth secrets.
+See [CYBERSECURITY.md](CYBERSECURITY.md) for the security module architecture.
 
 ## 🗄️ Database Schema
 
@@ -236,6 +237,7 @@ optional Socket.IO signal -> frontend GETs latest authorized state.
 - Online state: Socket.IO JWT from NextAuth session -> ws-server verifies ->
   status API -> `isOnline`, `lastSeen`.
 
+
 ### 2. Learning
 
 - Level practice: level config -> mixed encode/decode questions -> answers ->
@@ -250,8 +252,8 @@ optional Socket.IO signal -> frontend GETs latest authorized state.
   older `nextReviewAt` -> 20 questions.
 - Review saving: raw answers -> server-side Morse check -> group by char ->
   counters per answer, SRS once per char.
-- Progress display: aggregate `correctCount / totalSeen` -> accuracy,
-  weak chars, completed levels.
+- Progress display: aggregate `correctCount / totalSeen` -> accuracy card,
+  weak chars, level board, per-letter bar chart.
 
 ### 3. Chat
 
@@ -308,24 +310,11 @@ optional Socket.IO signal -> frontend GETs latest authorized state.
 
 **Implemented raw total: 20 points.**
 
-**Evaluation total: 19 points maximum** = 14 required points + 5 bonus points
-allowed by the subject.
+### Candidate Evidence, Not Counted Conservatively
 
-### Implemented But Not Counted Separately
-
-These features support the modules above, but are not counted as extra module
-points because they either overlap with already claimed modules or do not fully
-cover every subject requirement on their own.
-
-| Feature | Reason not counted separately |
-| --- | --- |
-| Chat-based game invitations, system messages, and persisted chat history | Supports user interaction, real-time features, and remote gameplay; the advanced chat module also expects extra controls such as blocking users |
-| Game session records, live rankings, final rankings, and stored scores | Supports the web-based game and multiplayer modules; a complete standalone game-statistics and match-history dashboard is not claimed |
-| Learning progress, mastery, and spaced repetition | Core product feature, but not claimed as a separate custom module |
-| Docker/Podman Compose environments and health checks | Required project infrastructure and support for testing, but not claimed as DevOps monitoring or microservices modules |
-
-See [CYBERSECURITY.md](CYBERSECURITY.md) for the security module architecture,
-configuration, and test commands.
+| Possible module | Evidence | Why not added to confirmed total |
+| --- | --- | --- |
+| Advanced analytics dashboard with data visualization | Learning dashboard: global accuracy, practice sessions, level progression board, weak-character detection, per-letter accuracy bar chart sorted from weakest to strongest | Strong visual analytics for learning, but not counted unless evaluators accept it as a full advanced analytics dashboard |
 
 ## 🙋 Individual Contributions
 

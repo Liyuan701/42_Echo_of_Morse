@@ -94,10 +94,10 @@ export default function RegisterForm() {
 			}),
 			});
 
-			const data = await response.json();
+			const data = await response.json().catch(() => null);
 
-		if (!response.ok) {
-			if (data.errorCode === "USERNAME_OR_EMAIL_IN_USE") {
+		if (!response.ok || data?.ok === false) {
+			if (data?.errorCode === "USERNAME_OR_EMAIL_IN_USE") {
 				setError(t.usernameOrEmailInUse);
 				return;
 			}
@@ -118,7 +118,6 @@ export default function RegisterForm() {
         confirmPassword: "",
       });
     } catch (submitError) {
-      console.error("Error form register: ", submitError);
       setError(t.genericError);
     } finally {
       setIsSubmitting(false);

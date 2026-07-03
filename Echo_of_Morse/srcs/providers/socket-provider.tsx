@@ -44,48 +44,33 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     const initSocket = async () => {
       try {
         const res = await fetch("/api/socket/token");
+        if (!res.ok) {
+          return;
+        }
+
         const data = await res.json();
 
         if (!isMounted) return;
+        if (!data.token) return;
 
         socketInstance.auth = {
           token: data.token,
         };
 
-        if (process.env.NODE_ENV === "development") {
-          console.log("AUTH SET", socketInstance.auth);
-        }
-
         socketInstance.connect();
 
-        if (process.env.NODE_ENV === "development") {
-          console.log(
-            "CONNECTING",
-            session.user.id,
-            socketInstance.connected,
-            socketInstance.id
-          );
-        }
-
         setSocket(socketInstance);
-      } catch (err) {
-        if (process.env.NODE_ENV === "development") {
-          console.error("Socket token fetch failed", err);
-        }
+      } catch {
+        setSocket(null);
+        setIsConnected(false);
       }
     };
 
     const handleConnect = () => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("CONNECTED", socketInstance.id);
-      }
       setIsConnected(true);
     };
 
-    const handleDisconnect = (reason: string) => {
-      if (process.env.NODE_ENV === "development") {
-        console.log("DISCONNECTED", reason);
-      }
+    const handleDisconnect = () => {
       setIsConnected(false);
     };
 
@@ -97,7 +82,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     const presenceHeartbeat = window.setInterval(() => {
       if (!socketInstance.connected) return;
 
-      fetch("/api/users/status", {
+      void fetch("/api/users/status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -106,7 +91,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           userId,
           isOnline: true,
         }),
-      });
+      }).catch(() => {});
     }, 60000);
 
     return () => {

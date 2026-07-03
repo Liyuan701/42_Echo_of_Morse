@@ -97,7 +97,9 @@ export default function InviteFriendsPanel({
           !sentInvitationsResponse.ok ||
           !receivedInvitationsResponse.ok
         ) {
-          throw new Error(t.failedToFetchFriends);
+          setRealOnlineFriends([]);
+          setPendingInviteFriendIds([]);
+          return;
         }
 
         const friends = (await friendsResponse.json()) as ApiFriend[];
@@ -133,7 +135,6 @@ export default function InviteFriendsPanel({
           )
         );
       } catch (error) {
-        console.error(error);
         setRealOnlineFriends([]);
       } finally {
         hasLoadedFriendsRef.current = true;
@@ -226,8 +227,6 @@ export default function InviteFriendsPanel({
         window.alert(error.message);
         return;
       }
-
-    	console.error(error);
 		window.alert(t.failedToSendInvitation);
     }
   }

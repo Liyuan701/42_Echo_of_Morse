@@ -112,11 +112,8 @@ export default function RadioLobbyClient({
       );
 
       if (!response.ok) {
-        const body = (await response.json().catch(() => null)) as
-          | { error?: string }
-          | null;
-        console.error(body?.error);
-        throw new Error(t.failedToLoadLobby);
+        await response.json().catch(() => null);
+        return null;
       }
 
       const lobby = (await response.json()) as {
@@ -126,14 +123,21 @@ export default function RadioLobbyClient({
 
       return lobby;
     },
-    [radio.radioId, t.failedToLoadLobby]
+    [radio.radioId]
   );
 
   const requestLobby = useCallback(
     async (method: "GET" | "POST") => {
-      applyLobbyResponse(await fetchLobby(method));
+      try {
+        const lobby = await fetchLobby(method);
+        if (lobby) {
+          applyLobbyResponse(lobby);
+        }
+      } catch {
+        setMessage(t.failedToLoadLobby);
+      }
     },
-    [applyLobbyResponse, fetchLobby]
+    [applyLobbyResponse, fetchLobby, t.failedToLoadLobby]
   );
 
   useEffect(() => {
@@ -142,13 +146,12 @@ export default function RadioLobbyClient({
 
     fetchLobby("POST")
       .then((lobby) => {
-        if (!cancelled) {
+        if (!cancelled && lobby) {
           applyLobbyResponse(lobby);
         }
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         if (!cancelled) {
-          console.error(error);
           setMessage(t.failedToJoinLobby);
         }
       });
@@ -158,7 +161,7 @@ export default function RadioLobbyClient({
     const intervalId = window.setInterval(() => {
       fetchLobby("GET")
         .then((lobby) => {
-          if (!cancelled) {
+          if (!cancelled && lobby) {
             applyLobbyResponse(lobby);
           }
         })
@@ -265,16 +268,15 @@ export default function RadioLobbyClient({
       };
 
       if (!response.ok || !body.users) {
-        	console.error(body.error);
-			throw new Error(t.failedToUpdateReadyStatus);
+			setMessage(t.failedToUpdateReadyStatus);
+      return;
       }
 
       applyLobbyResponse({
         users: body.users,
         activeSessionId: body.activeSessionId ?? null,
       });
-    } catch (error) {
-		console.error(error);
+    } catch {
 		setMessage(t.failedToUpdateReadyStatus);
     } finally {
       setIsUpdating(false);
@@ -306,15 +308,14 @@ export default function RadioLobbyClient({
       };
 
       if (!response.ok || !body.sessionId) {
-        	console.error(body.error);
-			throw new Error(t.failedToStartGame);
+			setMessage(t.failedToStartGame);
+      return;
       }
 
       router.push(
         `/competition/radio/${radio.radioId}/session/${body.sessionId}`
       );
-    } catch (error) {
-    	console.error(error);
+    } catch {
 		setMessage(t.failedToStartGame);
     } finally {
       setIsUpdating(false);
@@ -335,12 +336,14 @@ export default function RadioLobbyClient({
           | { error?: string }
           | null;
 
-        throw new Error(body?.error || t.failedToLeaveLobby);
+        setMessage(body?.error || t.failedToLeaveLobby);
+        setIsUpdating(false);
+        return;
       }
 
       router.push("/competition");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : t.failedToLeaveLobby);
+    } catch {
+      setMessage(t.failedToLeaveLobby);
       setIsUpdating(false);
     }
   }

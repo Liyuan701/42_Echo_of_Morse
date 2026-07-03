@@ -113,8 +113,7 @@ export async function POST(request: NextRequest) {
  
     if (existing) {
       return NextResponse.json(
-        { error: "Friendship already exists" },
-        { status: 409 }
+        { ok: false, code: "FRIENDSHIP_ALREADY_EXISTS", error: "Friendship already exists" }
       );
     }
  
