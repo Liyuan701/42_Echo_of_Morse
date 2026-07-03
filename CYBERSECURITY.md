@@ -95,8 +95,6 @@ Après le démarrage, ces variables sont accessibles partout dans le code :
 process.env.DATABASE_URL           // connexion PostgreSQL
 process.env.NEXTAUTH_SECRET        // clé de signature JWT
 process.env.NEXTAUTH_URL           // URL de l'application
-process.env.GITHUB_CLIENT_ID
-process.env.GITHUB_CLIENT_SECRET
 process.env.GOOGLE_CLIENT_ID
 process.env.GOOGLE_CLIENT_SECRET
 process.env.FORTYTWO_CLIENT_ID
