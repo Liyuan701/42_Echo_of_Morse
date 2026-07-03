@@ -303,18 +303,35 @@ optional Socket.IO signal -> frontend GETs latest authorized state.
 | Remote players | Major | 2 | Confirmed | Allow two players on separate clients to play the same game in real time | Independent authenticated users can join the same radio lobby, enter the same game session, receive Socket.IO update signals, submit scores, and see synchronized final results | all |
 | Multiplayer game with more than two players | Major | 2 | Confirmed | Support three or more simultaneous players in one game | Radio rooms support multiple lobby users; the ready queue creates a shared session for all ready players up to room capacity; the concurrent-user test runs with 5 users by default | all |
 | WAF and HashiCorp Vault | Major | 2 | Confirmed | Protect traffic and keep secrets outside the application code | ModSecurity with OWASP CRS filters production traffic; Vault initializes and injects database, authentication, and OAuth secrets | `gustgonz` |
+| Custom module: Morse learning engine with adaptive spaced repetition | Major | 2 | Confirmed | Add a project-specific learning system that is not covered by the listed modules | The learning module provides a 12-level Morse curriculum, mixed encode/decode practice, Web Audio playback, server-side answer validation, per-character progress, mastery/ease/interval SRS scheduling, due-review selection, weak-character detection, and progress visualizations | `jdu`, `lifan`, `yren` |
 | Use an ORM for the database | Minor | 1 | Confirmed | Keep database access typed and maintainable | Prisma models, migrations, seed data, and Prisma Client are used across the backend | `lifan` |
 | Support multiple languages | Minor | 1 | Confirmed | Provide at least three interface languages | The app includes an i18n provider, language switcher, and English, French, and Chinese dictionaries | `yren` |
 | Implement remote authentication with OAuth 2.0 | Minor | 1 | Confirmed | Allow users to connect through external identity providers | NextAuth supports Google OAuth and a custom 42 OAuth provider, with account linking | `yren` |
 | Server-side rendering for improved performance and SEO | Minor | 1 | Confirmed | Render data-backed pages on the server where appropriate | Next.js App Router server components load data for learning, profile, competition, lobby, and game session pages | all |
+| Custom-made design system with reusable components | Minor | 1 | Confirmed | Provide a consistent visual language with a reusable component library, color palette, typography, and icon/status affordances | Global CSS variables define the base palette and typography; reusable UI/layout/domain components include `Button`, `Card`, `Input`, `Badge`, `Modal`, `PageShell`, `Navbar`, `Footer`, `LanguageSwitcher`, `NotificationProvider`, `ChatWindow`, `FriendList`, `SystemMessageWindow`, `RadioWaveCard`, `MatchmakingPanel`, `MorsePlayer`, and learning cards | `jdu`, `yren`, all |
 
-**Implemented raw total: 20 points.**
+**Implemented raw total: 23 points.**
+
+### Custom Module Justification: Morse Learning Engine
+
+We chose this custom module because Morse learning is central to the project,
+not a side feature. It gives users a complete training loop before they use
+Morse in chat or multiplayer radio sessions.
+
+The module includes a 12-level curriculum, mixed encode/decode practice,
+browser Morse audio playback, server-side answer validation, per-character
+progress tracking, weak-character detection, and adaptive spaced repetition
+using `mastery`, `interval`, `easeFactor`, and `nextReviewAt`.
+
+It deserves Major module status because it is a project-specific subsystem with
+its own data model, learning algorithm, interactive UI, API routes, audio
+behavior, and persistent progress logic.
 
 ### Candidate Evidence, Not Counted Conservatively
 
 | Possible module | Evidence | Why not added to confirmed total |
 | --- | --- | --- |
-| Advanced analytics dashboard with data visualization | Learning dashboard: global accuracy, practice sessions, level progression board, weak-character detection, per-letter accuracy bar chart sorted from weakest to strongest | Strong visual analytics for learning, but not counted unless evaluators accept it as a full advanced analytics dashboard |
+| Advanced analytics dashboard with data visualization | Learning dashboard: global accuracy, practice sessions, level progression board, weak-character detection, per-letter accuracy bar chart sorted from weakest to strongest | Useful learning analytics, but not counted because it does not provide the full major-module scope such as export functionality, customizable date ranges, and dashboard-level filters |
 
 ## 🙋 Individual Contributions
 
