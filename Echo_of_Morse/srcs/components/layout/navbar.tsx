@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import LanguageSwitcher from "@/components/layout/language-switcher";
 import styles from "./navbar.module.css";
 
@@ -66,6 +67,7 @@ function groupUnreadFriendMessagesBySender(
 }
 
 export default function Navbar() {
+  const router = useRouter();
   const { data: session, status } = useSession();
   const isLoggedIn = status === "authenticated";
 
@@ -128,7 +130,11 @@ export default function Navbar() {
             <button
               type="button"
               className={styles.navButton}
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={async () => {
+                await signOut({ redirect: false });
+                router.push("/");
+                router.refresh();
+              }}
             >
               {t.logout}
             </button>

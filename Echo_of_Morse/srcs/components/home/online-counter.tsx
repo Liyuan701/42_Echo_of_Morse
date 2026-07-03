@@ -15,7 +15,15 @@ export default function OnlineCounter() {
   const [onlineCount, setOnlineCount] = useState(0);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket) {
+      // Sans socket (déconnecté ou visiteur anonyme), pas de push en direct :
+      // on lit le compte réel depuis la DB au lieu de garder l'ancienne valeur.
+      fetch("/api/users/online-count")
+        .then((res) => res.json())
+        .then((data) => setOnlineCount(data.count ?? 0))
+        .catch(() => {});
+      return;
+    }
 
     const handleUsersCount = (count: number) => {
       setOnlineCount(count);
