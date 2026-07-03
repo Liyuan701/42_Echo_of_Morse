@@ -36,6 +36,10 @@ export async function GET() {
           where: {
             userId,
             isRead: false,
+            OR: [
+              { i18nKey: null },
+              { i18nKey: { not: "friendRequest.received" } },
+            ],
           },
         }),
 

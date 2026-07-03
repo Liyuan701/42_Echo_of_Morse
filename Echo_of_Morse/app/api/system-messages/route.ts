@@ -25,7 +25,13 @@ export async function GET() {
     await expirePendingGameInvitationsForUser(transaction, userId);
 
     return transaction.systemMessage.findMany({
-      where: { userId },
+      where: {
+        userId,
+        OR: [
+          { i18nKey: null },
+          { i18nKey: { not: "friendRequest.received" } },
+        ],
+      },
       orderBy: { createdAt: "desc" },
       take: MAX_SYSTEM_MESSAGES,
     });

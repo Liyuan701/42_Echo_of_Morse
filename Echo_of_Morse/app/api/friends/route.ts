@@ -121,40 +121,20 @@ export async function POST(request: NextRequest) {
     }
  
     // create friendship with status PENDING
-    const friendship = await prisma.$transaction(async (transaction) => {
-      const createdFriendship = await transaction.friendship.create({
-        data: {
-          senderId,
-          receiverId,
-          status: "PENDING",
-        },
-        include: {
-          sender: {
-            select: {
-              id: true,
-              username: true,
-            },
+    const friendship = await prisma.friendship.create({
+      data: {
+        senderId,
+        receiverId,
+        status: "PENDING",
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
           },
         },
-      });
-
-      await transaction.systemMessage.create({
-        data: {
-          userId: receiverId,
-          title: "Friend request",
-          body: `${createdFriendship.sender.username} sent you a friend request.`,
-          isRead: false,
-          kind: "friend-request",
-          fromUserId: senderId,
-          actionStatus: "idle",
-          i18nKey: "friendRequest.received",
-          i18nParams: {
-            username: createdFriendship.sender.username,
-          },
-        },
-      });
-
-      return createdFriendship;
+      },
     });
 
     await notifyWs("friend.request.created", {
