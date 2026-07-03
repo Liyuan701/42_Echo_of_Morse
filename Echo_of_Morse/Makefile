@@ -67,7 +67,7 @@ prod:
 		-days 365 -nodes -subj "/CN=$$HOST_IP" \
 		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:$$HOST_IP" 2>/dev/null || true; \
 	chmod 644 certs/key.pem certs/cert.pem; \
-	NEXTAUTH_URL=https://$$HOST_IP:8443 $(COMPOSE) --env-file .env.prod -f docker-compose.yml up -d --build
+	$(COMPOSE) --env-file .env.prod -f docker-compose.yml up -d --build
 
 prod-down:
 	$(COMPOSE) --env-file .env.prod -f docker-compose.yml down

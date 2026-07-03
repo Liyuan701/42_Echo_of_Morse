@@ -10,7 +10,7 @@ services:
   # Filtre tout le trafic avant qu'il atteigne l'application
   # ============================================================
   waf:
-    image: docker.io/owasp/modsecurity-crs:nginx
+    image: docker.io/owasp/modsecurity-crs:3.3.9-nginx-202606290906
     container_name: transcendence_waf
     restart: always
     # L'image tourne par défaut en utilisateur "nginx" (UID 101), mais
