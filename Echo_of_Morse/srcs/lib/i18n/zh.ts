@@ -499,6 +499,7 @@ const zh = {
 		success: "账号创建成功，正在跳转到登录页面...",
 		genericError: "注册时出现错误，请稍后再试。",
 		usernameOrEmailInUse: "用户名或邮箱已被使用。",
+		nameTooLong: "用户名不能超过 20 个字符。",
 
 		showPassword: "显示",
 		hidePassword: "隐藏",

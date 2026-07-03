@@ -505,6 +505,7 @@ const en = {
 		success: "Account created successfully. Redirecting to login...",
 		genericError: "Something went wrong during registration.",
 		usernameOrEmailInUse: "Username or email already in use.",
+		nameTooLong: "Name cannot be longer than 20 characters.",
 
 		showPassword: "Show",
 		hidePassword: "Hide",

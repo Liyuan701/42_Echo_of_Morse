@@ -8,8 +8,9 @@ export async function POST(req: NextRequest) {
 	try {
 
 		//----------------------------- obtenir les donnes -----------------------------
-		const { username, email: rawEmail, password, confirmPassword } = await req.json();
+		const { username: rawUsername, email: rawEmail, password, confirmPassword } = await req.json();
 		const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
+		const username = typeof rawUsername === "string" ? rawUsername.trim() : "";
 
 		//----------------------------- verifier les donnes -----------------------------
 		//si email ou password est manquant
@@ -18,6 +19,10 @@ export async function POST(req: NextRequest) {
 		}
 		if (!username) {
 			return NextResponse.json({ error: "Name required" }, { status: 400 });
+		}
+		
+		if (username.length > 20) {
+			return NextResponse.json({ error: "Name too long" }, { status: 400 });
 		}
 
 		const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
