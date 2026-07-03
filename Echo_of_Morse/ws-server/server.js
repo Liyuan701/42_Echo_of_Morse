@@ -318,20 +318,6 @@ io.on("connection", async (socket) => {
     }
   });
 
-
-
-  // socket.on("radio:join", (payload, ack) => {
-  //   const radioId = payload?.radioId;
-  //   if (!radioId || typeof radioId !== "string") {
-  //     if (typeof ack === "function") ack({ ok: false, code: "INVALID_PAYLOAD" });
-  //     return;
-  //   }
-  //   socket.join(`radio:${radioId}`);
-  //   if (!socketRadioRooms.has(socket.id)) socketRadioRooms.set(socket.id, new Set());
-  //   socketRadioRooms.get(socket.id).add(radioId);
-  //   if (typeof ack === "function") ack({ ok: true });
-  // });
-
   socket.on("radio:join", (payload, ack) => {
     const radioId = payload?.radioId;
 
@@ -382,24 +368,6 @@ io.on("connection", async (socket) => {
     }
   });
 
-
-
-
-
-
-  // socket.on("radio:leave", (payload, ack) => {
-  //   const radioId = payload?.radioId;
-  //   if (!radioId || typeof radioId !== "string") {
-  //     if (typeof ack === "function") ack({ ok: false, code: "INVALID_PAYLOAD" });
-  //     return;
-  //   }
-  //   socket.leave(`radio:${radioId}`);
-  //   socketRadioRooms.get(socket.id)?.delete(radioId);
-  //   if (typeof ack === "function") ack({ ok: true });
-  // });
-
-
-
   socket.on("radio:leave", (payload, ack) => {
     const radioId = payload?.radioId;
 
@@ -445,21 +413,6 @@ io.on("connection", async (socket) => {
       ack({ ok: true });
     }
   });
-
-
-
-  // socket.on("game:join", (payload, ack) => {
-  //   const sessionId = payload?.sessionId;
-  //   if (!sessionId || typeof sessionId !== "string") {
-  //     if (typeof ack === "function") ack({ ok: false, code: "INVALID_PAYLOAD" });
-  //     return;
-  //   }
-  //   socket.join(`game:${sessionId}`);
-  //   if (!socketGameSessions.has(socket.id)) socketGameSessions.set(socket.id, new Set());
-  //   socketGameSessions.get(socket.id).add(sessionId);
-  //   if (typeof ack === "function") ack({ ok: true });
-  // });
-
 
   socket.on("game:join", (payload, ack) => {
     const sessionId = payload?.sessionId;
@@ -510,18 +463,6 @@ io.on("connection", async (socket) => {
     }
   });
 
-
-  // socket.on("game:leave", (payload, ack) => {
-  //   const sessionId = payload?.sessionId;
-  //   if (!sessionId || typeof sessionId !== "string") {
-  //     if (typeof ack === "function") ack({ ok: false, code: "INVALID_PAYLOAD" });
-  //     return;
-  //   }
-  //   socket.leave(`game:${sessionId}`);
-  //   socketGameSessions.get(socket.id)?.delete(sessionId);
-  //   if (typeof ack === "function") ack({ ok: true });
-  // });
-
   socket.on("game:leave", (payload, ack) => {
     const sessionId = payload?.sessionId;
 
@@ -548,7 +489,7 @@ io.on("connection", async (socket) => {
     });
 
     const beforeLeave = io.sockets.adapter.rooms.get(room)?.size || 0;
-    
+
     console.log("ROOM BEFORE LEAVE", room, "members:", beforeLeave);
     socket.leave(room);
     socketGameSessions.get(socket.id)?.delete(sessionId);
@@ -567,10 +508,6 @@ io.on("connection", async (socket) => {
       ack({ ok: true });
     }
   });
-
-
-
-
 
   socket.on("disconnect", async (reason) => {
     for (const radioId of socketRadioRooms.get(socket.id) ?? []) {
