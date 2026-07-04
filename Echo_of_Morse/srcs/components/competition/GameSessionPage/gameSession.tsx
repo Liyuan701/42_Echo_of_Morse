@@ -270,8 +270,8 @@ export default function GameSession({
 			return;
 		}
 
-		// Game polling stays more frequent because final scores must converge.
-		const intervalMs = isConnected ? 10000 : 5000;
+		// Game polling stays frequent because scores and completion must converge.
+		const intervalMs = isConnected ? 3000 : 2000;
 		const intervalId = window.setInterval(() => {
 			void refreshSessionSnapshot().catch(() => undefined);
 		}, intervalMs);

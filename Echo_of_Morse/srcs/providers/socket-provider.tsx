@@ -92,7 +92,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           isOnline: true,
         }),
       }).catch(() => {});
-    }, 60000);
+    }, 30000);
 
     return () => {
       isMounted = false;

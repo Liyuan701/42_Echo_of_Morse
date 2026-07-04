@@ -54,6 +54,7 @@ export default function RadioLobbyClient({
   const memberIdsRef = useRef(
     initialUsers.map((user) => user.id).sort().join(",")
   );
+  const shouldAutoJoinRef = useRef(initialUsers.length < radio.maxUsers);
 
   const sendLeaveRequest = useCallback(() => {
     void fetch(`/api/competition/radio/${radio.radioId}`, {
@@ -68,6 +69,7 @@ export default function RadioLobbyClient({
   );
 
   const currentUser = users.find((u) => u.isCurrentUser);
+  const currentUserId = currentUser?.id;
 
   const readyPlayers = useMemo(
     () => users.filter((u) => u.status === "ready"),
@@ -144,7 +146,9 @@ export default function RadioLobbyClient({
     let cancelled = false;
     leaveScheduler.cancelLeave();
 
-    fetchLobby("POST")
+    const joinMethod = shouldAutoJoinRef.current ? "POST" : "GET";
+
+    fetchLobby(joinMethod)
       .then((lobby) => {
         if (!cancelled && lobby) {
           applyLobbyResponse(lobby);
@@ -156,8 +160,8 @@ export default function RadioLobbyClient({
         }
       });
 
-    // Socket events drive normal updates; polling is only a slower safety net.
-    const intervalMs = isConnected ? 30000 : 5000;
+    // Socket events drive normal updates; polling catches delayed events quickly.
+    const intervalMs = isConnected ? 5000 : 3000;
     const intervalId = window.setInterval(() => {
       fetchLobby("GET")
         .then((lobby) => {
@@ -218,7 +222,13 @@ export default function RadioLobbyClient({
     function handleGameCreated(payload: {
       radioId?: string;
       sessionId: string;
+      playerIds?: string[];
     }) {
+      if (!currentUserId || !payload.playerIds?.includes(currentUserId)) {
+        void requestLobby("GET");
+        return;
+      }
+
       router.push(
         `/competition/radio/${payload.radioId ?? radio.radioId}/session/${payload.sessionId}`
       );
@@ -240,7 +250,7 @@ export default function RadioLobbyClient({
       s.off("radio:game-created", handleGameCreated);
       s.off("sync:required", handleSyncRequired);
     };
-  }, [socket, router, radio.radioId, requestLobby]);
+  }, [currentUserId, socket, router, radio.radioId, requestLobby]);
 
   /**
    * =========================================================

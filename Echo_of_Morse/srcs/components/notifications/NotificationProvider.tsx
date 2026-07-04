@@ -257,8 +257,8 @@ export function NotificationProvider({
       return;
     }
 
-    // Keep polling as a fallback, but slow it down while Socket.IO is healthy.
-    const intervalMs = isConnected ? 30000 : 6000;
+    // Keep polling frequent enough that missed Socket.IO events recover quickly.
+    const intervalMs = isConnected ? 5000 : 3000;
     const intervalId = window.setInterval(() => {
       void refreshNotifications();
     }, intervalMs);

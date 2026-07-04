@@ -73,8 +73,8 @@ export default function ReceivedInvitations() {
   useEffect(() => {
     void loadInvitations();
 
-    // Socket events refresh immediately; polling is the disconnected fallback.
-    const intervalMs = isConnected ? 30000 : 5000;
+    // Socket events refresh immediately; polling catches delayed events quickly.
+    const intervalMs = isConnected ? 5000 : 3000;
     const intervalId = window.setInterval(() => {
       void loadInvitations();
     }, intervalMs);

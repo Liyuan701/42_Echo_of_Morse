@@ -75,8 +75,8 @@ export default function OnlineOverview({ overview }: OnlineOverviewProps) {
     }
 
     void refreshOverview().catch(() => undefined);
-    // Socket events keep this live; polling only protects disconnected clients.
-    const intervalMs = isConnected ? 30000 : 5000;
+    // Socket events keep this live; polling catches delayed updates quickly.
+    const intervalMs = isConnected ? 5000 : 3000;
     const intervalId = window.setInterval(() => {
       void refreshOverview().catch(() => undefined);
     }, intervalMs);

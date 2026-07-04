@@ -186,8 +186,8 @@ export default function InviteFriendsPanel({
       return;
     }
 
-    // Socket presence events are primary; polling catches missed disconnects.
-    const intervalMs = isConnected ? 30000 : 6000;
+    // Socket presence events are primary; polling catches delayed updates quickly.
+    const intervalMs = isConnected ? 5000 : 3000;
     const intervalId = window.setInterval(() => {
       setPresenceRevision((revision) => revision + 1);
     }, intervalMs);
