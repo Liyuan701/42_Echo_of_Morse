@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useSocket } from "@/providers/socket-provider";
 import { useNotifications } from "@/components/notifications/NotificationProvider";
+import { isGameInvitationExpired } from "@/lib/game-invitation-expiration";
 import type { RadioId } from "@/types/competition";
 
 type ApiRadio = {
@@ -42,6 +43,7 @@ type AnswerGameInvitationArgs = {
   action: "accept" | "decline";
   fallbackRadioId?: string;
   fromUserId?: string;
+  expiresAt?: string;
   redirectOnAccept?: boolean;
 };
 
@@ -108,6 +110,8 @@ export function useGameInvitationActions() {
         const messageByCode: Record<string, string> = {
           FRIEND_ALREADY_INVITED_YOU: chatText.friendAlreadyInvitedYou,
           INVITATION_ALREADY_PENDING: chatText.gameInvitationAlreadyPending,
+          TARGET_INVITATION_ALREADY_PENDING:
+            chatText.friendHasPendingGameInvitation,
         };
         const status =
           typeof invitationBody.status === "number"
@@ -141,6 +145,7 @@ export function useGameInvitationActions() {
     [
       chatText.friendAlreadyInvitedYou,
       chatText.gameInvitationAlreadyPending,
+      chatText.friendHasPendingGameInvitation,
       currentUserId,
       refreshNotifications,
       router,
@@ -155,8 +160,20 @@ export function useGameInvitationActions() {
       action,
       fallbackRadioId,
       fromUserId,
+      expiresAt,
       redirectOnAccept = true,
     }: AnswerGameInvitationArgs) => {
+      if (isGameInvitationExpired({ expiresAt })) {
+        removeGameInvitation(invitationId);
+        await refreshNotifications();
+
+        throw new GameInvitationActionError(
+          "Invitation has expired.",
+          410,
+          { status: "expired" }
+        );
+      }
+
       const response = await fetch(`/api/game/invitations/${invitationId}`, {
         method: "PATCH",
         headers: {
@@ -209,7 +226,13 @@ export function useGameInvitationActions() {
 
       return body;
     },
-    [refreshNotifications, removeGameInvitation, router, socket]
+    [
+      refreshNotifications,
+      removeGameInvitation,
+      router,
+      socket,
+      t.failedToAnswerInvitation,
+    ]
   );
 
   return {

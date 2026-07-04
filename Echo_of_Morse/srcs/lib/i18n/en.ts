@@ -422,6 +422,7 @@ const en = {
 		//--------- invite disabled reasons ---------
 		friendOffline: "This friend is offline.",
 		gameInvitationAlreadyPending: "A game invitation is already pending with this friend.",
+		friendHasPendingGameInvitation: "This friend already has a pending game invitation.",
 		friendAlreadyInvitedYou: "This friend has already invited you. Please accept or decline their invitation first.",
 		friendInGame: "This friend is currently in a game.",
 		friendReadyInLobby: "This friend is already ready in a lobby.",

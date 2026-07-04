@@ -245,8 +245,12 @@ export async function POST(request: NextRequest) {
         throw new Error("FRIEND_ALREADY_INVITED_YOU");
       }
 
-      if (existingInvitation || targetPending) {
+      if (existingInvitation) {
         throw new Error("INVITATION_ALREADY_PENDING");
+      }
+
+      if (targetPending) {
+        throw new Error("TARGET_INVITATION_ALREADY_PENDING");
       }
 
       await ensureInviterLobbyPresence(transaction, {
@@ -304,6 +308,8 @@ export async function POST(request: NextRequest) {
       FRIEND_ALREADY_INVITED_YOU:
         "This friend has already invited you. Please accept or decline their invitation first.",
       INVITATION_ALREADY_PENDING: "Invitation already pending",
+      TARGET_INVITATION_ALREADY_PENDING:
+        "This friend already has a pending game invitation",
       ROOM_LACKS_INVITE_CAPACITY:
         "The radio room needs one free place for your friend",
     };

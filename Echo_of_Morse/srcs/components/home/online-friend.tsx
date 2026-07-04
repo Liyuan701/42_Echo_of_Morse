@@ -19,6 +19,7 @@ type ApiFriend = {
   username: string;
   avatarUrl: string | null;
   isOnline: boolean;
+  hasPendingGameInvitation?: boolean;
 };
 
 type OnlineFriend = {
@@ -26,6 +27,7 @@ type OnlineFriend = {
   username: string;
   avatarUrl: string | null;
   isOnline: boolean;
+  hasPendingGameInvitation?: boolean;
 };
 
 type SentGameInvitation = {
@@ -103,6 +105,9 @@ export default function OnlineFriendsPreview() {
             ...receivedInvitations.map(
               (invitation) => invitation.fromUser.id
             ),
+            ...friends
+              .filter((friend) => friend.hasPendingGameInvitation)
+              .map((friend) => friend.id),
           ]),
         ]);
       } catch (error) {

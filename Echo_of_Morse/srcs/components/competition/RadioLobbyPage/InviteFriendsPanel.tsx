@@ -22,6 +22,7 @@ type ApiFriend = {
   gameStatus?: "IDLE" | "READY" | "PLAYING" | null;
   lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
   currentRadioId?: string | null;
+  hasPendingGameInvitation?: boolean;
 };
 
 type InviteFriendsPanelProps = {
@@ -39,6 +40,7 @@ type InviteFriendItem = {
   gameStatus?: "IDLE" | "READY" | "PLAYING" | null;
   lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
   currentRadioId?: string | null;
+  hasPendingGameInvitation?: boolean;
 };
 
 export default function InviteFriendsPanel({
@@ -121,6 +123,7 @@ export default function InviteFriendsPanel({
             gameStatus: friend.gameStatus,
             lobbyStatus: friend.lobbyStatus,
             currentRadioId: friend.currentRadioId,
+            hasPendingGameInvitation: friend.hasPendingGameInvitation,
           }));
 
         setRealOnlineFriends(onlineFriends);
@@ -131,6 +134,9 @@ export default function InviteFriendsPanel({
               ...receivedInvitations.map(
                 (invitation) => invitation.fromUser.id
               ),
+              ...friends
+                .filter((friend) => friend.hasPendingGameInvitation)
+                .map((friend) => friend.id),
             ])
           )
         );

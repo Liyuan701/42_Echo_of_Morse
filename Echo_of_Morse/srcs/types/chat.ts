@@ -28,6 +28,7 @@ export type Friend = {
   gameStatus?: "IDLE" | "READY" | "PLAYING" | null;
   lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
   currentRadioId?: string | null;
+  hasPendingGameInvitation?: boolean;
 };
 
 export type ChatMessage = {

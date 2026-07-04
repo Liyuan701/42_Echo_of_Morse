@@ -24,6 +24,7 @@ import { useSession } from "next-auth/react";
 import { mapChatModeToDB } from "@/lib/mappers/chat-mode";
 import { useSocket } from "@/providers/socket-provider";
 import { useNotifications } from "@/components/notifications/NotificationProvider";
+import { isGameInvitationExpired } from "@/lib/game-invitation-expiration";
 import RadioWavePickerModal from "@/components/competition/RadioLobbyPage/RadioWavePickerModal";
 import type { RadioId } from "@/types/competition";
 import {
@@ -102,6 +103,7 @@ export default function ChatLayout() {
     refreshNotifications,
     markFriendAsRead,
     markSystemNotificationsAsRead,
+    removeGameInvitation,
   } = useNotifications();
 
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -534,6 +536,10 @@ export default function ChatLayout() {
       return t.gameInvitationAlreadyPending;
     }
 
+    if (friend.hasPendingGameInvitation) {
+      return t.friendHasPendingGameInvitation;
+    }
+
     if (incomingPendingInviteFriendIds.has(friend.id)) {
       return t.friendAlreadyInvitedYou;
     }
@@ -575,6 +581,16 @@ export default function ChatLayout() {
       return;
     }
 
+    const pendingInvitation = pendingGameInvitations.find(
+      (invitation) => invitation.id === message.invitationId
+    );
+
+    if (pendingInvitation && isGameInvitationExpired(pendingInvitation)) {
+      removeGameInvitation(pendingInvitation.id);
+      void refreshNotifications();
+      return;
+    }
+
     setInvitationActionStatuses((current) => ({
       ...current,
       [message.invitationId as string]: "updating",
@@ -586,6 +602,7 @@ export default function ChatLayout() {
         action,
         fallbackRadioId: message.radioId,
         fromUserId: message.fromUserId,
+        expiresAt: pendingInvitation?.expiresAt,
         redirectOnAccept: true,
       });
 
@@ -597,7 +614,19 @@ export default function ChatLayout() {
       }));
 
       await loadSystemMessages();
-    } catch {
+    } catch (error) {
+      if (
+        error instanceof GameInvitationActionError &&
+        error.status === 410
+      ) {
+        removeGameInvitation(message.invitationId);
+        setInvitationActionStatuses((current) => ({
+          ...current,
+          [message.invitationId as string]: "expired",
+        }));
+        return;
+      }
+
       setInvitationActionStatuses((current) => ({
         ...current,
         [message.invitationId as string]: "error",

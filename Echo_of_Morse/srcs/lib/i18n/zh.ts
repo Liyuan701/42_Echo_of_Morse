@@ -421,6 +421,7 @@ const zh = {
 
 		friendOffline: "这个好友不在线。",
 		gameInvitationAlreadyPending: "已经向这个好友发送了游戏邀请。",
+		friendHasPendingGameInvitation: "这个好友已有一个待处理的游戏邀请。",
 		friendAlreadyInvitedYou: "这个好友已经邀请了你，请先接受或拒绝对方的邀请。",
 		friendInGame: "这个好友正在游戏中。",
 		friendReadyInLobby: "这个好友已经在大厅中准备好了。",

@@ -420,6 +420,7 @@ const fr = {
 		//--------- invite disabled reasons ---------
 		friendOffline: "Cet ami est hors ligne.",
 		gameInvitationAlreadyPending: "Une invitation de jeu est déjà en attente avec cet ami.",
+		friendHasPendingGameInvitation: "Cet ami a déjà une invitation de jeu en attente.",
 		friendAlreadyInvitedYou: "Cet ami vous a déjà invité. Veuillez d'abord accepter ou refuser son invitation.",
 		friendInGame: "Cet ami est actuellement en partie.",
 		friendReadyInLobby: "Cet ami est déjà prêt dans un lobby.",

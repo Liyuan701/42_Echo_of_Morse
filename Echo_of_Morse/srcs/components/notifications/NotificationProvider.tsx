@@ -12,6 +12,11 @@ import {
 } from "react";
 import { useSession } from "next-auth/react";
 import { useSocket } from "@/providers/socket-provider";
+import {
+  filterActiveGameInvitations,
+  getNextGameInvitationExpiryDelay,
+  isActiveGameInvitation,
+} from "@/lib/game-invitation-expiration";
 import type {
   FriendUnreadCounts,
   NotificationFriendMessage,
@@ -77,7 +82,7 @@ function writeJsonRecord(key: string, value: Record<string, number>) {
 }
 
 function isPendingInvitation(invitation: NotificationGameInvitation) {
-  return invitation.status.toLowerCase() === "pending";
+  return isActiveGameInvitation(invitation);
 }
 
 export function NotificationProvider({
@@ -262,6 +267,31 @@ export function NotificationProvider({
       window.clearInterval(intervalId);
     };
   }, [isConnected, refreshNotifications, status]);
+
+  useEffect(() => {
+    if (pendingGameInvitations.length === 0) {
+      return;
+    }
+
+    const expiryDelay = getNextGameInvitationExpiryDelay(
+      pendingGameInvitations
+    );
+
+    if (expiryDelay === null) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPendingGameInvitations((current) =>
+        filterActiveGameInvitations(current)
+      );
+      void refreshNotifications();
+    }, expiryDelay);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [pendingGameInvitations, refreshNotifications]);
 
   useEffect(() => {
     if (!socket) {

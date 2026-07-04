@@ -8,6 +8,7 @@ import { authOptions } from "@/lib/auth";
 import { notifyWs } from "@/lib/notifyWs";
 import { prisma } from "@/server/prisma";
 import { getFriends } from "@/lib/services/friends";
+import { GAME_INVITATION_TIMEOUT_MS } from "@/lib/services/game-invitations";
  
 // GET /api/friends?userId=123 - get friends list for userId
 export async function GET(request: NextRequest) {
@@ -36,6 +37,27 @@ export async function GET(request: NextRequest) {
   }
  
   const friends = await getFriends(userId);
+  const friendIds = friends.map((friend) => friend.user.id);
+  const activeInvitationCutoff = new Date(
+    Date.now() - GAME_INVITATION_TIMEOUT_MS
+  );
+
+  const pendingInvitationTargets =
+    friendIds.length === 0
+      ? []
+      : await prisma.gameInvitation.findMany({
+          where: {
+            status: "PENDING",
+            toUserId: { in: friendIds },
+            createdAt: { gt: activeInvitationCutoff },
+          },
+          select: {
+            toUserId: true,
+          },
+        });
+  const pendingInvitationTargetIds = new Set(
+    pendingInvitationTargets.map((invitation) => invitation.toUserId)
+  );
  
   // give frontend game session info of my friend.
   const formatted = friends.map((friend) => {
@@ -66,6 +88,7 @@ export async function GET(request: NextRequest) {
         activeSession?.session.room.radioId ??
         lobbyPresence?.room.radioId ??
         null,
+      hasPendingGameInvitation: pendingInvitationTargetIds.has(user.id),
     };
   });
  

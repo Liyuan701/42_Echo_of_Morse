@@ -4,6 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Card } from "@/components/ui";
 import { useSocket } from "@/providers/socket-provider";
+import {
+  filterActiveGameInvitations,
+  getNextGameInvitationExpiryDelay,
+  isGameInvitationExpired,
+} from "@/lib/game-invitation-expiration";
 import styles from "@/../app/competition/competition.module.css";
 import {
   GameInvitationActionError,
@@ -58,7 +63,11 @@ export default function ReceivedInvitations() {
       return;
     }
 
-    setInvitations((await response.json().catch(() => [])) as GameInvitation[]);
+    const nextInvitations = (await response
+      .json()
+      .catch(() => [])) as GameInvitation[];
+
+    setInvitations(filterActiveGameInvitations(nextInvitations));
   }, [status]);
 
   useEffect(() => {
@@ -93,10 +102,37 @@ export default function ReceivedInvitations() {
     };
   }, [loadInvitations, socket]);
 
+  useEffect(() => {
+    if (invitations.length === 0) {
+      return;
+    }
+
+    const expiryDelay = getNextGameInvitationExpiryDelay(invitations);
+
+    if (expiryDelay === null) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setInvitations((current) => filterActiveGameInvitations(current));
+      void loadInvitations();
+    }, expiryDelay);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [invitations, loadInvitations]);
+
   async function answerInvitation(
     invitation: GameInvitation,
     action: "accept" | "decline"
   ) {
+    if (isGameInvitationExpired(invitation)) {
+      setInvitations((current) =>
+        current.filter((item) => item.id !== invitation.id)
+      );
+      void loadInvitations();
+      return;
+    }
+
     setUpdatingId(invitation.id);
 
     try {
@@ -105,6 +141,7 @@ export default function ReceivedInvitations() {
         action,
         fallbackRadioId: invitation.radio?.radioId,
         fromUserId: invitation.fromUser.id,
+        expiresAt: invitation.expiresAt,
         redirectOnAccept: true,
       });
 
@@ -120,6 +157,8 @@ export default function ReceivedInvitations() {
         setInvitations((current) =>
           current.filter((item) => item.id !== invitation.id)
         );
+        void loadInvitations();
+        return;
       }
 		window.alert(t.failedToAnswerInvitation);
 
