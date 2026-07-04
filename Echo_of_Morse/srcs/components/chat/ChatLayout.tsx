@@ -1101,45 +1101,6 @@ export default function ChatLayout() {
     );
   }
 
-  function handleShareFriend(friendId: string) {
-    const target = friends.find((friend) => friend.id === friendId);
-
-    if (!target) {
-      return;
-    }
-
-    if (!selectedFriend) {
-      window.alert(t.openChatBeforeSharingFriend);
-      return;
-    }
-
-    if (selectedFriend.id === target.id) {
-      window.alert(t.cannotShareFriendToThemselves);
-      return;
-    }
-
-    const sharedMsg: ChatMessage = {
-		id: crypto.randomUUID(),
-		friendId: selectedFriend.id,
-		sender: "me",
-		rawText: t.sharedContactMessage
-			.replace("{displayName}", target.displayName)
-			.replace("{username}", target.username),
-		translatedText: undefined,
-		mode: "LANGUAGE_ONLY",
-		createdAt: getCurrentTime(),
-    };
-
-    setMessages((prev) => [...prev, sharedMsg]);
-
-    addSystemMessage(
-      	t.contactSharedTitle,
-		t.contactSharedBody
-			.replace("{displayName}", target.displayName)
-			.replace("{friendName}", selectedFriend.displayName)
-    );
-  }
-
   function handleInviteFriendToGame(friendId: string) {
     const invited = friends.find((friend) => friend.id === friendId);
 
@@ -1328,7 +1289,6 @@ export default function ChatLayout() {
         onSendFriendRequest={handleSendFriendRequest}
         onRenameFriend={handleRenameFriend}
         onDeleteFriend={handleDeleteFriend}
-        onShareFriend={handleShareFriend}
         onInviteFriendToGame={handleInviteFriendToGame}
       />
 
