@@ -71,6 +71,8 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   if (invitation.status !== "PENDING") {
     const isExpired = invitation.status === "EXPIRED";
 
+    // Expiration is an expected outcome of the 1-minute timeout, not a real
+    // HTTP error, so it is reported as 200 with status: "expired" in the body.
     return NextResponse.json(
       {
         error:
@@ -79,7 +81,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
             : "Invitation has already been answered",
         status: invitation.status.toLowerCase(),
       },
-      { status: isExpired ? 410 : 409 }
+      { status: isExpired ? 200 : 409 }
     );
   }
   // If the row is still pending but its deadline has passed, expire it before answering.
@@ -94,7 +96,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         status: "expired",
         expiresAt: getGameInvitationExpiresAt(invitation.createdAt),
       },
-      { status: 410 }
+      { status: 200 }
     );
   }
 
