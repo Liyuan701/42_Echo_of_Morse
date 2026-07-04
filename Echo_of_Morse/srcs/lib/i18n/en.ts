@@ -318,7 +318,7 @@ const en = {
 		
 		viewProfile: "View {displayName}'s profile",
 		avatarAlt: "{displayName}'s avatar",
-		openProfileHint: "Click the name or avatar to open this profile.",
+		openProfileHint: "Click the avatar to open this profile.",
 		closeChat: "Close chat",
 		
 		//--------- ChatModeSelector ---------

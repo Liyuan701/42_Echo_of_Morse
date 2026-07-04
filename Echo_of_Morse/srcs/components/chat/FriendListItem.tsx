@@ -89,10 +89,15 @@ export default function FriendListItem({
     onInviteFriendToGame(friend.id);
   }
 
+  function handleOpenProfile(event: MouseEvent<HTMLAnchorElement>) {
+    event.stopPropagation();
+  }
+
   return (
     <>
       <div
         onContextMenu={handleContextMenu}
+        onClick={() => onSelectFriend(friend.id)}
         className={`${styles.item} ${isSelected ? styles.selected : ""}`}
       >
         <div className={styles.profileTrigger}>
@@ -100,6 +105,7 @@ export default function FriendListItem({
             href={profileHref}
             className={styles.avatarLink}
             aria-label={t.viewProfile.replace("{displayName}", displayName)}
+            onClick={handleOpenProfile}
           >
             {friend.avatarUrl ? (
               <img
@@ -140,18 +146,14 @@ export default function FriendListItem({
 
         <div className={styles.content}>
           <div className={styles.row}>
-            <Link href={profileHref} className={styles.nameLink}>
+            <span className={styles.nameLink}>
               {displayName}
-            </Link>
+            </span>
 
             <span className={styles.time}>{friend.lastMessageAt}</span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onSelectFriend(friend.id)}
-            className={styles.previewButton}
-          >
+          <div className={styles.previewButton}>
             <span className={styles.preview}>{friend.lastMessage}</span>
 
             <span className={styles.previewMeta}>
@@ -171,7 +173,7 @@ export default function FriendListItem({
                 aria-label={friend.isOnline ? t.online : t.offline}
               />
             </span>
-          </button>
+          </div>
 
           <div className={styles.actions}>
             <button

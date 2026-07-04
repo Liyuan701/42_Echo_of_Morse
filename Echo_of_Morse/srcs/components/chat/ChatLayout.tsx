@@ -1323,6 +1323,7 @@ export default function ChatLayout() {
 
       {currentView.type === "friend" && selectedFriend ? (
         <ChatWindow
+          key={selectedFriend.id}
           friend={selectedFriend}
           messages={selectedMessages}
           chatMode={chatMode}

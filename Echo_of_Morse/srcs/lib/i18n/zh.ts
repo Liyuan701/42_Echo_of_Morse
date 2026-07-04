@@ -319,7 +319,7 @@ const zh = {
 		
 		viewProfile: "查看 {displayName} 的资料",
 		avatarAlt: "{displayName} 的头像",
-		openProfileHint: "点击名字或头像打开个人资料。",
+		openProfileHint: "点击头像打开个人资料。",
 		closeChat: "关闭聊天",
 		
 		//--------- ChatModeSelector ---------

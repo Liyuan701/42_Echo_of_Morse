@@ -241,6 +241,7 @@
   border: 1px solid transparent;
   border-radius: 14px;
   background-color: transparent;
+  cursor: pointer;
 }
 
 .item:hover {
@@ -333,7 +334,7 @@
   border: none;
   background: transparent;
   text-align: left;
-  cursor: pointer;
+  cursor: inherit;
 }
 
 .preview {

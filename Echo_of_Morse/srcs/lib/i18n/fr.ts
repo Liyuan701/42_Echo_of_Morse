@@ -316,7 +316,7 @@ const fr = {
 		online: "En ligne",
 		viewProfile: "Voir le profil de {displayName}",
 		avatarAlt: "Avatar de {displayName}",
-		openProfileHint: "Cliquez sur le nom ou l'avatar pour ouvrir ce profil.",
+		openProfileHint: "Cliquez sur l'avatar pour ouvrir ce profil.",
 		closeChat: "Fermer le chat",
 		
 		//--------- ChatModeSelector ---------
