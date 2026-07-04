@@ -41,7 +41,6 @@ type FriendListProps = {
 
   onRenameFriend: (friendId: string, nextDisplayName: string) => void;
   onDeleteFriend: (friendId: string) => void;
-  onShareFriend: (friendId: string) => void | Promise<void>;
 
   onInviteFriendToGame: (friendId: string) => void;
 };
@@ -68,7 +67,6 @@ export default function FriendList({
   onSendFriendRequest,
   onRenameFriend,
   onDeleteFriend,
-  onShareFriend,
   onInviteFriendToGame,
 }: FriendListProps) {
   const { dictionary } = useI18n();
@@ -208,7 +206,6 @@ export default function FriendList({
                 onSelectFriend={onSelectFriend}
                 onRenameFriend={onRenameFriend}
                 onDeleteFriend={onDeleteFriend}
-                onShareFriend={onShareFriend}
                 onInviteFriendToGame={onInviteFriendToGame}
               />
             );

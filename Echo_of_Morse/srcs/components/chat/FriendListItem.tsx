@@ -17,7 +17,6 @@ type FriendListItemProps = {
   onSelectFriend: (friendId: string) => void;
   onRenameFriend: (friendId: string, nextDisplayName: string) => void;
   onDeleteFriend: (friendId: string) => void;
-  onShareFriend: (friendId: string) => void;
 };
 
 export default function FriendListItem({
@@ -28,7 +27,6 @@ export default function FriendListItem({
   onSelectFriend,
   onRenameFriend,
   onDeleteFriend,
-  onShareFriend,
   onInviteFriendToGame,
 }: FriendListItemProps) {
   const { dictionary } = useI18n();
@@ -81,11 +79,6 @@ export default function FriendListItem({
     setMenuPosition(null);
   }
 
-  function handleShare() {
-    onShareFriend(friend.id);
-    setMenuPosition(null);
-  }
-
   function handleInviteToGame(event: MouseEvent<HTMLButtonElement>) {
     event.stopPropagation();
 
@@ -94,16 +87,6 @@ export default function FriendListItem({
     }
 
     onInviteFriendToGame(friend.id);
-  }
-
-  function handleInviteToGameFromMenu() {
-    if (isInviteDisabled) {
-      setMenuPosition(null);
-      return;
-    }
-
-    onInviteFriendToGame(friend.id);
-    setMenuPosition(null);
   }
 
   return (
@@ -211,9 +194,6 @@ export default function FriendListItem({
           onClose={() => setMenuPosition(null)}
           onRename={handleRename}
           onDelete={handleDelete}
-          onShare={handleShare}
-          onInviteToGame={handleInviteToGameFromMenu}
-          isGameInviteDisabled={isInviteDisabled}
         />
       ) : null}
     </>

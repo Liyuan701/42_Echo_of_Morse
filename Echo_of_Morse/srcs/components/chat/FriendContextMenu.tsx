@@ -13,9 +13,6 @@ type FriendContextMenuProps = {
   onClose: () => void;
   onRename: () => void;
   onDelete: () => void;
-  onShare: () => void;
-  onInviteToGame: () => void;
-  isGameInviteDisabled: boolean;
 };
 
 export default function FriendContextMenu({
@@ -24,9 +21,6 @@ export default function FriendContextMenu({
   onClose,
   onRename,
   onDelete,
-  onShare,
-  onInviteToGame,
-  isGameInviteDisabled,
 }: FriendContextMenuProps) {
 	const { dictionary } = useI18n();
 	const t = dictionary.chat;
@@ -63,24 +57,6 @@ export default function FriendContextMenu({
     >
       <button type="button" onClick={onRename} className={styles.item}>
         {t.renameRemark}
-      </button>
-
-      <button type="button" onClick={onShare} className={styles.item}>
-        {t.shareFriend}
-      </button>
-
-      <button
-        type="button"
-        onClick={onInviteToGame}
-        className={styles.item}
-        disabled={isGameInviteDisabled}
-        title={
-          isGameInviteDisabled
-            ? t.friendOfflineOrPending
-            : t.inviteFriendToPlay
-        }
-      >
-        {t.inviteToGame}
       </button>
 
       <button type="button" onClick={onDelete} className={styles.deleteItem}>
