@@ -76,7 +76,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"   # utile en développement — à commenter en production
+      # - "5432:5432"   # utile en développement — à commenter en production
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -139,7 +139,7 @@ services:
     # puis redescend ses privilèges pour lancer le serveur.
     user: root
     ports:
-      - "8200:8200"   # interface UI Vault accessible sur http://localhost:8200
+      # - "8200:8200"   # interface UI Vault accessible sur http://localhost:8200
     environment:
       - VAULT_ADDR=http://0.0.0.0:8200
       - SKIP_SETCAP=1
