@@ -59,6 +59,11 @@ type ApiSystemMessage = {
 
 type InvitationActionStatus = NonNullable<SystemMessage["actionStatus"]>;
 
+type ActiveConversation = {
+  friendId: string;
+  id: string;
+};
+
 type FriendWithOptionalGameStatus = Friend & {
   gameStatus?: "IDLE" | "READY" | "PLAYING" | null;
   lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
@@ -111,7 +116,8 @@ export default function ChatLayout() {
   const [currentView, setCurrentView] = useState<ChatPanelView>({
     type: "none",
   });
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [activeConversation, setActiveConversation] =
+    useState<ActiveConversation | null>(null);
   const [chatMode, setChatMode] = useState<ChatMode>("LANGUAGE_TO_MORSE");
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const [userSearchQuery, setUserSearchQuery] = useState("");
@@ -137,6 +143,8 @@ export default function ChatLayout() {
     string | null
   >(null);
   const suppressFriendQuerySelection = useRef(false);
+  const conversationRequestId = useRef(0);
+  const messageRequestId = useRef(0);
 
   const loadFriends = useCallback(async () => {
     if (!userId) {
@@ -273,42 +281,74 @@ export default function ChatLayout() {
     if (
       sessionStatus !== "authenticated" ||
       !userId ||
-      !conversationId ||
-      !selectedFriendId
+      !activeConversation ||
+      activeConversation.friendId !== selectedFriendId
     ) {
       return;
     }
 
+    const requestId = messageRequestId.current + 1;
+    messageRequestId.current = requestId;
+    const conversation = activeConversation;
+
     const loadMessages = async () => {
       try {
-        const res = await fetch(`/api/messages?conversationId=${conversationId}`);
+        const res = await fetch(
+          `/api/messages?conversationId=${conversation.id}`
+        );
+
+        if (messageRequestId.current !== requestId) {
+          return;
+        }
+
         if (!res.ok) {
-          setMessages([]);
+          setMessages((current) =>
+            current.filter(
+              (message) => message.friendId !== conversation.friendId
+            )
+          );
           return;
         }
 
         const data = await res.json();
 
-        setMessages(
-          Array.isArray(data)
-            ? data.map((message: ApiMessage) => ({
-                id: message.id,
-                friendId: selectedFriendId,
-                sender: message.senderId === userId ? "me" : "friend",
-                rawText: message.rawText,
-                translatedText: message.translatedText ?? undefined,
-                mode: message.mode,
-                createdAt: new Date(message.createdAt).toLocaleTimeString(),
-              }))
-            : []
-        );
+        if (messageRequestId.current !== requestId) {
+          return;
+        }
+
+        const nextMessages = Array.isArray(data)
+          ? data.map((message: ApiMessage) => ({
+              id: message.id,
+              friendId: conversation.friendId,
+              sender: message.senderId === userId ? "me" : "friend",
+              rawText: message.rawText,
+              translatedText: message.translatedText ?? undefined,
+              mode: message.mode,
+              createdAt: new Date(message.createdAt).toLocaleTimeString(),
+            }))
+          : [];
+
+        setMessages((current) => [
+          ...current.filter(
+            (message) => message.friendId !== conversation.friendId
+          ),
+          ...nextMessages,
+        ]);
       } catch {
-        setMessages([]);
+        if (messageRequestId.current !== requestId) {
+          return;
+        }
+
+        setMessages((current) =>
+          current.filter(
+            (message) => message.friendId !== conversation.friendId
+          )
+        );
       }
     };
 
     void loadMessages();
-  }, [conversationId, selectedFriendId, sessionStatus, userId]);
+  }, [activeConversation, selectedFriendId, sessionStatus, userId]);
 
   useEffect(() => {
     if (!socket || !userId) {
@@ -345,7 +385,7 @@ export default function ChatLayout() {
             ? {
                 ...friend,
                 lastMessage: message.rawText,
-                lastMessageAt: new Date(message.createdAt).toLocaleTimeString(),
+                lastMessageAt: message.createdAt,
               }
             : friend
         )
@@ -827,9 +867,12 @@ export default function ChatLayout() {
   // Opening the system panel marks persisted system messages as read
   // on both the local UI and the backend unread counter.
   async function handleSelectSystemMessages() {
+    conversationRequestId.current += 1;
+    messageRequestId.current += 1;
     setComposerError("");
     suppressFriendQuerySelection.current = true;
     router.replace("/chat?panel=system", { scroll: false });
+    setActiveConversation(null);
     setCurrentView({ type: "system" });
 
     try {
@@ -842,7 +885,10 @@ export default function ChatLayout() {
   }
 
   async function handleOpenSystemMessagesWithoutMarkingRead() {
+    conversationRequestId.current += 1;
+    messageRequestId.current += 1;
     setComposerError("");
+    setActiveConversation(null);
     setCurrentView({ type: "system" });
 
     try {
@@ -868,6 +914,9 @@ export default function ChatLayout() {
 
   const handleSelectFriend = useCallback(
     async (friendId: string) => {
+      const requestId = conversationRequestId.current + 1;
+      conversationRequestId.current = requestId;
+      messageRequestId.current += 1;
       setComposerError("");
       suppressFriendQuerySelection.current = false;
       router.replace(`/chat?friendId=${encodeURIComponent(friendId)}`, {
@@ -878,7 +927,7 @@ export default function ChatLayout() {
         type: "friend",
         friendId,
       });
-      setConversationId(null);
+      setActiveConversation(null);
 
       let res: Response;
 
@@ -893,11 +942,19 @@ export default function ChatLayout() {
           }),
         });
       } catch {
+        if (conversationRequestId.current !== requestId) {
+          return;
+        }
+
         setComposerError(t.failedToOpenConversation);
         return;
       }
 
       const data = await res.json().catch(() => ({}));
+
+      if (conversationRequestId.current !== requestId) {
+        return;
+      }
 
       if (!res.ok || !data.id) {
 		setComposerError(t.failedToOpenConversation);
@@ -905,7 +962,10 @@ export default function ChatLayout() {
         return;
       }
 
-      setConversationId(data.id);
+      setActiveConversation({
+        friendId,
+        id: data.id,
+      });
     },
     [markFriendAsRead, router, t]
   );
@@ -1119,6 +1179,9 @@ export default function ChatLayout() {
     );
 
     if (selectedFriendId === friendId) {
+      conversationRequestId.current += 1;
+      messageRequestId.current += 1;
+      setActiveConversation(null);
       setCurrentView({
         type: "none",
       });
@@ -1215,7 +1278,11 @@ export default function ChatLayout() {
 
     const dbMode = mapChatModeToDB(chatMode);
 
-    if (!conversationId || !userId) {
+    if (
+      !activeConversation ||
+      activeConversation.friendId !== selectedFriend.id ||
+      !userId
+    ) {
       setComposerError(t.conversationNotReady);
       return false;
     }
@@ -1229,7 +1296,7 @@ export default function ChatLayout() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          conversationId,
+          conversationId: activeConversation.id,
           rawText: transformed.rawText,
           translatedText: transformed.translatedText,
           mode: dbMode,
@@ -1270,6 +1337,18 @@ export default function ChatLayout() {
       ];
     });
 
+    setFriends((current) =>
+      current.map((friend) =>
+        friend.id === selectedFriend.id
+          ? {
+              ...friend,
+              lastMessage: result.message!.rawText,
+              lastMessageAt: result.message!.createdAt,
+            }
+          : friend
+      )
+    );
+
     socket?.emit("chat:message:send", {
       senderId: userId,
       toUserId: result.recipientId,
@@ -1280,9 +1359,12 @@ export default function ChatLayout() {
   }
 
   function handleClosePanel() {
+    conversationRequestId.current += 1;
+    messageRequestId.current += 1;
     setComposerError("");
     suppressFriendQuerySelection.current = false;
     router.replace("/chat", { scroll: false });
+    setActiveConversation(null);
     setCurrentView({
       type: "none",
     });
@@ -1323,7 +1405,6 @@ export default function ChatLayout() {
 
       {currentView.type === "friend" && selectedFriend ? (
         <ChatWindow
-          key={selectedFriend.id}
           friend={selectedFriend}
           messages={selectedMessages}
           chatMode={chatMode}

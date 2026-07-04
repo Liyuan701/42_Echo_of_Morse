@@ -58,10 +58,61 @@ export async function GET(request: NextRequest) {
   const pendingInvitationTargetIds = new Set(
     pendingInvitationTargets.map((invitation) => invitation.toUserId)
   );
+  const conversations =
+    friendIds.length === 0
+      ? []
+      : await prisma.conversation.findMany({
+          where: {
+            OR: [
+              {
+                userAId: userId,
+                userBId: { in: friendIds },
+              },
+              {
+                userAId: { in: friendIds },
+                userBId: userId,
+              },
+            ],
+          },
+          select: {
+            userAId: true,
+            userBId: true,
+            messages: {
+              orderBy: {
+                createdAt: "desc",
+              },
+              take: 1,
+              select: {
+                rawText: true,
+                createdAt: true,
+              },
+            },
+          },
+        });
+  const latestMessageByFriendId = new Map<
+    string,
+    { rawText: string; createdAt: Date }
+  >();
+
+  for (const conversation of conversations) {
+    const latestMessage = conversation.messages[0];
+
+    if (!latestMessage) {
+      continue;
+    }
+
+    const friendId =
+      conversation.userAId === userId
+        ? conversation.userBId
+        : conversation.userAId;
+
+    latestMessageByFriendId.set(friendId, latestMessage);
+  }
  
   // give frontend game session info of my friend.
   const formatted = friends.map((friend) => {
     const user = friend.user;
+    const latestMessage = latestMessageByFriendId.get(user.id);
     const activeSession = user.radioSessionPlayers[0] ?? null;
     const lobbyPresence = user.radioLobbyPresences[0] ?? null;
     const isPlaying =
@@ -76,8 +127,8 @@ export async function GET(request: NextRequest) {
       avatarUrl: user.image,
       image: user.image,
       isOnline: user.isOnline,
-      lastMessage: "",
-      lastMessageAt: "",
+      lastMessage: latestMessage?.rawText ?? "",
+      lastMessageAt: latestMessage?.createdAt.toISOString() ?? "",
       gameStatus: isPlaying ? "PLAYING" : "IDLE",
       lobbyStatus: isPlaying
         ? "PLAYING"

@@ -19,6 +19,23 @@ type FriendListItemProps = {
   onDeleteFriend: (friendId: string) => void;
 };
 
+function formatLastMessageTime(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function FriendListItem({
   friend,
   isSelected,
@@ -45,6 +62,7 @@ export default function FriendListItem({
   const inviteButtonLabel = isGameInvitePending ? t.pending : t.invite;
   const unreadCount = friend.unreadCount ?? 0;
   const isInviteDisabled = Boolean(inviteDisabledReason);
+  const lastMessageTime = formatLastMessageTime(friend.lastMessageAt);
 
   function handleContextMenu(event: MouseEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -150,7 +168,7 @@ export default function FriendListItem({
               {displayName}
             </span>
 
-            <span className={styles.time}>{friend.lastMessageAt}</span>
+            <span className={styles.time}>{lastMessageTime}</span>
           </div>
 
           <div className={styles.previewButton}>
