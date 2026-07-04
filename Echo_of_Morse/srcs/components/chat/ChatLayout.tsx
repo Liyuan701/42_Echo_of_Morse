@@ -64,6 +64,10 @@ type ActiveConversation = {
   id: string;
 };
 
+type SelectFriendOptions = {
+  updateUrl?: boolean;
+};
+
 type FriendWithOptionalGameStatus = Friend & {
   gameStatus?: "IDLE" | "READY" | "PLAYING" | null;
   lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
@@ -143,6 +147,7 @@ export default function ChatLayout() {
     string | null
   >(null);
   const suppressFriendQuerySelection = useRef(false);
+  const pendingFriendUrlSync = useRef<string | null>(null);
   const conversationRequestId = useRef(0);
   const messageRequestId = useRef(0);
 
@@ -316,7 +321,7 @@ export default function ChatLayout() {
           return;
         }
 
-        const nextMessages = Array.isArray(data)
+        const nextMessages: ChatMessage[] = Array.isArray(data)
           ? data.map((message: ApiMessage) => ({
               id: message.id,
               friendId: conversation.friendId,
@@ -869,6 +874,7 @@ export default function ChatLayout() {
   async function handleSelectSystemMessages() {
     conversationRequestId.current += 1;
     messageRequestId.current += 1;
+    pendingFriendUrlSync.current = null;
     setComposerError("");
     suppressFriendQuerySelection.current = true;
     router.replace("/chat?panel=system", { scroll: false });
@@ -887,6 +893,7 @@ export default function ChatLayout() {
   async function handleOpenSystemMessagesWithoutMarkingRead() {
     conversationRequestId.current += 1;
     messageRequestId.current += 1;
+    pendingFriendUrlSync.current = null;
     setComposerError("");
     setActiveConversation(null);
     setCurrentView({ type: "system" });
@@ -913,15 +920,21 @@ export default function ChatLayout() {
   }
 
   const handleSelectFriend = useCallback(
-    async (friendId: string) => {
+    async (friendId: string, options: SelectFriendOptions = {}) => {
+      const updateUrl = options.updateUrl ?? true;
       const requestId = conversationRequestId.current + 1;
       conversationRequestId.current = requestId;
       messageRequestId.current += 1;
       setComposerError("");
       suppressFriendQuerySelection.current = false;
-      router.replace(`/chat?friendId=${encodeURIComponent(friendId)}`, {
-        scroll: false,
-      });
+
+      if (updateUrl) {
+        pendingFriendUrlSync.current = friendId;
+        router.replace(`/chat?friendId=${encodeURIComponent(friendId)}`, {
+          scroll: false,
+        });
+      }
+
       markFriendAsRead(friendId);
       setCurrentView({
         type: "friend",
@@ -979,6 +992,14 @@ export default function ChatLayout() {
       return;
     }
 
+    if (pendingFriendUrlSync.current) {
+      if (friendIdFromQuery === pendingFriendUrlSync.current) {
+        pendingFriendUrlSync.current = null;
+      }
+
+      return;
+    }
+
     const friendExists = friends.some(
       (friend) => friend.id === friendIdFromQuery
     );
@@ -994,7 +1015,7 @@ export default function ChatLayout() {
       return;
     }
 
-    void handleSelectFriend(friendIdFromQuery);
+    void handleSelectFriend(friendIdFromQuery, { updateUrl: false });
   }, [
     currentView,
     friendIdFromQuery,
@@ -1181,6 +1202,7 @@ export default function ChatLayout() {
     if (selectedFriendId === friendId) {
       conversationRequestId.current += 1;
       messageRequestId.current += 1;
+      pendingFriendUrlSync.current = null;
       setActiveConversation(null);
       setCurrentView({
         type: "none",
@@ -1361,6 +1383,7 @@ export default function ChatLayout() {
   function handleClosePanel() {
     conversationRequestId.current += 1;
     messageRequestId.current += 1;
+    pendingFriendUrlSync.current = null;
     setComposerError("");
     suppressFriendQuerySelection.current = false;
     router.replace("/chat", { scroll: false });
