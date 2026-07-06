@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Echo of Morse was originally created and accomplished as part of the 42 cursus Transcendence project by mlaurent, lifan, yren, and gustgonz.
+Echo of Morse was originally created and accomplished as part of the 42 cursus Transcendence project by mlaurent, lifan, yren, jdu, and gustgonz.
 
 This repository is a personal modified version of that original project. It is no longer maintained as a 42 school assignment: this fork continues the application as an independent project, with new design decisions, cleanup, and future improvements for public release.
 
