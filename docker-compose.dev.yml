@@ -1,4 +1,4 @@
-# Docker Compose configuration for Transcendence project - DEVELOPMENT
+# Docker Compose configuration for Echo of Morse - DEVELOPMENT
 # Architecture: Browser -> localhost:3000 -> Next.js container -> db:5432 -> PostgreSQL container
 
 services:
@@ -6,7 +6,7 @@ services:
   # PostgreSQL database container
   db:
     image: docker.io/library/postgres:15
-    container_name: transcendence_db_dev
+    container_name: echo_db_dev
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -17,14 +17,14 @@ services:
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
     networks:
-      - transcendence_network
+      - echo_network
 
   # Next.js application container - dev mode with hot reload
   web:
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
-    container_name: transcendence_web
+    container_name: echo_web_dev
     restart: always
     env_file:
       - .env.dev
@@ -40,7 +40,7 @@ services:
     depends_on:
       - db
     networks:
-      - transcendence_network
+      - echo_network
     command: sh /app/docker/dev-entrypoint.sh
 
 
@@ -51,11 +51,11 @@ services:
     ports:
       - "3001:3001"
     networks:
-    - transcendence_network
+    - echo_network
 
 volumes:
   postgres_data_dev:
 
 networks:
-  transcendence_network:
+  echo_network:
     driver: bridge

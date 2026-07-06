@@ -79,25 +79,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     initSocket();
 
-    const presenceHeartbeat = window.setInterval(() => {
-      if (!socketInstance.connected) return;
-
-      void fetch("/api/users/status", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          isOnline: true,
-        }),
-      }).catch(() => {});
-    }, 30000);
-
     return () => {
       isMounted = false;
 
-      window.clearInterval(presenceHeartbeat);
       socketInstance.off("connect", handleConnect);
       socketInstance.off("disconnect", handleDisconnect);
     };

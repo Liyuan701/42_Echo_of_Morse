@@ -32,7 +32,7 @@ export default function GameSession({
 
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionGame;
-	const { socket, isConnected } = useSocket();
+	const { socket } = useSocket();
 
 	//arder une valeur sans relancer l’affichage de la page
 	const sequenceIndexRef = useRef(1);
@@ -262,24 +262,6 @@ export default function GameSession({
 	]);
 
 	useEffect(() => {
-		const hasPendingEligiblePlayers = sessionData?.players.some(
-			(player) => !player.abandoned && !player.completed
-		);
-
-		if (sessionData?.status === "finished" && !hasPendingEligiblePlayers) {
-			return;
-		}
-
-		// Game polling stays frequent because scores and completion must converge.
-		const intervalMs = isConnected ? 3000 : 2000;
-		const intervalId = window.setInterval(() => {
-			void refreshSessionSnapshot().catch(() => undefined);
-		}, intervalMs);
-
-		return () => window.clearInterval(intervalId);
-	}, [isConnected, refreshSessionSnapshot, sessionData]);
-
-	useEffect(() => {
 		if (!socket) {
 			return;
 		}
@@ -287,17 +269,40 @@ export default function GameSession({
 		// Join the Socket.IO room for this match; events only signal a refresh.
 		socket.emit("game:join", { sessionId });
 
+		function handleSocketSync() {
+			socket.emit("game:join", { sessionId });
+			void refreshSessionSnapshot().catch(() => undefined);
+		}
+
 		function handleSessionUpdated() {
 			void refreshSessionSnapshot().catch(() => undefined);
 		}
 
+		socket.on("connect", handleSocketSync);
+		socket.on("sync:required", handleSocketSync);
 		socket.on("game:session-updated", handleSessionUpdated);
 
 		return () => {
 			socket.emit("game:leave", { sessionId });
+			socket.off("connect", handleSocketSync);
+			socket.off("sync:required", handleSocketSync);
 			socket.off("game:session-updated", handleSessionUpdated);
 		};
 	}, [refreshSessionSnapshot, sessionId, socket]);
+
+	useEffect(() => {
+		function handleVisibilityChange() {
+			if (document.visibilityState === "visible") {
+				void refreshSessionSnapshot().catch(() => undefined);
+			}
+		}
+
+		window.addEventListener("visibilitychange", handleVisibilityChange);
+
+		return () => {
+			window.removeEventListener("visibilitychange", handleVisibilityChange);
+		};
+	}, [refreshSessionSnapshot]);
 
 	//-------------------- gestion du timer --------------------
 	useEffect(() => {

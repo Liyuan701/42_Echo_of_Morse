@@ -1,4 +1,4 @@
-# Configuration Docker Compose pour le projet Transcendence
+# Configuration Docker Compose pour le projet Echo of Morse
 # Architecture: Navigateur -> waf:443 -> web:3000 -> db:5432
 #                             waf:443 -> ws:3001  (WebSocket via /socket.io/)
 #               Secrets:     vault-init -> vault -> web
@@ -11,7 +11,7 @@ services:
   # ============================================================
   waf:
     image: docker.io/owasp/modsecurity-crs:3.3.9-nginx-202606290906
-    container_name: transcendence_waf
+    container_name: echo_waf
     restart: always
     # L'image tourne par défaut en utilisateur "nginx" (UID 101), mais
     # /etc/nginx appartient à root:root (775) — sans ça, le entrypoint
@@ -62,21 +62,19 @@ services:
       - web
       - ws
     networks:
-      - transcendence_network
+      - echo_network
 
   # ============================================================
   # Base de données PostgreSQL — interne uniquement
   # ============================================================
   db:
     image: docker.io/library/postgres:15
-    container_name: transcendence_db
+    container_name: echo_db
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      # - "5432:5432"   # utile en développement — à commenter en production
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -87,7 +85,7 @@ services:
       retries: 10
       start_period: 10s
     networks:
-      - transcendence_network
+      - echo_network
 
   # ============================================================
   # Application Next.js — interne uniquement
@@ -100,7 +98,7 @@ services:
       args:
         NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
         NEXTAUTH_URL: ${NEXTAUTH_URL}
-    container_name: transcendence_web
+    container_name: echo_web
     restart: always
     # ports:
     #   - "3000:3000"   # utile en développement — à commenter en production
@@ -122,7 +120,7 @@ services:
       retries: 6
       start_period: 30s
     networks:
-      - transcendence_network
+      - echo_network
     env_file:
       - .env.prod
 
@@ -132,14 +130,12 @@ services:
   # ============================================================
   vault:
     image: docker.io/hashicorp/vault:latest
-    container_name: transcendence_vault
+    container_name: echo_vault
     restart: unless-stopped
     # root dans le conteneur (pas sur l'hôte) — l'entrypoint de l'image fait
     # le chown du volume nommé (créé root:root par Docker) vers vault:vault,
     # puis redescend ses privilèges pour lancer le serveur.
     user: root
-    ports:
-      # - "8200:8200"   # interface UI Vault accessible sur http://localhost:8200
     environment:
       - VAULT_ADDR=http://0.0.0.0:8200
       - SKIP_SETCAP=1
@@ -155,7 +151,7 @@ services:
     # (UID 100, non-root) ne peut pas y écrire → "permission denied".
     command: sh -c "chown -R vault:vault /vault/data && exec docker-entrypoint.sh vault server -config=/vault/config/local.json"
     networks:
-      - transcendence_network
+      - echo_network
 
   # ============================================================
   # vault-unseal — initialise et descelle Vault au démarrage
@@ -164,7 +160,7 @@ services:
   # ============================================================
   vault-unseal:
     image: docker.io/hashicorp/vault:latest
-    container_name: transcendence_vault_unseal
+    container_name: echo_vault_unseal
     user: root
     environment:
       - VAULT_ADDR=http://vault:8200
@@ -176,7 +172,7 @@ services:
     restart: unless-stopped
     command: sh /vault/scripts/vault-unseal.sh
     networks:
-      - transcendence_network
+      - echo_network
 
   # ============================================================
   # vault-init — charge les secrets du .env dans Vault (one-shot)
@@ -185,7 +181,7 @@ services:
   # ============================================================
   vault-init:
     image: docker.io/hashicorp/vault:latest
-    container_name: transcendence_vault_init
+    container_name: echo_vault_init
     environment:
       - VAULT_ADDR=http://vault:8200
       # secret/database
@@ -219,7 +215,7 @@ services:
         echo '[vault-init] Secrets chargés avec succès'
       "
     networks:
-      - transcendence_network
+      - echo_network
 
   # ============================================================
   # Serveur WebSocket (Socket.IO) — interne uniquement
@@ -228,7 +224,7 @@ services:
   # ============================================================
   ws:
     build: ./ws-server
-    container_name: transcendence_ws
+    container_name: echo_ws
     restart: always
     # ports:
     #   - "3001:3001"   # utile en développement — à commenter en production
@@ -243,7 +239,7 @@ services:
       retries: 6
       start_period: 10s
     networks:
-      - transcendence_network
+      - echo_network
     environment:
       - WS_SHARED_SECRET=${WS_SHARED_SECRET}
 
@@ -256,5 +252,5 @@ volumes:
 
 # Réseau interne — tous les services communiquent ici
 networks:
-  transcendence_network:
+  echo_network:
     driver: bridge

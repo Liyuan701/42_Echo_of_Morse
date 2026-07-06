@@ -9,7 +9,7 @@ export function getSocket(token?: string) {
     const WS_URL = process.env.NEXT_PUBLIC_WS_URL || window.location.origin;
     socket = io(WS_URL, {
       path: "/socket.io/",
-      transports: ["polling", "websocket"],
+      transports: ["websocket"],
       autoConnect: false,
       auth: token ? { token } : undefined,
     });

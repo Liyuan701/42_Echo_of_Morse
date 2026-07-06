@@ -13,7 +13,7 @@ const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   path: "/socket.io/",
   cors: { origin: "*" },
-  transports: ["polling", "websocket"],
+  transports: ["websocket"],
   pingInterval: 25000,
   pingTimeout: 20000,
 });

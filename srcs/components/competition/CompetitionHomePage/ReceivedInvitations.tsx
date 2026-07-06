@@ -35,7 +35,7 @@ export default function ReceivedInvitations() {
 	const t = dictionary.competitionHome;
 	
   const { status } = useSession();
-  const { socket, isConnected } = useSocket();
+  const { socket } = useSocket();
   const { answerGameInvitation } = useGameInvitationActions();
 
   const [invitations, setInvitations] = useState<GameInvitation[]>([]);
@@ -72,15 +72,7 @@ export default function ReceivedInvitations() {
 
   useEffect(() => {
     void loadInvitations();
-
-    // Socket events refresh immediately; polling catches delayed events quickly.
-    const intervalMs = isConnected ? 5000 : 3000;
-    const intervalId = window.setInterval(() => {
-      void loadInvitations();
-    }, intervalMs);
-
-    return () => window.clearInterval(intervalId);
-  }, [isConnected, loadInvitations]);
+  }, [loadInvitations]);
 
   useEffect(() => {
     if (!socket) {
@@ -91,16 +83,32 @@ export default function ReceivedInvitations() {
       void loadInvitations();
     }
 
+    socket.on("connect", handleInvitationEvent);
+    socket.on("sync:required", handleInvitationEvent);
     socket.on("game-invitation:new", handleInvitationEvent);
     socket.on("game-invitation:updated", handleInvitationEvent);
     socket.on("game-invitation:answered", handleInvitationEvent);
 
     return () => {
+      socket.off("connect", handleInvitationEvent);
+      socket.off("sync:required", handleInvitationEvent);
       socket.off("game-invitation:new", handleInvitationEvent);
       socket.off("game-invitation:updated", handleInvitationEvent);
       socket.off("game-invitation:answered", handleInvitationEvent);
     };
   }, [loadInvitations, socket]);
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void loadInvitations();
+      }
+    }
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => window.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [loadInvitations]);
 
   useEffect(() => {
     if (invitations.length === 0) {

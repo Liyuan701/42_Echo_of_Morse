@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui";
 import { useSocket } from "@/providers/socket-provider";
 import styles from "@/../app/competition/competition.module.css";
@@ -21,6 +21,24 @@ export default function OnlineOverview({ overview }: OnlineOverviewProps) {
   const [onlineNow, setOnlineNow] = useState(overview.totalOnlineUsers);
   const [radioUsers, setRadioUsers] = useState(overview.radioUsers);
 
+  const refreshOverview = useCallback(async () => {
+    const response = await fetch("/api/competition/overview", {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    const data = (await response.json()) as {
+      totalOnlineUsers: number;
+      radioUsers: Record<string, number>;
+    };
+
+    setOnlineNow(data.totalOnlineUsers);
+    setRadioUsers(data.radioUsers);
+  }, []);
+
   useEffect(() => {
     if (!socket) return;
 
@@ -28,64 +46,43 @@ export default function OnlineOverview({ overview }: OnlineOverviewProps) {
       setOnlineNow(count);
     }
 
-    /**
-     * optional: future event for live lobby updates
-     */
-    function handleRadioUpdate(data: {
-      radioId: string;
-      count: number;
-    }) {
-      setRadioUsers((prev) => ({
-        ...prev,
-        [data.radioId]: data.count,
-      }));
+    function handleRadioUpdate() {
+      void refreshOverview();
     }
 
     socket.on("users-count", handleUsersCount);
-    socket.on("radio-users-update", handleRadioUpdate);
+    socket.on("radio:user-list-updated", handleRadioUpdate);
+    socket.on("radio:ready-list-updated", handleRadioUpdate);
+    socket.on("radio:game-created", handleRadioUpdate);
+    socket.on("sync:required", handleRadioUpdate);
+    socket.on("connect", handleRadioUpdate);
     socket.emit("get-users-count");
 
     return () => {
       socket.off("users-count", handleUsersCount);
-      socket.off("radio-users-update", handleRadioUpdate);
+      socket.off("radio:user-list-updated", handleRadioUpdate);
+      socket.off("radio:ready-list-updated", handleRadioUpdate);
+      socket.off("radio:game-created", handleRadioUpdate);
+      socket.off("sync:required", handleRadioUpdate);
+      socket.off("connect", handleRadioUpdate);
     };
-  }, [socket]);
+  }, [refreshOverview, socket]);
 
   useEffect(() => {
-    let cancelled = false;
+    void refreshOverview().catch(() => undefined);
 
-    async function refreshOverview() {
-      const response = await fetch("/api/competition/overview", {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        return;
-      }
-
-      const data = (await response.json()) as {
-        totalOnlineUsers: number;
-        radioUsers: Record<string, number>;
-      };
-
-      if (!cancelled) {
-        setOnlineNow(data.totalOnlineUsers);
-        setRadioUsers(data.radioUsers);
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void refreshOverview().catch(() => undefined);
       }
     }
 
-    void refreshOverview().catch(() => undefined);
-    // Socket events keep this live; polling catches delayed updates quickly.
-    const intervalMs = isConnected ? 5000 : 3000;
-    const intervalId = window.setInterval(() => {
-      void refreshOverview().catch(() => undefined);
-    }, intervalMs);
+    window.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isConnected]);
+  }, [refreshOverview]);
 
   return (
     <Card className={styles.overviewCard} aria-labelledby="online-overview">

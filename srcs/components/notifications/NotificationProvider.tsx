@@ -102,7 +102,7 @@ export function NotificationProvider({
 
 
   const { status, data: session } = useSession();
-  const { socket, isConnected } = useSocket();
+  const { socket } = useSocket();
   const userId = session?.user?.id;
 
   const [pendingGameInvitations, setPendingGameInvitations] = useState<
@@ -252,21 +252,7 @@ export function NotificationProvider({
 
   useEffect(() => {
     void refreshNotifications();
-
-    if (status !== "authenticated") {
-      return;
-    }
-
-    // Keep polling frequent enough that missed Socket.IO events recover quickly.
-    const intervalMs = isConnected ? 5000 : 3000;
-    const intervalId = window.setInterval(() => {
-      void refreshNotifications();
-    }, intervalMs);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [isConnected, refreshNotifications, status]);
+  }, [refreshNotifications]);
 
   useEffect(() => {
     if (pendingGameInvitations.length === 0) {
@@ -302,6 +288,8 @@ export function NotificationProvider({
       void refreshNotifications();
     };
 
+    socket.on("connect", handleNotificationEvent);
+    socket.on("sync:required", handleNotificationEvent);
     socket.on("chat:message:new", handleNotificationEvent);
     socket.on("game-invitation:new", handleNotificationEvent);
     socket.on("game-invitation:updated", handleNotificationEvent);
@@ -311,6 +299,8 @@ export function NotificationProvider({
     socket.on("friend:removed", handleNotificationEvent);
 
     return () => {
+      socket.off("connect", handleNotificationEvent);
+      socket.off("sync:required", handleNotificationEvent);
       socket.off("chat:message:new", handleNotificationEvent);
       socket.off("game-invitation:new", handleNotificationEvent);
       socket.off("game-invitation:updated", handleNotificationEvent);
@@ -320,6 +310,20 @@ export function NotificationProvider({
       socket.off("friend:removed", handleNotificationEvent);
     };
   }, [refreshNotifications, socket]);
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void refreshNotifications();
+      }
+    }
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refreshNotifications]);
 
   useEffect(() => {
     if (!toast) {

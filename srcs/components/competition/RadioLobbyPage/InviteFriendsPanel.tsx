@@ -54,7 +54,7 @@ export default function InviteFriendsPanel({
 
   const { data: session, status } = useSession();
   const currentUserId = (session?.user as { id?: string } | undefined)?.id;
-  const { socket, isConnected } = useSocket();
+  const { socket } = useSocket();
   const { sendGameInvitation } = useGameInvitationActions();
 
   const [realOnlineFriends, setRealOnlineFriends] = useState<
@@ -166,18 +166,26 @@ export default function InviteFriendsPanel({
       setPresenceRevision((revision) => revision + 1);
     };
 
+    socket.on("connect", handleStateChange);
+    socket.on("sync:required", handleStateChange);
     socket.on("online-users", handleStateChange);
     socket.on("game-invitation:new", handleStateChange);
     socket.on("game-invitation:updated", handleStateChange);
     socket.on("game-invitation:answered", handleStateChange);
     socket.on("friend:presence-updated", handleStateChange);
+    socket.on("radio:user-list-updated", handleStateChange);
+    socket.on("radio:ready-list-updated", handleStateChange);
 
     return () => {
+      socket.off("connect", handleStateChange);
+      socket.off("sync:required", handleStateChange);
       socket.off("online-users", handleStateChange);
       socket.off("game-invitation:new", handleStateChange);
       socket.off("game-invitation:updated", handleStateChange);
       socket.off("game-invitation:answered", handleStateChange);
       socket.off("friend:presence-updated", handleStateChange);
+      socket.off("radio:user-list-updated", handleStateChange);
+      socket.off("radio:ready-list-updated", handleStateChange);
     };
   }, [socket]);
 
@@ -186,14 +194,16 @@ export default function InviteFriendsPanel({
       return;
     }
 
-    // Socket presence events are primary; polling catches delayed updates quickly.
-    const intervalMs = isConnected ? 5000 : 3000;
-    const intervalId = window.setInterval(() => {
-      setPresenceRevision((revision) => revision + 1);
-    }, intervalMs);
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        setPresenceRevision((revision) => revision + 1);
+      }
+    }
 
-    return () => window.clearInterval(intervalId);
-  }, [isConnected, status]);
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => window.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [status]);
 
   const friendsToDisplay = useMemo(() => {
     return status === "authenticated" ? realOnlineFriends : [];

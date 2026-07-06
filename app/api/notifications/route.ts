@@ -27,8 +27,7 @@ export async function GET() {
     recentMessages,
   ] =
     await prisma.$transaction(async (transaction) => {
-      // Notification polling is 
-      // also the fallback that turns timed-out invites into expired records.
+      // Snapshot refresh also turns timed-out invites into expired records.
       await expirePendingGameInvitationsForUser(transaction, userId);
 
       return Promise.all([

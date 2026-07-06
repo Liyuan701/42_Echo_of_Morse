@@ -45,7 +45,7 @@ export default function RadioLobbyClient({
 	const radioName = radioNameById[radio.radioId];
 
   const router = useRouter();
-  const { socket, isConnected } = useSocket();
+  const { socket } = useSocket();
 
   const [users, setUsers] = useState<RadioUser[]>(initialUsers);
   const [message, setMessage] = useState("");
@@ -160,29 +160,14 @@ export default function RadioLobbyClient({
         }
       });
 
-    // Socket events drive normal updates; polling catches delayed events quickly.
-    const intervalMs = isConnected ? 5000 : 3000;
-    const intervalId = window.setInterval(() => {
-      fetchLobby("GET")
-        .then((lobby) => {
-          if (!cancelled && lobby) {
-            applyLobbyResponse(lobby);
-          }
-        })
-        .catch(() => {
-          // Keep the last database snapshot during a temporary network failure.
-        });
-    }, intervalMs);
 
     return () => {
       cancelled = true;
-      window.clearInterval(intervalId);
       leaveScheduler.scheduleLeave();
     };
   }, [
     applyLobbyResponse,
     fetchLobby,
-    isConnected,
     leaveScheduler,
     t.failedToJoinLobby,
   ]);
@@ -199,6 +184,20 @@ export default function RadioLobbyClient({
       window.removeEventListener("pagehide", handlePageHide);
     };
   }, [leaveScheduler, sendLeaveRequest]);
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void requestLobby("GET");
+      }
+    }
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [requestLobby]);
 
   /**
    * =========================================================
@@ -236,8 +235,10 @@ export default function RadioLobbyClient({
 
     function handleSyncRequired() {
       s.emit("radio:join", { radioId: radio.radioId });
+      void requestLobby("GET");
     }
 
+    s.on("connect", handleSyncRequired);
     s.on("radio:user-list-updated", handleUserListUpdated);
     s.on("radio:ready-list-updated", handleReadyListUpdated);
     s.on("radio:game-created", handleGameCreated);
@@ -245,6 +246,7 @@ export default function RadioLobbyClient({
 
     return () => {
       s.emit("radio:leave", { radioId: radio.radioId });
+      s.off("connect", handleSyncRequired);
       s.off("radio:user-list-updated", handleUserListUpdated);
       s.off("radio:ready-list-updated", handleReadyListUpdated);
       s.off("radio:game-created", handleGameCreated);

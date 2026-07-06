@@ -5,12 +5,11 @@ const PASSWORD = "MorseTest123!";
 
 // Default users
 const users = [
-  { username: "lifan", learningLevel: 3 },
-  { username: "yren", learningLevel: 4 },
-  { username: "jdu", learningLevel: 2 },
-  { username: "mlaurent", learningLevel: 5 },
-  { username: "gustgonz", learningLevel: 3 },
-  { username: "nobody", learningLevel: 1 },
+  { username: "A", learningLevel: 3 },
+  { username: "B", learningLevel: 4 },
+  { username: "C", learningLevel: 2 },
+  { username: "D", learningLevel: 5 },
+  { username: "E", learningLevel: 3 },
   { username: "top_student", learningLevel: 12 }, // top student who has level 12.
 ];
 
@@ -235,7 +234,7 @@ async function main() {
   // Create friendships
   console.log("Creating FULL friendships...");
 
-  const group = ["lifan", "yren", "jdu", "mlaurent", "gustgonz"];
+  const group = ["A", "B", "C", "D", "E"];
 
   for (let i = 0; i < group.length; i++) {
     for (let j = i + 1; j < group.length; j++) {
@@ -255,13 +254,13 @@ async function main() {
   // Create conversations and messages
   console.log("Creating conversations and messages...");
 
-  const lifan = map["lifan"];
-  const yren = map["yren"];
-  const jdu = map["jdu"];
+  const userA = map["A"];
+  const userB = map["B"];
+  const userC = map["C"];
 
-  const [aId, bId] = lifan.id < yren.id
-    ? [lifan.id, yren.id]
-    : [yren.id, lifan.id];
+  const [aId, bId] = userA.id < userB.id
+    ? [userA.id, userB.id]
+    : [userB.id, userA.id];
 
   const conv1 = await prisma.conversation.create({
     data: {
@@ -274,14 +273,14 @@ async function main() {
     data: [
       {
         conversationId: conv1.id,
-        senderId: lifan.id,
+        senderId: userA.id,
         rawText: "Hello in morse",
         translatedText: ".... . .-.. .-.. ---",
         mode: "LANGUAGE_TO_MORSE",
       },
       {
         conversationId: conv1.id,
-        senderId: yren.id,
+        senderId: userB.id,
         rawText: "Reply here",
         translatedText: ".-. . .--. .-.. -.--",
         mode: "LANGUAGE_TO_MORSE",
@@ -289,9 +288,9 @@ async function main() {
     ],
   });
 
-  const [cId, dId] = lifan.id < jdu.id
-    ? [lifan.id, jdu.id]
-    : [jdu.id, lifan.id];
+  const [cId, dId] = userA.id < userC.id
+    ? [userA.id, userC.id]
+    : [userC.id, userA.id];
 
   await prisma.conversation.create({
     data: {
