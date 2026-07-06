@@ -48,15 +48,32 @@ Additional development/demo accounts may exist for specific flows, such as `lear
 
 ## Development
 
-The application source now lives directly at the repository root.
+The application source lives directly at the repository root. Docker Compose is managed through the Makefile.
 
 Common development commands:
 
 ```bash
-make dev
-make db-init
-make test
-make check
+make dev        # start the development stack
+make dev-logs   # start dev and follow logs
+make down       # stop the development stack
+make rebuild    # rebuild and start dev
+make db-init    # run Prisma migrations and seed data
+make db         # open psql in the dev database container
+make check      # run typecheck and lint
+```
+
+## Production
+
+Common production commands:
+
+```bash
+make certs      # generate local HTTPS certificates
+make prod       # build and start production
+make prod-down  # stop production
+make prod-logs  # follow production logs
+make ps         # show production container status
+make seed       # run production seed data
+make db-prod    # open psql in the production database container
 ```
 
 This README is being rebuilt for the fork and will be expanded as the modified application evolves.

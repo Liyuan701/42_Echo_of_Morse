@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/session-user";
-import { getRadioLobby } from "@/lib/services/competition";
+import { getPublicRadioLobbySnapshot, getRadioLobby } from "@/lib/services/competition";
 import { getRadioUserState } from "@/lib/services/radio-user-state";
 import { notifyWs } from "@/lib/notifyWs";
 import { prisma } from "@/server/prisma";
@@ -20,11 +20,11 @@ type RouteContext = {
 };
 
 async function notifyRadioLobbyChanged(type: string, radioId: string) {
-  // The full lobby response contains user-specific fields like isCurrentUser.
-  // Broadcast only a signal; each browser reloads its own authorized snapshot.
+  const lobby = await getPublicRadioLobbySnapshot(radioId);
+
   await notifyWs(type, {
     radioId,
-    data: { radioId },
+    data: { radioId, lobby },
   });
 }
 

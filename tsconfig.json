@@ -16,6 +16,7 @@
       ]
     },
     "strict": true,
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,

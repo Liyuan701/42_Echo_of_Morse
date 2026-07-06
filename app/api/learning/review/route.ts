@@ -8,6 +8,7 @@ import { NextRequest } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { getMorseForCharacter } from "@/lib/morse";
 import { calculateSrsState, getNextReviewAt } from "@/lib/learning/srs";
+import type { SrsState } from "@/lib/learning/srs";
 import { prisma } from "@/server/prisma";
 
 const REVIEW_QUESTION_COUNT = 20;
@@ -20,6 +21,16 @@ type ReviewAnswer = {
   char?: string;
   mode?: ReviewMode;
   answer?: string;
+};
+
+type ReviewProgressRow = SrsState & {
+  id: string;
+  letterId: number;
+  correctCount: number;
+  wrongCount: number;
+  totalSeen: number;
+  nextReviewAt: Date;
+  letter: { char: string };
 };
 
 function getAccuracy(correctCount: number, totalSeen: number) {
@@ -53,7 +64,7 @@ export async function GET() {
 
   // Only practiced characters can enter review. Unseen characters remain part
   // of the normal 12-level learning path.
-  const progressRows = await prisma.userLetterProgress.findMany({
+  const progressRows = (await prisma.userLetterProgress.findMany({
     where: {
       userId: session.user.id,
       totalSeen: { gt: 0 },
@@ -63,7 +74,7 @@ export async function GET() {
         select: { char: true },
       },
     },
-  });
+  })) as ReviewProgressRow[];
 
   const reviewableProgressRows = progressRows.filter((progress) =>
     Boolean(getMorseForCharacter(progress.letter.char))
@@ -165,7 +176,7 @@ export async function POST(request: NextRequest) {
 
   // Fetch progress through the authenticated user so submitted characters
   // cannot update another user's records.
-  const progressRows = await prisma.userLetterProgress.findMany({
+  const progressRows = (await prisma.userLetterProgress.findMany({
     where: {
       userId: session.user.id,
       letter: {
@@ -177,7 +188,7 @@ export async function POST(request: NextRequest) {
         select: { char: true },
       },
     },
-  });
+  })) as ReviewProgressRow[];
 
   const progressByCharacter = new Map(
     progressRows.map((progress) => [progress.letter.char, progress])

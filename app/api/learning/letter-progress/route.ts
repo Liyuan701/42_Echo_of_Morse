@@ -4,21 +4,17 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/server/prisma";
-import { Prisma } from "@prisma/client";
-
-type ProgressWithLetter = Prisma.UserLetterProgressGetPayload<{
-  select: {
-    mastery: true;
-    correctCount: true;
-    wrongCount: true;
-    totalSeen: true;
-    lastReviewed: true;
-    nextReviewAt: true;
-    letter: {
-      select: { char: true };
-    };
+type ProgressWithLetter = {
+  mastery: number;
+  correctCount: number;
+  wrongCount: number;
+  totalSeen: number;
+  lastReviewed: Date | null;
+  nextReviewAt: Date;
+  letter: {
+    char: string;
   };
-}>;
+};
 
 export async function GET() {
   const session = await getServerSession(authOptions);

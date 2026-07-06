@@ -1,6 +1,7 @@
 //* A helper to deal with the invitation time-out issues. 
 
 import type { Prisma } from "@prisma/client";
+import { notifyWs } from "@/lib/notifyWs";
 
 
 // Game invitations are short-lived 
@@ -9,7 +10,7 @@ export const GAME_INVITATION_TIMEOUT_MS = 60 * 1000;
 
 type DbClient = Prisma.TransactionClient;
 
-type ExpirableInvitation = {
+export type ExpirableInvitation = {
   id: string;
   fromUserId: string;
   toUserId: string;
@@ -25,6 +26,105 @@ type ExpirableInvitation = {
     name: string;
   } | null;
 };
+
+type ClientGameInvitationUser = {
+  id: string;
+  username: string;
+  image?: string | null;
+};
+
+type ClientGameInvitationRadio = {
+  radioId: string;
+  name: string;
+} | null;
+
+type ClientGameInvitationInput = {
+  id: string;
+  status: string;
+  createdAt: Date;
+  fromUserId: string;
+  toUserId: string;
+  fromUser: ClientGameInvitationUser;
+  toUser: ClientGameInvitationUser;
+  radioRoom?: ClientGameInvitationRadio;
+};
+
+export function formatGameInvitationForClient(invitation: ClientGameInvitationInput) {
+  return {
+    id: invitation.id,
+    status: invitation.status.toLowerCase(),
+    createdAt: invitation.createdAt,
+    expiresAt: getGameInvitationExpiresAt(invitation.createdAt),
+    fromUser: {
+      id: invitation.fromUserId,
+      username: invitation.fromUser.username,
+      image: invitation.fromUser.image ?? null,
+    },
+    toUser: {
+      id: invitation.toUserId,
+      username: invitation.toUser.username,
+      image: invitation.toUser.image ?? null,
+    },
+    radio: invitation.radioRoom ?? null,
+  };
+}
+
+export async function notifyGameInvitationChange(
+  type: string,
+  invitation: ClientGameInvitationInput,
+  status = invitation.status.toLowerCase()
+) {
+  const payload = {
+    invitationId: invitation.id,
+    status,
+    invitation: formatGameInvitationForClient({
+      ...invitation,
+      status: status.toUpperCase(),
+    }),
+  };
+
+  await Promise.all([
+    notifyWs(type, {
+      toUserId: invitation.toUserId,
+      data: payload,
+    }),
+    notifyWs(type, {
+      toUserId: invitation.fromUserId,
+      data: payload,
+    }),
+  ]);
+}
+
+export async function notifyExpiredGameInvitations(
+  invitations: ExpirableInvitation[]
+) {
+  const uniqueInvitations = Array.from(
+    new Map(invitations.map((invitation) => [invitation.id, invitation])).values()
+  );
+
+  await Promise.all(
+    uniqueInvitations.map((invitation) =>
+      notifyGameInvitationChange(
+        "game-invitation.updated",
+        {
+          ...invitation,
+          status: "EXPIRED",
+          fromUser: {
+            id: invitation.fromUserId,
+            username: invitation.fromUser.username,
+            image: null,
+          },
+          toUser: {
+            id: invitation.toUserId,
+            username: invitation.toUser.username,
+            image: null,
+          },
+        },
+        "expired"
+      )
+    )
+  );
+}
 
 export function getGameInvitationExpiresAt(createdAt: Date) {
   return new Date(createdAt.getTime() + GAME_INVITATION_TIMEOUT_MS);
@@ -66,7 +166,7 @@ export async function expirePendingGameInvitationsForUser(
 ) {
   const expiredBefore = new Date(now.getTime() - GAME_INVITATION_TIMEOUT_MS);
 
-  const invitations = await transaction.gameInvitation.findMany({
+  const invitations: ExpirableInvitation[] = await transaction.gameInvitation.findMany({
     where: {
       status: "PENDING",
       createdAt: {

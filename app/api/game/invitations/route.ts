@@ -4,10 +4,13 @@
 //* POST: create a new game invitation to invite a friend.
 
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { getSessionUserId } from "@/lib/session-user";
 import {
   expirePendingGameInvitationsForUser,
-  getGameInvitationExpiresAt,
+  formatGameInvitationForClient,
+  notifyExpiredGameInvitations,
+  notifyGameInvitationChange,
 } from "@/lib/services/game-invitations";
 import { ensureInviterLobbyPresence } from "@/lib/services/invitation-lobby";
 import { getRadioUserState } from "@/lib/services/radio-user-state";
@@ -42,57 +45,42 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const invitations = await prisma.$transaction(async (transaction) => {
-    // Clear timed-out invitations first so the response only contains active actions.
-    await expirePendingGameInvitationsForUser(transaction, userId);
+  const { invitations, expiredInvitations } = await prisma.$transaction(
+    async (transaction: Prisma.TransactionClient) => {
+      const expiredInvitations = await expirePendingGameInvitationsForUser(
+        transaction,
+        userId
+      );
 
-    return transaction.gameInvitation.findMany({
-      where: {
-        status: "PENDING",
-        // Filter by sender or receiver according to the requested direction.
-        ...(direction === "sent"
-          ? { fromUserId: userId }
-          : { toUserId: userId }),
-        // radioId is an optional filter.
-        ...(radioId ? { radioRoom: { radioId } } : {}),
-      },
-      orderBy: { createdAt: "desc" },
-      include: {
-        fromUser: {
-          select: {
-            id: true,
-            username: true,
-            image: true,
+      const invitations = await transaction.gameInvitation.findMany({
+        where: {
+          status: "PENDING",
+          ...(direction === "sent"
+            ? { fromUserId: userId }
+            : { toUserId: userId }),
+          ...(radioId ? { radioRoom: { radioId } } : {}),
+        },
+        orderBy: { createdAt: "desc" },
+        include: {
+          fromUser: {
+            select: { id: true, username: true, image: true },
+          },
+          toUser: {
+            select: { id: true, username: true, image: true },
+          },
+          radioRoom: {
+            select: { radioId: true, name: true },
           },
         },
-        toUser: {
-          select: {
-            id: true,
-            username: true,
-            image: true,
-          },
-        },
-        radioRoom: {
-          select: {
-            radioId: true,
-            name: true,
-          },
-        },
-      },
-    });
-  });
+      });
 
-  return NextResponse.json(
-    invitations.map((invitation) => ({
-      id: invitation.id,
-      status: invitation.status.toLowerCase(),
-      createdAt: invitation.createdAt,
-      expiresAt: getGameInvitationExpiresAt(invitation.createdAt),
-      fromUser: invitation.fromUser,
-      toUser: invitation.toUser,
-      radio: invitation.radioRoom,
-    }))
+      return { invitations, expiredInvitations };
+    }
   );
+
+  await notifyExpiredGameInvitations(expiredInvitations);
+
+  return NextResponse.json(invitations.map(formatGameInvitationForClient));
 }
 
 // Create a new invitation to join a radio lobby.
@@ -175,9 +163,9 @@ export async function POST(request: NextRequest) {
   // To avoid pending conflicts, request status of both sender & target
   // Search for their pending invitation status and wether they have other invitation.
   try {
-    const invitation = await prisma.$transaction(async (transaction) => {
+    const { invitation, expiredInvitations } = await prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
       // Expire old pending invitations before checking uniqueness rules.
-      await Promise.all([
+      const expiredInvitationGroups = await Promise.all([
         expirePendingGameInvitationsForUser(transaction, fromUserId),
         expirePendingGameInvitationsForUser(transaction, toUserId),
       ]);
@@ -261,27 +249,37 @@ export async function POST(request: NextRequest) {
         maxUsers: room.maxUsers,
       });
 
-      return transaction.gameInvitation.create({
+      const invitation = await transaction.gameInvitation.create({
         data: {
           fromUserId,
           toUserId,
           radioRoomId: room.id,
         },
-        select: {
-          id: true,
-          status: true,
-          createdAt: true,
+        include: {
+          fromUser: {
+            select: { id: true, username: true, image: true },
+          },
+          toUser: {
+            select: { id: true, username: true, image: true },
+          },
+          radioRoom: {
+            select: { radioId: true, name: true },
+          },
         },
       });
+
+      return {
+        invitation,
+        expiredInvitations: expiredInvitationGroups.flat(),
+      };
     });
 
-    return NextResponse.json(
-      {
-        ...invitation,
-        expiresAt: getGameInvitationExpiresAt(invitation.createdAt),
-      },
-      { status: 201 }
-    );
+    await notifyExpiredGameInvitations(expiredInvitations);
+    await notifyGameInvitationChange("game-invitation.created", invitation, "pending");
+
+    return NextResponse.json(formatGameInvitationForClient(invitation), {
+      status: 201,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "INVITATION_CREATE_FAILED";

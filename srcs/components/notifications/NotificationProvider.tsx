@@ -26,6 +26,12 @@ import type {
 } from "@/types/notifications";
 import styles from "./notification-center.module.css";
 
+type GameInvitationSocketPayload = {
+  invitationId?: string;
+  status?: string;
+  invitation?: NotificationGameInvitation;
+};
+
 type ToastNotification = {
   id: string;
   title: string;
@@ -279,6 +285,57 @@ export function NotificationProvider({
     };
   }, [pendingGameInvitations, refreshNotifications]);
 
+  const applyInvitationSocketEvent = useCallback(
+    (payload?: GameInvitationSocketPayload) => {
+      const invitation = payload?.invitation;
+      const invitationId = payload?.invitationId ?? invitation?.id;
+      const eventStatus = payload?.status ?? invitation?.status;
+
+      if (!invitationId) {
+        void refreshNotifications();
+        return;
+      }
+
+      if (eventStatus !== "pending" || !invitation) {
+        setPendingGameInvitations((current) =>
+          current.filter((item) => item.id !== invitationId)
+        );
+        knownInvitationIds.current.delete(invitationId);
+        return;
+      }
+
+      if (userId && invitation.toUser.id !== userId) {
+        return;
+      }
+
+      setPendingGameInvitations((current) => {
+        if (current.some((item) => item.id === invitation.id)) {
+          return current;
+        }
+
+        return filterActiveGameInvitations([invitation, ...current]);
+      });
+
+      if (!knownInvitationIds.current.has(invitation.id)) {
+        knownInvitationIds.current.add(invitation.id);
+        const radioId = invitation.radio?.radioId;
+        const radioName = radioId
+          ? radioNameById[radioId] ?? t.radioLobbyFallback
+          : t.radioLobbyFallback;
+
+        setToast({
+          id: "invite:" + invitation.id,
+          title: t.newGameInvitationTitle,
+          body: t.gameInvitationToastBody
+            .replace("{username}", invitation.fromUser.username)
+            .replace("{radioName}", radioName),
+          href: "/chat?panel=system",
+        });
+      }
+    },
+    [refreshNotifications, radioNameById, t, userId]
+  );
+
   useEffect(() => {
     if (!socket) {
       return;
@@ -291,9 +348,9 @@ export function NotificationProvider({
     socket.on("connect", handleNotificationEvent);
     socket.on("sync:required", handleNotificationEvent);
     socket.on("chat:message:new", handleNotificationEvent);
-    socket.on("game-invitation:new", handleNotificationEvent);
-    socket.on("game-invitation:updated", handleNotificationEvent);
-    socket.on("game-invitation:answered", handleNotificationEvent);
+    socket.on("game-invitation:new", applyInvitationSocketEvent);
+    socket.on("game-invitation:updated", applyInvitationSocketEvent);
+    socket.on("game-invitation:answered", applyInvitationSocketEvent);
     socket.on("friend:request:new", handleNotificationEvent);
     socket.on("friend:request:accepted", handleNotificationEvent);
     socket.on("friend:removed", handleNotificationEvent);
@@ -302,14 +359,14 @@ export function NotificationProvider({
       socket.off("connect", handleNotificationEvent);
       socket.off("sync:required", handleNotificationEvent);
       socket.off("chat:message:new", handleNotificationEvent);
-      socket.off("game-invitation:new", handleNotificationEvent);
-      socket.off("game-invitation:updated", handleNotificationEvent);
-      socket.off("game-invitation:answered", handleNotificationEvent);
+      socket.off("game-invitation:new", applyInvitationSocketEvent);
+      socket.off("game-invitation:updated", applyInvitationSocketEvent);
+      socket.off("game-invitation:answered", applyInvitationSocketEvent);
       socket.off("friend:request:new", handleNotificationEvent);
       socket.off("friend:request:accepted", handleNotificationEvent);
       socket.off("friend:removed", handleNotificationEvent);
     };
-  }, [refreshNotifications, socket]);
+  }, [applyInvitationSocketEvent, refreshNotifications, socket]);
 
   useEffect(() => {
     function handleVisibilityChange() {

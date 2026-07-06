@@ -4,6 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { encode } from "@/lib/morse";
 import { useSocket } from "@/providers/socket-provider";
+import { useSession } from "next-auth/react";
 
 import styles from "./css/gameSession.module.css";
 import Answer from "./answer";
@@ -17,6 +18,12 @@ import {
 	submitGameSessionResult,
 	updateGameSessionProgress,
 } from "./gameSessionData";
+
+type GameSessionUpdatePayload = {
+	radioId?: string;
+	sessionId?: string;
+	session?: GameSessionData;
+};
 
 type GameSessionProps = {
 	radioId: string;
@@ -33,6 +40,8 @@ export default function GameSession({
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionGame;
 	const { socket } = useSocket();
+	const { data: authSession } = useSession();
+	const currentUserId = (authSession?.user as { id?: string } | undefined)?.id;
 
 	//arder une valeur sans relancer l’affichage de la page
 	const sequenceIndexRef = useRef(1);
@@ -150,6 +159,27 @@ export default function GameSession({
 		});
 	}, []);
 
+	const applySocketSessionSnapshot = useCallback(
+		(payload?: GameSessionUpdatePayload) => {
+			if (!payload?.session || payload.sessionId !== sessionId) {
+				return false;
+			}
+
+			const localizedSession: GameSessionData = {
+				...payload.session,
+				players: payload.session.players.map((player) =>
+					currentUserId && player.id === currentUserId
+						? { ...player, id: "me", username: "You" }
+						: player
+				),
+			};
+
+			applySessionSnapshot(localizedSession);
+			return true;
+		},
+		[applySessionSnapshot, currentUserId, sessionId]
+	);
+
 	const refreshSessionSnapshot = useCallback(() => {
 		return getGameSessionData({ radioId, sessionId }).then(applySessionSnapshot);
 	}, [applySessionSnapshot, radioId, sessionId]);
@@ -266,29 +296,33 @@ export default function GameSession({
 			return;
 		}
 
+		const s = socket;
+
 		// Join the Socket.IO room for this match; events only signal a refresh.
-		socket.emit("game:join", { sessionId });
+		s.emit("game:join", { sessionId });
 
 		function handleSocketSync() {
-			socket.emit("game:join", { sessionId });
+			s.emit("game:join", { sessionId });
 			void refreshSessionSnapshot().catch(() => undefined);
 		}
 
-		function handleSessionUpdated() {
-			void refreshSessionSnapshot().catch(() => undefined);
+		function handleSessionUpdated(payload?: GameSessionUpdatePayload) {
+			if (!applySocketSessionSnapshot(payload)) {
+				void refreshSessionSnapshot().catch(() => undefined);
+			}
 		}
 
-		socket.on("connect", handleSocketSync);
-		socket.on("sync:required", handleSocketSync);
-		socket.on("game:session-updated", handleSessionUpdated);
+		s.on("connect", handleSocketSync);
+		s.on("sync:required", handleSocketSync);
+		s.on("game:session-updated", handleSessionUpdated);
 
 		return () => {
-			socket.emit("game:leave", { sessionId });
-			socket.off("connect", handleSocketSync);
-			socket.off("sync:required", handleSocketSync);
-			socket.off("game:session-updated", handleSessionUpdated);
+			s.emit("game:leave", { sessionId });
+			s.off("connect", handleSocketSync);
+			s.off("sync:required", handleSocketSync);
+			s.off("game:session-updated", handleSessionUpdated);
 		};
-	}, [refreshSessionSnapshot, sessionId, socket]);
+	}, [applySocketSessionSnapshot, refreshSessionSnapshot, sessionId, socket]);
 
 	useEffect(() => {
 		function handleVisibilityChange() {

@@ -3,8 +3,6 @@
 import { useI18n } from "@/lib/i18n";
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useSocket } from "@/providers/socket-provider";
 import { useNotifications } from "@/components/notifications/NotificationProvider";
 import { isGameInvitationExpired } from "@/lib/game-invitation-expiration";
 import type { RadioId } from "@/types/competition";
@@ -67,24 +65,16 @@ async function readJsonSafely<T>(response: Response): Promise<T> {
   }
 }
 
-function getActionStatus(action: "accept" | "decline") {
-  return action === "accept" ? "accepted" : "declined";
-}
-
 export function useGameInvitationActions() {
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionRadio;
   const chatText = dictionary.chatLayout;
 
   const router = useRouter();
-  const { data: session } = useSession();
-  const { socket } = useSocket();
   const {
     removeGameInvitation,
     refreshNotifications,
   } = useNotifications();
-
-  const currentUserId = session?.user?.id;
 
   const sendGameInvitation = useCallback(
     async ({
@@ -127,14 +117,6 @@ export function useGameInvitationActions() {
         );
       }
 
-      socket?.emit("game-invitation:send", {
-        invitation: invitationBody,
-        invitationId: invitationBody.id,
-        toUserId,
-        fromUserId: currentUserId,
-      });
-
-      await refreshNotifications();
 
       if (redirectAfterSend) {
         router.push(`/competition/radio/${radioId}`);
@@ -146,10 +128,7 @@ export function useGameInvitationActions() {
       chatText.friendAlreadyInvitedYou,
       chatText.gameInvitationAlreadyPending,
       chatText.friendHasPendingGameInvitation,
-      currentUserId,
-      refreshNotifications,
       router,
-      socket,
       t.failedToSendInvitation,
     ]
   );
@@ -159,7 +138,6 @@ export function useGameInvitationActions() {
       invitationId,
       action,
       fallbackRadioId,
-      fromUserId,
       expiresAt,
       redirectOnAccept = true,
     }: AnswerGameInvitationArgs) => {
@@ -192,12 +170,6 @@ export function useGameInvitationActions() {
         if (response.status === 410 || body.status === "expired") {
           removeGameInvitation(invitationId);
           await refreshNotifications();
-
-          socket?.emit("game-invitation:answered", {
-            toUserId: fromUserId,
-            invitationId,
-            status: "expired",
-          });
         }
 
         throw new GameInvitationActionError(
@@ -208,13 +180,6 @@ export function useGameInvitationActions() {
       }
 
       removeGameInvitation(invitationId);
-      await refreshNotifications();
-
-      socket?.emit("game-invitation:answered", {
-        toUserId: fromUserId,
-        invitationId,
-        status: getActionStatus(action),
-      });
 
       if (action === "accept" && redirectOnAccept) {
         const radioId = body.radio?.radioId ?? fallbackRadioId;
@@ -230,7 +195,6 @@ export function useGameInvitationActions() {
       refreshNotifications,
       removeGameInvitation,
       router,
-      socket,
       t.failedToAnswerInvitation,
     ]
   );

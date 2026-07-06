@@ -4,15 +4,16 @@
 
 
 import { NextResponse } from "next/server";
-import type { MessageMode } from "@prisma/client";
 import { getSessionUserId } from "@/lib/session-user";
 import { prisma } from "@/server/prisma";
 
-const MESSAGE_MODES: MessageMode[] = [
+const MESSAGE_MODES = [
   "LANGUAGE_TO_MORSE",
   "MORSE_TO_LANGUAGE",
   "LANGUAGE_ONLY",
-];
+] as const;
+
+type MessageMode = (typeof MESSAGE_MODES)[number];
 
 // GET /api/messages?conversationId=xxx
 export async function GET(request: Request) {

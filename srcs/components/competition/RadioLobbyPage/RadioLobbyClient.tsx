@@ -17,6 +17,16 @@ import type { RadioConfig } from "@/types/competition";
 
 import styles from "@/../app/competition/radio/[radioId]/radio-lobby.module.css";
 
+type PublicRadioLobbySnapshot = {
+  radioId: string;
+  users: Array<Omit<RadioUser, "isFriend" | "isCurrentUser">>;
+};
+
+type LobbyUpdatePayload = {
+  radioId?: string;
+  lobby?: PublicRadioLobbySnapshot | null;
+};
+
 export type RadioLobbyClientProps = {
   radio: {
     id: string;
@@ -101,6 +111,39 @@ export default function RadioLobbyClient({
       }
     },
     [radio.radioId, router]
+  );
+
+  const applyPublicLobbySnapshot = useCallback(
+    (snapshot: PublicRadioLobbySnapshot | null | undefined) => {
+      if (!snapshot || snapshot.radioId !== radio.radioId) {
+        return false;
+      }
+
+      const previousUsers = new Map(users.map((user) => [user.id, user]));
+      const nextUsers: RadioUser[] = snapshot.users.map((user) => {
+        const previousUser = previousUsers.get(user.id);
+
+        return {
+          ...user,
+          isFriend: previousUser?.isFriend ?? false,
+          isCurrentUser: previousUser?.isCurrentUser ?? false,
+        };
+      });
+
+      const nextMemberIds = nextUsers
+        .map((user) => user.id)
+        .sort()
+        .join(",");
+
+      if (nextMemberIds !== memberIdsRef.current) {
+        memberIdsRef.current = nextMemberIds;
+        setLobbyMembershipRevision((revision) => revision + 1);
+      }
+
+      setUsers(nextUsers);
+      return true;
+    },
+    [radio.radioId, users]
   );
 
   const fetchLobby = useCallback(
@@ -210,12 +253,10 @@ export default function RadioLobbyClient({
 
     s.emit("radio:join", { radioId: radio.radioId });
 
-    function handleUserListUpdated() {
-      void requestLobby("GET");
-    }
-
-    function handleReadyListUpdated() {
-      void requestLobby("GET");
+    function handleLobbyUpdated(payload?: LobbyUpdatePayload) {
+      if (!applyPublicLobbySnapshot(payload?.lobby)) {
+        void requestLobby("GET");
+      }
     }
 
     function handleGameCreated(payload: {
@@ -239,20 +280,27 @@ export default function RadioLobbyClient({
     }
 
     s.on("connect", handleSyncRequired);
-    s.on("radio:user-list-updated", handleUserListUpdated);
-    s.on("radio:ready-list-updated", handleReadyListUpdated);
+    s.on("radio:user-list-updated", handleLobbyUpdated);
+    s.on("radio:ready-list-updated", handleLobbyUpdated);
     s.on("radio:game-created", handleGameCreated);
     s.on("sync:required", handleSyncRequired);
 
     return () => {
       s.emit("radio:leave", { radioId: radio.radioId });
       s.off("connect", handleSyncRequired);
-      s.off("radio:user-list-updated", handleUserListUpdated);
-      s.off("radio:ready-list-updated", handleReadyListUpdated);
+      s.off("radio:user-list-updated", handleLobbyUpdated);
+      s.off("radio:ready-list-updated", handleLobbyUpdated);
       s.off("radio:game-created", handleGameCreated);
       s.off("sync:required", handleSyncRequired);
     };
-  }, [currentUserId, socket, router, radio.radioId, requestLobby]);
+  }, [
+    applyPublicLobbySnapshot,
+    currentUserId,
+    socket,
+    router,
+    radio.radioId,
+    requestLobby,
+  ]);
 
   /**
    * =========================================================

@@ -2,10 +2,12 @@
 //* PATCH to modify the status of an invitation.
 
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { getSessionUserId } from "@/lib/session-user";
 import {
   expirePendingGameInvitationById,
   getGameInvitationExpiresAt,
+  notifyGameInvitationChange,
   isGameInvitationExpired,
 } from "@/lib/services/game-invitations";
 import { getRadioUserState } from "@/lib/services/radio-user-state";
@@ -43,10 +45,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     where: { id: params.id },
     include: {
       fromUser: {
-        select: { username: true },
+        select: { id: true, username: true, image: true },
       },
       toUser: {
-        select: { username: true },
+        select: { id: true, username: true, image: true },
       },
       radioRoom: {
         include: {
@@ -84,9 +86,15 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   }
   // If the row is still pending but its deadline has passed, expire it before answering.
   if (isGameInvitationExpired(invitation.createdAt)) {
-    await prisma.$transaction(async (transaction) => {
+    await prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
       await expirePendingGameInvitationById(transaction, invitation);
     });
+
+    await notifyGameInvitationChange(
+      "game-invitation.updated",
+      { ...invitation, status: "EXPIRED" },
+      "expired"
+    );
 
     return NextResponse.json(
       {
@@ -100,16 +108,16 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
   // now, decline -> change invitation status, creat two sys messages.
   if (body.action === "decline") {
-    const declined = await prisma.$transaction(async (transaction) => {
+    const declined = await prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
       const updated = await transaction.gameInvitation.update({
         where: { id: invitation.id },
         data: { status: "DECLINED" },
         include: {
           fromUser: {
-            select: { username: true },
+            select: { id: true, username: true, image: true },
           },
           toUser: {
-            select: { username: true },
+            select: { id: true, username: true, image: true },
           },
           radioRoom: {
             select: {
@@ -164,6 +172,12 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       return updated;
     });
 
+    await notifyGameInvitationChange(
+      "game-invitation.updated",
+      declined,
+      "declined"
+    );
+
     return NextResponse.json({
       id: declined.id,
       status: declined.status.toLowerCase(),
@@ -179,15 +193,15 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   }
 
   try {
-    const updated = await prisma.$transaction(async (transaction) => {
+    const updated = await prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
       const freshInvitation = await transaction.gameInvitation.findUnique({
         where: { id: invitation.id },
         include: {
           fromUser: {
-            select: { username: true },
+            select: { id: true, username: true, image: true },
           },
           toUser: {
-            select: { username: true },
+            select: { id: true, username: true, image: true },
           },
           radioRoom: {
             include: {
@@ -298,10 +312,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         data: { status: "ACCEPTED" },
         include: {
           fromUser: {
-            select: { username: true },
+            select: { id: true, username: true, image: true },
           },
           toUser: {
-            select: { username: true },
+            select: { id: true, username: true, image: true },
           },
           radioRoom: {
             select: {
@@ -355,6 +369,12 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
       return updated;
     });
+
+    await notifyGameInvitationChange(
+      "game-invitation.updated",
+      updated,
+      "accepted"
+    );
 
     return NextResponse.json({
       id: updated.id,
@@ -412,6 +432,14 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
         status: 409,
       },
     };
+
+    if (message === "INVITATION_EXPIRED") {
+      await notifyGameInvitationChange(
+        "game-invitation.updated",
+        { ...invitation, status: "EXPIRED" },
+        "expired"
+      );
+    }
 
     if (errors[message]) {
       return NextResponse.json(

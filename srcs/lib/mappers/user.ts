@@ -1,11 +1,18 @@
 // convert the full API user info to simpler UI user info.
 
-import type { User } from "@prisma/client";
-
-import type { UserDTO } from "@/types/user";
-
 export function toUserDTO(
-  user: any,
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    image: string | null;
+    bio: string | null;
+    learningLevel: number;
+    isOnline: boolean;
+    createdAt: Date;
+    lastSeen: Date | null;
+    accounts: Array<{ provider: string }>;
+  },
   friendCount?: number
 ) {
   return {

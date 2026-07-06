@@ -30,11 +30,20 @@ type GameInvitation = {
   } | null;
 };
 
+type GameInvitationSocketPayload = {
+  invitationId?: string;
+  status?: string;
+  invitation?: GameInvitation & {
+    toUser?: { id: string };
+  };
+};
+
 export default function ReceivedInvitations() {
 	const { dictionary } = useI18n();
 	const t = dictionary.competitionHome;
 	
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const userId = session?.user?.id;
   const { socket } = useSocket();
   const { answerGameInvitation } = useGameInvitationActions();
 
@@ -74,29 +83,62 @@ export default function ReceivedInvitations() {
     void loadInvitations();
   }, [loadInvitations]);
 
+  const applyInvitationSocketEvent = useCallback(
+    (payload?: GameInvitationSocketPayload) => {
+      const invitation = payload?.invitation;
+      const invitationId = payload?.invitationId ?? invitation?.id;
+      const invitationStatus = payload?.status ?? invitation?.status;
+
+      if (!invitationId) {
+        void loadInvitations();
+        return;
+      }
+
+      if (invitationStatus !== "pending" || !invitation) {
+        setInvitations((current) =>
+          current.filter((item) => item.id !== invitationId)
+        );
+        return;
+      }
+
+      if (userId && invitation.toUser?.id !== userId) {
+        return;
+      }
+
+      setInvitations((current) => {
+        if (current.some((item) => item.id === invitation.id)) {
+          return current;
+        }
+
+        return filterActiveGameInvitations([invitation, ...current]);
+      });
+    },
+    [loadInvitations, userId]
+  );
+
   useEffect(() => {
     if (!socket) {
       return;
     }
 
-    function handleInvitationEvent() {
+    function handleSyncEvent() {
       void loadInvitations();
     }
 
-    socket.on("connect", handleInvitationEvent);
-    socket.on("sync:required", handleInvitationEvent);
-    socket.on("game-invitation:new", handleInvitationEvent);
-    socket.on("game-invitation:updated", handleInvitationEvent);
-    socket.on("game-invitation:answered", handleInvitationEvent);
+    socket.on("connect", handleSyncEvent);
+    socket.on("sync:required", handleSyncEvent);
+    socket.on("game-invitation:new", applyInvitationSocketEvent);
+    socket.on("game-invitation:updated", applyInvitationSocketEvent);
+    socket.on("game-invitation:answered", applyInvitationSocketEvent);
 
     return () => {
-      socket.off("connect", handleInvitationEvent);
-      socket.off("sync:required", handleInvitationEvent);
-      socket.off("game-invitation:new", handleInvitationEvent);
-      socket.off("game-invitation:updated", handleInvitationEvent);
-      socket.off("game-invitation:answered", handleInvitationEvent);
+      socket.off("connect", handleSyncEvent);
+      socket.off("sync:required", handleSyncEvent);
+      socket.off("game-invitation:new", applyInvitationSocketEvent);
+      socket.off("game-invitation:updated", applyInvitationSocketEvent);
+      socket.off("game-invitation:answered", applyInvitationSocketEvent);
     };
-  }, [loadInvitations, socket]);
+  }, [applyInvitationSocketEvent, loadInvitations, socket]);
 
   useEffect(() => {
     function handleVisibilityChange() {

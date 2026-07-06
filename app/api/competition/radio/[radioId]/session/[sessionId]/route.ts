@@ -19,12 +19,24 @@ type RouteContext = {
   };
 };
 
-async function notifyGameSessionChanged(radioId: string, sessionId: string) {
-  // The session response contains current-user fields like id: "me".
-  // Broadcast only a change signal; each browser reloads its own snapshot.
+async function notifyGameSessionChanged(
+  radioId: string,
+  sessionId: string,
+  session?: NonNullable<Awaited<ReturnType<typeof findSession>>>
+) {
+  const nextSession = session ?? (await findSession(radioId, sessionId));
+
+  if (!nextSession) {
+    return;
+  }
+
   await notifyWs("game.session.updated", {
     sessionId,
-    data: { radioId, sessionId },
+    data: {
+      radioId,
+      sessionId,
+      session: formatSession(nextSession, null),
+    },
   });
 }
 
@@ -63,7 +75,7 @@ async function findSession(radioId: string, sessionId: string) {
 // Helper function to format the session data for API response
 function formatSession(
   session: NonNullable<Awaited<ReturnType<typeof findSession>>>,
-  currentUserId: string
+  currentUserId: string | null
 ) {
   // Calculate lasted time.
   const elapsedSeconds = session.startedAt
@@ -81,9 +93,9 @@ function formatSession(
     sequences: createSessionSequences(session.id),
     speedWpm: session.room.wpm,
     players: session.players.map((player) => ({
-      id: player.userId === currentUserId ? "me" : player.userId,
+      id: currentUserId && player.userId === currentUserId ? "me" : player.userId,
       username:
-        player.userId === currentUserId ? "You" : player.user.username,
+        currentUserId && player.userId === currentUserId ? "You" : player.user.username,
       score: player.score ?? 0,
       correct: player.correct,
       total: player.total,
@@ -197,7 +209,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
     const updatedSession = await findSession(params.radioId, params.sessionId);
     if (updatedProgress.count > 0) {
-      await notifyGameSessionChanged(params.radioId, params.sessionId);
+      await notifyGameSessionChanged(params.radioId, params.sessionId, updatedSession!);
     }
     return NextResponse.json(formatSession(updatedSession!, userId));
   }
@@ -261,6 +273,6 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
   }
 
   const updatedSession = await findSession(params.radioId, params.sessionId);
-  await notifyGameSessionChanged(params.radioId, params.sessionId);
+  await notifyGameSessionChanged(params.radioId, params.sessionId, updatedSession!);
   return NextResponse.json(formatSession(updatedSession!, userId));
 }

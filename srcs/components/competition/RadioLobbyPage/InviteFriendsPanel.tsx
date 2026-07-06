@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Card } from "@/components/ui";
 import type { RadioId } from "@/types/competition";
@@ -41,6 +41,15 @@ type InviteFriendItem = {
   lobbyStatus?: "IDLE" | "READY" | "PLAYING" | null;
   currentRadioId?: string | null;
   hasPendingGameInvitation?: boolean;
+};
+
+type GameInvitationSocketPayload = {
+  status?: string;
+  invitation?: {
+    status?: string;
+    fromUser: { id: string };
+    toUser: { id: string };
+  };
 };
 
 export default function InviteFriendsPanel({
@@ -157,6 +166,44 @@ export default function InviteFriendsPanel({
     lobbyMembershipRevision,
   ]);
 
+  const applyInvitationSocketEvent = useCallback(
+    (payload?: GameInvitationSocketPayload) => {
+      const invitation = payload?.invitation;
+
+      if (!invitation || !currentUserId) {
+        setPresenceRevision((revision) => revision + 1);
+        return;
+      }
+
+      const otherUserId =
+        invitation.fromUser.id === currentUserId
+          ? invitation.toUser.id
+          : invitation.toUser.id === currentUserId
+            ? invitation.fromUser.id
+            : null;
+
+      if (!otherUserId) {
+        return;
+      }
+
+      const invitationStatus = payload?.status ?? invitation.status;
+
+      if (invitationStatus === "pending") {
+        setPendingInviteFriendIds((previousIds) =>
+          previousIds.includes(otherUserId)
+            ? previousIds
+            : [...previousIds, otherUserId]
+        );
+        return;
+      }
+
+      setPendingInviteFriendIds((previousIds) =>
+        previousIds.filter((id) => id !== otherUserId)
+      );
+    },
+    [currentUserId]
+  );
+
   useEffect(() => {
     if (!socket) {
       return;
@@ -169,9 +216,9 @@ export default function InviteFriendsPanel({
     socket.on("connect", handleStateChange);
     socket.on("sync:required", handleStateChange);
     socket.on("online-users", handleStateChange);
-    socket.on("game-invitation:new", handleStateChange);
-    socket.on("game-invitation:updated", handleStateChange);
-    socket.on("game-invitation:answered", handleStateChange);
+    socket.on("game-invitation:new", applyInvitationSocketEvent);
+    socket.on("game-invitation:updated", applyInvitationSocketEvent);
+    socket.on("game-invitation:answered", applyInvitationSocketEvent);
     socket.on("friend:presence-updated", handleStateChange);
     socket.on("radio:user-list-updated", handleStateChange);
     socket.on("radio:ready-list-updated", handleStateChange);
@@ -180,14 +227,14 @@ export default function InviteFriendsPanel({
       socket.off("connect", handleStateChange);
       socket.off("sync:required", handleStateChange);
       socket.off("online-users", handleStateChange);
-      socket.off("game-invitation:new", handleStateChange);
-      socket.off("game-invitation:updated", handleStateChange);
-      socket.off("game-invitation:answered", handleStateChange);
+      socket.off("game-invitation:new", applyInvitationSocketEvent);
+      socket.off("game-invitation:updated", applyInvitationSocketEvent);
+      socket.off("game-invitation:answered", applyInvitationSocketEvent);
       socket.off("friend:presence-updated", handleStateChange);
       socket.off("radio:user-list-updated", handleStateChange);
       socket.off("radio:ready-list-updated", handleStateChange);
     };
-  }, [socket]);
+  }, [applyInvitationSocketEvent, socket]);
 
   useEffect(() => {
     if (status !== "authenticated") {

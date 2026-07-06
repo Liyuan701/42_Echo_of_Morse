@@ -140,6 +140,42 @@ export async function getRadioLobby(radioId: string, currentUserId: string) {
   };
 }
 
+export async function getPublicRadioLobbySnapshot(radioId: string) {
+  const room = await prisma.radioRoom.findUnique({
+    where: { radioId },
+    include: {
+      lobbyPresences: {
+        orderBy: { joinedAt: "asc" },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              image: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!room) {
+    return null;
+  }
+
+  return {
+    radioId: room.radioId,
+    users: room.lobbyPresences.map((presence) => ({
+      id: presence.user.id,
+      username: presence.user.username,
+      displayName: presence.user.username,
+      avatarUrl: presence.user.image,
+      avatarInitial: presence.user.username.charAt(0).toUpperCase() || "?",
+      status: presence.status.toLowerCase() as RadioUser["status"],
+    })),
+  };
+}
+
 // Fetch all radio configurations for lobby listing
 export async function getRadioConfigs() {
   const radios = await prisma.radioRoom.findMany({
