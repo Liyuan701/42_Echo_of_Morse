@@ -16,7 +16,15 @@ The application includes:
 - Morse lessons, practice, and review flows;
 - friendship and private chat features;
 - real-time radio lobbies and multiplayer Morse games;
-- Docker-based development and deployment support.
+- Docker-based deployment support.
+
+## Real-time Sync
+
+Echo of Morse uses Socket.IO for live events and regular HTTP requests for initial loading, user actions, and recovery sync. This keeps the app responsive without making every screen depend on socket payloads alone.
+
+Current real-time events cover online presence, chat messages, friend requests, radio lobby membership, ready-state changes, game-session updates, and game invitation changes. When an invitation creates or changes lobby membership, the affected radio lobby is also notified so open lobby pages can refresh promptly.
+
+Fallback fetches are intentionally kept for page load, reconnect, visibility restore, and direct user actions.
 
 ## Test Users
 
@@ -32,11 +40,11 @@ Seed users:
 
 | Username | Email | Notes |
 | --- | --- | --- |
-| A | A@test.com | Core test user |
-| B | B@test.com | Core test user |
-| C | C@test.com | Core test user |
-| D | D@test.com | Core test user |
-| E | E@test.com | Core test user |
+| A | a@test.com | Core test user |
+| B | b@test.com | Core test user |
+| C | c@test.com | Core test user |
+| D | d@test.com | Core test user |
+| E | e@test.com | Core test user |
 
 The original relationship structure is kept:
 
@@ -44,36 +52,39 @@ The original relationship structure is kept:
 - The sample chat with messages exists between `A` and `B`.
 - The second sample conversation exists between `A` and `C`.
 
-Additional development/demo accounts may exist for specific flows, such as `learner` and `top_student`.
+Additional demo accounts may exist for specific flows, such as `learner` and `top_student`.
 
-## Development
+## Configuration
 
-The application source lives directly at the repository root. Docker Compose is managed through the Makefile.
+The Docker stack reads environment variables from `.env`. Use `.env.example` as the template when preparing a new deployment environment.
 
-Common development commands:
+Important values include:
 
-```bash
-make dev        # start the development stack
-make dev-logs   # start dev and follow logs
-make down       # stop the development stack
-make rebuild    # rebuild and start dev
-make db-init    # run Prisma migrations and seed data
-make db         # open psql in the dev database container
-make check      # run typecheck and lint
-```
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, and `DATABASE_URL`
+- `NEXTAUTH_SECRET` and `NEXTAUTH_URL`
+- OAuth credentials for Google and 42 login, if enabled
+- `NEXT_PUBLIC_WS_URL` for the browser Socket.IO endpoint
+- `WS_SHARED_SECRET` shared by the web and websocket services
 
-## Production
+## Docker Commands
 
-Common production commands:
+The repository keeps a single production-oriented Docker Compose stack. Common commands:
 
 ```bash
-make certs      # generate local HTTPS certificates
-make prod       # build and start production
-make prod-down  # stop production
-make prod-logs  # follow production logs
-make ps         # show production container status
-make seed       # run production seed data
-make db-prod    # open psql in the production database container
+make certs    # generate local HTTPS certificates
+make up       # build and start the stack
+make down     # stop the stack
+make restart  # restart the stack
+make rebuild  # rebuild images and restart the stack
+make logs     # follow stack logs
+make ps       # show container status
+make migrate  # run Prisma migrations inside the web container
+make seed     # run seed data inside the web container
+make db       # open psql in the database container
 ```
 
-This README is being rebuilt for the fork and will be expanded as the modified application evolves.
+The application is served through the WAF. With the default local certificate setup, open:
+
+```text
+https://localhost:8443
+```

@@ -54,7 +54,7 @@ services:
       # Exception pour le callback OAuth Google : scope "userinfo.profile" déclenche
       # faussement la règle LFI 930120 (.profile détecté comme fichier système).
       - ./docker/modsecurity/google-oauth-exception.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-902-GOOGLE-OAUTH-EXCEPTION.conf:z
-      # Certificat SSL auto-signé généré par le Makefile (make prod) via openssl — sans sudo
+      # Certificat SSL auto-signé généré par le Makefile (make up) via openssl — sans sudo
       # Ces 2 lignes remplacent le certificat auto-généré de l'image par le nôtre (certs/)
       - ./certs/cert.pem:/etc/nginx/conf/server.crt:z
       - ./certs/key.pem:/etc/nginx/conf/server.key:z
@@ -122,7 +122,7 @@ services:
     networks:
       - echo_network
     env_file:
-      - .env.prod
+      - .env
 
   # ============================================================
   # HashiCorp Vault — gestionnaire de secrets

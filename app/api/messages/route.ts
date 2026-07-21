@@ -4,6 +4,7 @@
 
 
 import { NextResponse } from "next/server";
+import { notifyWs } from "@/lib/notifyWs";
 import { getSessionUserId } from "@/lib/session-user";
 import { prisma } from "@/server/prisma";
 
@@ -115,6 +116,14 @@ export async function POST(request: Request) {
     conversation.userAId === senderId
       ? conversation.userBId
       : conversation.userAId;
+
+  // Broadcast only after the authenticated API has persisted the message.
+  // This keeps delivery tied to the HTTP session instead of trusting a
+  // potentially stale client Socket identity after an account switch.
+  await notifyWs("message.created", {
+    toUserId: recipientId,
+    data: message,
+  });
 
   return NextResponse.json(
     {

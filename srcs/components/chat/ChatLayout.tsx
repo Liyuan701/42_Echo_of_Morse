@@ -1371,12 +1371,6 @@ export default function ChatLayout() {
       )
     );
 
-    socket?.emit("chat:message:send", {
-      senderId: userId,
-      toUserId: result.recipientId,
-      message: result.message,
-    });
-
     return true;
   }
 

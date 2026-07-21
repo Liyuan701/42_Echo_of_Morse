@@ -11,7 +11,22 @@ import {
   isGameInvitationExpired,
 } from "@/lib/services/game-invitations";
 import { getRadioUserState } from "@/lib/services/radio-user-state";
+import { getPublicRadioLobbySnapshot } from "@/lib/services/competition";
+import { notifyWs } from "@/lib/notifyWs";
 import { prisma } from "@/server/prisma";
+
+async function notifyInvitationLobbyChanged(radioId: string | null | undefined) {
+  if (!radioId) {
+    return;
+  }
+
+  const lobby = await getPublicRadioLobbySnapshot(radioId);
+
+  await notifyWs("radio.users.updated", {
+    radioId,
+    data: { radioId, lobby },
+  });
+}
 
 type RouteContext = {
   params: {
@@ -375,6 +390,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       updated,
       "accepted"
     );
+    await notifyInvitationLobbyChanged(updated.radioRoom?.radioId);
 
     return NextResponse.json({
       id: updated.id,

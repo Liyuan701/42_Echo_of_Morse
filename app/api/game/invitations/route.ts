@@ -14,7 +14,22 @@ import {
 } from "@/lib/services/game-invitations";
 import { ensureInviterLobbyPresence } from "@/lib/services/invitation-lobby";
 import { getRadioUserState } from "@/lib/services/radio-user-state";
+import { getPublicRadioLobbySnapshot } from "@/lib/services/competition";
+import { notifyWs } from "@/lib/notifyWs";
 import { prisma } from "@/server/prisma";
+
+async function notifyInvitationLobbyChanged(radioId: string | null | undefined) {
+  if (!radioId) {
+    return;
+  }
+
+  const lobby = await getPublicRadioLobbySnapshot(radioId);
+
+  await notifyWs("radio.users.updated", {
+    radioId,
+    data: { radioId, lobby },
+  });
+}
 
 function isUniqueConstraintError(error: unknown) {
   return (
@@ -276,6 +291,7 @@ export async function POST(request: NextRequest) {
 
     await notifyExpiredGameInvitations(expiredInvitations);
     await notifyGameInvitationChange("game-invitation.created", invitation, "pending");
+    await notifyInvitationLobbyChanged(invitation.radioRoom?.radioId);
 
     return NextResponse.json(formatGameInvitationForClient(invitation), {
       status: 201,
@@ -291,7 +307,8 @@ export async function POST(request: NextRequest) {
           error: "Invitation already pending",
           code: "INVITATION_ALREADY_PENDING",
           status: 409,
-        }
+        },
+        { status: 409 }
       );
     }
 
@@ -314,7 +331,8 @@ export async function POST(request: NextRequest) {
 
     if (errors[message]) {
       return NextResponse.json(
-        { ok: false, error: errors[message], code: message, status: 409 }
+        { ok: false, error: errors[message], code: message, status: 409 },
+        { status: 409 }
       );
     }
 

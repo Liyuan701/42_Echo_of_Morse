@@ -59,19 +59,21 @@ async function main() {
   const existing = await prisma.user.findFirst();
   if (existing) {
     // Keep existing local data, but update known seed accounts to the current
-    // compliant test password.
-    await prisma.user.updateMany({
-      where: {
-        email: {
-          in: [
-            ...users.map((user) => `${user.username}@test.com`),
-            "learner@test.com",
-          ],
+    // compliant test password and normalized lowercase email addresses.
+    for (const user of users) {
+      await prisma.user.updateMany({
+        where: { username: user.username },
+        data: {
+          email: `${user.username.toLowerCase()}@test.com`,
+          passwordHash,
         },
-      },
-      data: { passwordHash },
+      });
+    }
+    await prisma.user.updateMany({
+      where: { username: "learner" },
+      data: { email: "learner@test.com", passwordHash },
     });
-    console.log("Radio rooms ensured; seed account passwords updated.");
+    console.log("Radio rooms ensured; seed account emails and passwords updated.");
     return;
   }
   console.log("Reset database...");
@@ -94,7 +96,7 @@ async function main() {
     const user = await prisma.user.create({
       data: {
         username: u.username,
-        email: `${u.username}@test.com`,
+        email: `${u.username.toLowerCase()}@test.com`,
         passwordHash,
         learningLevel: u.learningLevel,
         bio: "",

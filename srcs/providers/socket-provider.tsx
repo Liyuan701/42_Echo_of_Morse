@@ -53,6 +53,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         if (!isMounted) return;
         if (!data.token) return;
 
+        // The Socket instance is shared across client-side navigations. When a
+        // different account signs in, reconnect so the server verifies the new
+        // token and moves this browser into the correct user room.
+        if (socketInstance.connected) {
+          socketInstance.disconnect();
+        }
+
         socketInstance.auth = {
           token: data.token,
         };

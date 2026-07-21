@@ -1,4 +1,6 @@
-// check-db.js，放在项目根目录
+// check-db.js，on the project root
+// to check the db health.
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
